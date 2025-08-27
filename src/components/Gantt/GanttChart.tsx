@@ -519,7 +519,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         </div>
 
         {/* Scrollable Timeline */}
-        <div className="flex-1 overflow-x-scroll overflow-y-scroll scrollbar-always-visible" ref={timelineRef} style={{
+        <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible" ref={timelineRef} style={{
           scrollbarWidth: 'auto',
           scrollbarColor: '#6B7280 #E5E7EB',
           cursor: isDragging ? 'grabbing' : 'grab'
@@ -532,9 +532,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         >
-          <div className="min-w-full min-h-full">
+          <div className="min-w-max">
             {/* Timeline Header */}
-            <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-max">
+            <div className="border-b border-gray-200 sticky top-0 bg-white z-20" style={{ minWidth: `${timeScale.length * 16}px` }}>
               {/* Week Numbers Row */}
               <div className="flex border-b border-gray-100">
                 {timeScale.map((date, index) => {
@@ -569,11 +569,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`w-4 border-r border-gray-100 h-6 relative ${
+                      className={`border-r border-gray-100 h-6 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
-                      style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
+                      style={isMonday ? { width: `${daysInWeek * 16}px`, minWidth: `${daysInWeek * 16}px` } : { width: '16px', minWidth: '16px' }}
                     >
                       {isMonday && (
                         <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
@@ -622,11 +622,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`w-4 border-r border-gray-100 h-4 relative ${
+                      className={`border-r border-gray-100 h-4 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
-                      style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
+                      style={isFirstOfMonth ? { width: `${daysInMonth * 16}px`, minWidth: `${daysInMonth * 16}px` } : { width: '16px', minWidth: '16px' }}
                     >
                       {isFirstOfMonth && (
                         <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
@@ -650,13 +650,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                     className={`flex-1 border-r border-gray-100 h-3 relative ${
+                      className={`border-r border-gray-100 h-3 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
+                      style={{ width: '16px', minWidth: '16px' }}
                       title={date.toLocaleDateString('fr-FR')}
                     >
-                     <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
+                      <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
@@ -673,7 +674,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             </div>
 
             {/* Project Rows */}
-            <div className="flex-1 min-w-max">
+            <div className="flex-1" style={{ minWidth: `${timeScale.length * 16}px` }}>
               {sortedProjects.map((project) => {
                 const color = getStatusColor(project.status);
                 const isExpanded = expandedProjects.has(project.id);
@@ -691,8 +692,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const widthPercentage = endPercentage - startPercentage;
                 
                 return (
-                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center min-w-max`}>
-                    <div className="flex w-full min-w-max">
+                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center`} style={{ minWidth: `${timeScale.length * 16}px` }}>
+                    <div className="flex w-full" style={{ minWidth: `${timeScale.length * 16}px` }}>
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
                         const isToday = date.toDateString() === new Date().toDateString();
@@ -700,10 +701,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`flex-1 border-r border-gray-100 relative h-[60px] min-w-0 ${
+                            className={`border-r border-gray-100 relative h-[60px] ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
+                            style={{ width: '16px', minWidth: '16px' }}
                           >
                             {/* Weekend grid line */}
                             {isWeekendDay && (
