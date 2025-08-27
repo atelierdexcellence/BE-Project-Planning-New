@@ -95,6 +95,11 @@ const translations = {
     'gantt.manage_tasks': 'Manage Tasks',
     'gantt.today': 'Today',
     
+    // Key Dates
+    'gantt.wood_foam_launch': 'Wood/Foam Launch',
+    'gantt.previewed_delivery': 'Previewed Delivery',
+    'gantt.last_call': 'Last Call',
+    
     // Task Categories
     'overview.title': 'Team Workload Overview',
     'overview.subtitle': 'BE Team workload and project distribution analysis',
@@ -261,6 +266,11 @@ const translations = {
     'gantt.tasks_appear': 'Les tâches apparaîtront ici une fois créées.',
     'gantt.manage_tasks': 'Gérer les Tâches',
     'gantt.today': 'Aujourd\'hui',
+    
+    // Key Dates
+    'gantt.wood_foam_launch': 'Lancement Bois/Mousse',
+    'gantt.previewed_delivery': 'Livraison Prévue',
+    'gantt.last_call': 'Dernier Appel',
     
     // Task Categories
     'overview.title': 'Vue d\'Ensemble de la Charge de Travail',

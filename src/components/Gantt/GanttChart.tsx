@@ -733,15 +733,15 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-yellow-500 rounded-sm"></div>
-          <span className="text-gray-700">Lancement Bois/Mousse</span>
+          <span className="text-gray-700">{t('gantt.wood_foam_launch')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-          <span className="text-gray-700">Livraison Prévue</span>
+          <span className="text-gray-700">{t('gantt.previewed_delivery')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-          <span className="text-gray-700">Dernier Appel</span>
+          <span className="text-gray-700">{t('gantt.last_call')}</span>
         </div>
       </div>
     </div>
