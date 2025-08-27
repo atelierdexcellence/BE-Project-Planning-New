@@ -79,7 +79,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [weekScrollOffset, setWeekScrollOffset] = useState(0);
 
   // Horizontal scroll offset for navigation
-  const [scrollOffset, setScrollOffset] = useState(0);
 
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
@@ -115,13 +114,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     
     switch (viewMode) {
       case 'week':
-        // Generate extended timeline for horizontal scrolling
+        // Show only one week at a time, but allow navigation through weekScrollOffset
         const currentDay = now.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay; // Handle Sunday as 0
         startDate = new Date(now);
-        startDate.setDate(now.getDate() + mondayOffset + (7 * weekScrollOffset) - 14); // Show 2 weeks before
+        startDate.setDate(now.getDate() + mondayOffset + (7 * weekScrollOffset)); // Current week + offset
         endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + (7 * 5) - 1); // Show 5 weeks total
+        endDate.setDate(startDate.getDate() + 6); // Show only 7 days (one week)
         break;
       case 'year':
         startDate = new Date(now.getFullYear(), 0, 1);
@@ -156,14 +155,18 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
   // Navigation functions
   const navigatePrevious = () => {
-    setScrollOffset(prev => prev - 1);
+    if (viewMode === 'week') {
+      setWeekScrollOffset(prev => prev - 1); // Go to previous week
+    } else {
+      // Handle other view modes later
+    }
   };
 
   const navigateNext = () => {
     if (viewMode === 'week') {
-      setWeekScrollOffset(prev => prev - 1);
+      setWeekScrollOffset(prev => prev + 1); // Go to next week
     } else {
-      setScrollOffset(prev => prev + 1);
+      // Handle other view modes later
     }
   };
 
@@ -171,14 +174,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     if (viewMode === 'week') {
       setWeekScrollOffset(0);
     } else {
-      setScrollOffset(0);
+      // Handle other view modes later
     }
     setCurrentDate(new Date());
   };
 
   // Reset scroll offset when view mode changes
   useEffect(() => {
-    setScrollOffset(0);
     setWeekScrollOffset(0);
     setCurrentDate(new Date());
   }, [viewMode]);
@@ -264,14 +266,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         weekEnd.setDate(weekStart.getDate() + 6);
         return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
       case 'month':
-        const monthDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthDate = new Date(date.getFullYear(), date.getMonth() + scrollOffset, 1);
         return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
       case 'quarter':
-        const quarterDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        const quarterDate = new Date(date.getFullYear(), date.getMonth() + (scrollOffset * 3), 1);
         const quarter = Math.floor(quarterDate.getMonth() / 3) + 1;
         return `Q${quarter} ${quarterDate.getFullYear()}`;
       case 'year':
-        return date.getFullYear().toString();
+        return (date.getFullYear() + scrollOffset).toString();
       default:
         return '';
     }
@@ -536,9 +538,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className={viewMode === 'week' ? 'min-w-max min-h-full' : 'min-w-full min-h-full'}>
+          <div className="min-w-full min-h-full">
             {/* Timeline Header */}
-            <div className={`border-b border-gray-200 sticky top-0 bg-white z-20 ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
+            <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-full">
               {/* Week Numbers Row */}
               <div className="flex border-b border-gray-100">
                 {timeScale.map((date, index) => {
@@ -677,7 +679,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             </div>
 
             {/* Project Rows */}
-            <div className={`flex-1 ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
+            <div className="flex-1 min-w-full">
               {sortedProjects.map((project) => {
                 const color = getStatusColor(project.status);
                 const isExpanded = expandedProjects.has(project.id);
@@ -695,8 +697,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const widthPercentage = endPercentage - startPercentage;
                 
                 return (
-                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center min-w-max`}>
-                    <div className={`flex w-full ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
+                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center">
+                    <div className="flex w-full">
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
                         const isToday = date.toDateString() === new Date().toDateString();
