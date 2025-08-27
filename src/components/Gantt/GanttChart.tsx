@@ -78,6 +78,26 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
   const [weekScrollOffset, setWeekScrollOffset] = useState(0);
 
+  // Add wheel event handler for timeline navigation
+  const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
+    // Only handle horizontal scrolling or when shift is held
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
+      e.preventDefault();
+      
+      if (viewMode === 'week') {
+        // Determine scroll direction
+        const scrollDirection = e.deltaX > 0 || (e.shiftKey && e.deltaY > 0) ? 1 : -1;
+        
+        // Add small delay to prevent too rapid scrolling
+        const now = Date.now();
+        if (!handleTimelineWheel.lastScroll || now - handleTimelineWheel.lastScroll > 150) {
+          setWeekScrollOffset(prev => prev + scrollDirection);
+          handleTimelineWheel.lastScroll = now;
+        }
+      }
+    }
+  }, [viewMode]);
+
   // Horizontal scroll offset for navigation
 
   // Filter projects based on status
@@ -523,7 +543,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
         {/* Scrollable Timeline */}
         <div 
-          className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible" 
+          className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
           scrollbarWidth: 'auto',
@@ -537,6 +557,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onWheel={handleTimelineWheel}
         >
           <div className="min-w-full min-h-full">
             {/* Timeline Header */}
