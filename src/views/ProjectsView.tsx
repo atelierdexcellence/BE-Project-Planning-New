@@ -3,11 +3,13 @@ import { ProjectCard } from '../components/Projects/ProjectCard';
 import { ProjectForm } from '../components/Projects/ProjectForm';
 import { ProjectGanttChart } from '../components/Gantt/ProjectGanttChart';
 import { useProjects } from '../hooks/useProjects';
+import { useLanguage } from '../hooks/useLanguage';
 import { Plus, Search, Grid, List } from 'lucide-react';
 import type { Project } from '../types';
 
 export const ProjectsView: React.FC = () => {
   const { projects, sortProjectsByNextDate, createProject, updateProject, getTasksForProject } = useProjects();
+  const { t } = useLanguage();
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectGantt, setShowProjectGantt] = useState(false);
