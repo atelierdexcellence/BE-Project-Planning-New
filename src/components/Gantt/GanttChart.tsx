@@ -584,7 +584,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
-          cursor: isDragging ? 'grabbing' : 'grab'
+          cursor: isDragging ? 'grabbing' : 'grab',
+          overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
