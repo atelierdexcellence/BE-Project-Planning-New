@@ -1,0 +1,93 @@
+import React, { useState, createContext } from 'react';
+import { LoginForm } from './components/Auth/LoginForm';
+import { Header } from './components/Layout/Header';
+import { Sidebar } from './components/Layout/Sidebar';
+import { NotificationPanel } from './components/Notifications/NotificationPanel';
+import { OverviewView } from './views/OverviewView';
+import { GanttView } from './views/GanttView';
+import { ProjectsView } from './views/ProjectsView';
+import { UsersView } from './views/UsersView';
+import { useAuthHook, AuthContext } from './hooks/useAuth';
+import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
+import type { User } from './types';
+
+function App() {
+  const auth = useAuthHook();
+  const language = useLanguageHook();
+  const [activeView, setActiveView] = useState('overview');
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!auth.user) {
+    return (
+      <AuthContext.Provider value={auth}>
+        <LanguageContext.Provider value={language}>
+          <LoginForm />
+        </LanguageContext.Provider>
+      </AuthContext.Provider>
+    );
+  }
+
+  const renderView = () => {
+    switch (activeView) {
+      case 'overview':
+        return <OverviewView />;
+      case 'gantt':
+        return <GanttView />;
+      case 'projects':
+        return <ProjectsView />;
+      case 'analytics':
+        return (
+          <div className="flex-1 p-6">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+            <p className="text-gray-600 mt-2">Analytics dashboard coming soon...</p>
+          </div>
+        );
+      case 'users':
+        return (
+          <UsersView />
+        );
+      case 'settings':
+        return (
+          <div className="flex-1 p-6">
+            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-600 mt-2">Application settings coming soon...</p>
+          </div>
+        );
+      default:
+        return <GanttView />;
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={auth}>
+      <LanguageContext.Provider value={language}>
+        <div className="min-h-screen bg-gray-100">
+          <Header onNotificationsClick={() => setShowNotifications(true)} />
+          
+          <div className="flex">
+            <Sidebar activeView={activeView} onViewChange={setActiveView} />
+            {renderView()}
+          </div>
+
+          <NotificationPanel
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+          />
+        </div>
+      </LanguageContext.Provider>
+    </AuthContext.Provider>
+  );
+}
+
+export default App;

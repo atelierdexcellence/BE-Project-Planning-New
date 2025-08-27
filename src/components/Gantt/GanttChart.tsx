@@ -1,0 +1,749 @@
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { Plus, Filter, Download, Calendar, Settings } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
+import { PROJECT_SUB_CATEGORIES } from '../../types';
+import type { Project, Task } from '../../types';
+
+interface ProjectHoverProps {
+  project: Project;
+  position: { x: number; y: number };
+  onClose: () => void;
+}
+
+const ProjectHover: React.FC<ProjectHoverProps> = ({ project, position, onClose }) => {
+  return (
+    <div
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-sm"
+      style={{
+        left: `${position.x + 10}px`,
+        top: `${position.y - 10}px`,
+        transform: 'translateY(-100%)'
+      }}
+      onMouseLeave={onClose}
+    >
+      {project.image_url && (
+        <img
+          src={project.image_url}
+          alt={project.name}
+          className="w-full h-32 object-cover rounded-lg mb-3"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+          }}
+        />
+      )}
+      <h4 className="font-semibold text-gray-900 mb-1">{project.name}</h4>
+      <p className="text-sm text-gray-600 mb-2">{project.client}</p>
+      <div className="text-xs text-gray-500">
+        <p>BC: {project.bc_order_number}</p>
+        <p>Progress: {Math.round((project.hours_completed / project.hours_previewed) * 100)}%</p>
+      </div>
+    </div>
+  );
+};
+
+interface GanttChartProps {
+  projects: Project[];
+  tasks: Task[];
+  viewMode: 'year' | 'quarter' | 'month' | 'week';
+  onProjectClick?: (project: Project) => void;
+  onNewProject?: () => void;
+  statusFilter: string;
+  onStatusFilterChange: (filter: string) => void;
+  subCategoryFilter: string;
+  onSubCategoryFilterChange: (filter: string) => void;
+  onViewModeChange: (mode: 'year' | 'quarter' | 'month' | 'week') => void;
+  onExport?: () => void;
+}
+
+export const GanttChart: React.FC<GanttChartProps> = ({ 
+  projects, 
+  tasks, 
+  viewMode = 'week',
+  onProjectClick,
+  onNewProject,
+  statusFilter,
+  onStatusFilterChange,
+  subCategoryFilter,
+  onSubCategoryFilterChange,
+  onViewModeChange,
+  onExport
+}) => {
+  const { t, language } = useLanguage();
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [hoveredProject, setHoveredProject] = useState<{ project: Project; position: { x: number; y: number } } | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  // Filter projects based on status
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => 
+      (statusFilter === 'all' || project.status === statusFilter) &&
+      (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter)
+    );
+  }, [projects, statusFilter, subCategoryFilter]);
+
+  // Sort projects by priority and name
+  const sortedProjects = useMemo(() => {
+    const sorted = filteredProjects.slice().sort((a, b) => {
+      // First sort by sub_category priority
+      const categoryA = PROJECT_SUB_CATEGORIES.find(cat => cat.id === a.sub_category);
+      const categoryB = PROJECT_SUB_CATEGORIES.find(cat => cat.id === b.sub_category);
+      
+      if (categoryA && categoryB && categoryA.priority !== categoryB.priority) {
+        return categoryA.priority - categoryB.priority;
+      }
+      
+      // Then sort by name
+      return a.name.localeCompare(b.name);
+    });
+    
+    return sorted;
+  }, [filteredProjects]);
+
+  const { timeScale, startDate, endDate } = useMemo(() => {
+    const now = new Date(currentDate);
+    
+    let startDate: Date;
+    let endDate: Date;
+    
+    // Adjust timeline based on view mode
+    switch (viewMode) {
+      case 'week':
+        // Show current week (Monday to Sunday)
+        const currentDay = now.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay; // Handle Sunday as 0
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() + mondayOffset);
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6); // Sunday (6 days after Monday = 7 total days)
+        break;
+      case 'year':
+        // Show full year from January to December
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear(), 11, 31);
+        break;
+      case 'quarter':
+        // Show current quarter (3 months)
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+        break;
+      case 'month':
+        // Show current month
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      default:
+        startDate = new Date(now);
+        endDate = new Date(now);
+        endDate.setMonth(endDate.getMonth() + 2);
+    }
+    
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const timeScale = [];
+    
+    for (let i = 0; i <= totalDays - 1; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      timeScale.push(date);
+    }
+    
+    return { timeScale, startDate, endDate, totalDays };
+  }, [viewMode, currentDate]);
+
+  // Navigation functions
+  const navigatePrevious = () => {
+    const newDate = new Date(currentDate);
+    switch (viewMode) {
+      case 'week':
+        newDate.setDate(newDate.getDate() - 7);
+        break;
+      case 'month':
+        newDate.setMonth(newDate.getMonth() - 1);
+        break;
+      case 'quarter':
+        newDate.setMonth(newDate.getMonth() - 3);
+        break;
+      case 'year':
+        newDate.setFullYear(newDate.getFullYear() - 1);
+        break;
+    }
+    setCurrentDate(newDate);
+  };
+
+  const navigateNext = () => {
+    const newDate = new Date(currentDate);
+    switch (viewMode) {
+      case 'week':
+        newDate.setDate(newDate.getDate() + 7);
+        break;
+      case 'month':
+        newDate.setMonth(newDate.getMonth() + 1);
+        break;
+      case 'quarter':
+        newDate.setMonth(newDate.getMonth() + 3);
+        break;
+      case 'year':
+        newDate.setFullYear(newDate.getFullYear() + 1);
+        break;
+    }
+    setCurrentDate(newDate);
+  };
+
+  const navigateToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  // Reset to today when view mode changes
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, [viewMode]);
+
+  // Format current period display
+  const getCurrentPeriodLabel = () => {
+    const date = new Date(currentDate);
+    switch (viewMode) {
+      case 'week':
+        const weekStart = new Date(date);
+        const currentDay = date.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        weekStart.setDate(date.getDate() + mondayOffset);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+      case 'month':
+        return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      case 'quarter':
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        return `Q${quarter} ${date.getFullYear()}`;
+      case 'year':
+        return date.getFullYear().toString();
+      default:
+        return '';
+    }
+  };
+  const getProjectPosition = (project: Project) => {
+    const projectStart = new Date(project.key_dates.start_in_be);
+    const projectEnd = new Date(project.key_dates.last_call);
+    
+    const startOffset = Math.max(0, Math.ceil((projectStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const duration = Math.ceil((projectEnd.getTime() - projectStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return { startOffset, duration };
+  };
+
+  const getStatusColor = (status: Project['status']) => {
+    const colors = {
+      planning: '#6B7280',
+      in_progress: '#3B82F6',
+      at_risk: '#F59E0B',
+      overdue: '#EF4444',
+      completed: '#10B981',
+      on_hold: '#8B5CF6'
+    };
+    return colors[status];
+  };
+
+  const isWeekend = (date: Date) => {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  };
+
+  const getWeekNumber = (date: Date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
+  const toggleProjectExpanded = (projectId: string) => {
+    setExpandedProjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleProjectHover = (project: Project, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredProject({
+      project,
+      position: {
+        x: event.clientX,
+        y: event.clientY
+      }
+    });
+  };
+
+  const handleProjectLeave = () => {
+    setHoveredProject(null);
+  };
+
+  return (
+    <div className="space-y-6 h-full overflow-hidden relative">
+      {/* Fixed Controls */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <select
+              value={statusFilter}
+              onChange={(e) => onStatusFilterChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">{t('gantt.all_status')}</option>
+              <option value="planning">{t('status.planning')}</option>
+              <option value="in_progress">{t('status.in_progress')}</option>
+              <option value="at_risk">{t('status.at_risk')}</option>
+              <option value="overdue">{t('status.overdue')}</option>
+              <option value="completed">{t('status.completed')}</option>
+              <option value="on_hold">{t('status.on_hold')}</option>
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {/* Navigation Controls */}
+            <div className="flex items-center space-x-2 mr-4">
+              <button
+                onClick={navigatePrevious}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+                title="Previous period"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <div className="text-center min-w-[200px]">
+                <div className="text-sm font-medium text-gray-900">
+                  {getCurrentPeriodLabel()}
+                </div>
+                <button
+                  onClick={navigateToday}
+                  className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {t('gantt.today')}
+                </button>
+              </div>
+              
+              <button
+                onClick={navigateNext}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+                title="Next period"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <Filter className="h-4 w-4 text-gray-500" />
+            <select
+              value={subCategoryFilter}
+              onChange={(e) => onSubCategoryFilterChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">{t('gantt.all_categories')}</option>
+              {PROJECT_SUB_CATEGORIES.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.priority}. {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex border border-gray-300 rounded-md">
+            {(['week', 'month', 'quarter', 'year'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => onViewModeChange(mode)}
+                className={`px-3 py-2 text-sm capitalize ${
+                  viewMode === mode
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } ${mode === 'week' ? 'rounded-l-md' : mode === 'year' ? 'rounded-r-md' : ''}`}
+              >
+                {t(`gantt.${mode}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={onExport}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            <span>{t('gantt.export')}</span>
+          </button>
+
+          <button
+            onClick={onNewProject}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{t('projects.new_project')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Gantt Chart */}
+      <div className="bg-white rounded-lg shadow-sm border flex-1 overflow-hidden flex max-h-[calc(100vh-300px)]">
+        {/* Fixed Project Column */}
+        <div className="w-64 bg-gray-50 border-r border-gray-200 flex-shrink-0 flex flex-col">
+          {/* Fixed Header */}
+          <div className="p-4 border-b border-gray-200 font-medium text-gray-900 bg-gray-50 sticky top-0 z-10">
+            {t('gantt.project_column_title')}
+          </div>
+          
+          {/* Fixed Project Names */}
+          <div className="flex-1 overflow-y-auto">
+            {sortedProjects.map((project) => {
+              const color = getStatusColor(project.status);
+              const isExpanded = expandedProjects.has(project.id);
+              
+              return (
+                <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-2 min-h-[60px] flex items-center">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => toggleProjectExpanded(project.id)}
+                     className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                     <svg 
+                       className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                       fill="none" 
+                       stroke="currentColor" 
+                       viewBox="0 0 24 24"
+                     >
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                     </svg>
+                    </button>
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="text-xs font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
+                            onClick={() => onProjectClick?.(project)}>
+                          {project.name}
+                        </h5>
+                        <span className={`px-2 py-1 rounded-full capitalize flex-shrink-0 ml-2 text-xs ${
+                          project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                          project.status === 'at_risk' ? 'bg-yellow-100 text-yellow-800' :
+                          project.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {t(`status.${project.status}`)}
+                        </span>
+                      </div>
+                      {isExpanded && (
+                        <>
+                          <p className="text-xs text-gray-500 truncate">
+                            {project.client}
+                          </p>
+                          <p className="text-xs text-gray-400 truncate">
+                            {PROJECT_SUB_CATEGORIES.find(cat => cat.id === project.sub_category)?.name}
+                          </p>
+                          <p className="text-xs text-gray-400 truncate">
+                            {project.bc_order_number}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Scrollable Timeline */}
+        <div className="flex-1 overflow-x-scroll overflow-y-scroll scrollbar-always-visible" ref={timelineRef} style={{
+          scrollbarWidth: 'auto',
+          scrollbarColor: '#6B7280 #E5E7EB'
+        }}>
+          <div className="min-w-full min-h-full">
+            {/* Timeline Header */}
+            <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-max">
+              {/* Week Numbers Row */}
+              <div className="flex border-b border-gray-100">
+                {timeScale.map((date, index) => {
+                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isWeekendDay = isWeekend(date);
+                  const isMonday = date.getDay() === 1;
+                  const weekNumber = getWeekNumber(date);
+                  
+                  // Calculate days in this week (for Monday only)
+                  let daysInWeek = 1;
+                  if (isMonday) {
+                    daysInWeek = 0;
+                    for (let i = 0; i < 7 && (index + i) < timeScale.length; i++) {
+                      const checkDate = timeScale[index + i];
+                      if (checkDate.getDay() === (1 + i) % 7 || (i === 6 && checkDate.getDay() === 0)) {
+                        daysInWeek++;
+                      } else {
+                        break;
+                      }
+                    }
+                  }
+                  
+                  // Skip Tuesday-Sunday if they're part of a week that started with Monday
+                  const isTuesdayToSunday = date.getDay() >= 2 || date.getDay() === 0;
+                  const mondayIndex = date.getDay() === 0 ? index - 6 : index - (date.getDay() - 1);
+                  const hasMonday = mondayIndex >= 0 && timeScale[mondayIndex] && timeScale[mondayIndex].getDay() === 1;
+                  
+                  if (isTuesdayToSunday && hasMonday) {
+                    return null; // Skip rendering Tuesday-Sunday cells when Monday exists
+                  }
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`w-4 border-r border-gray-100 h-6 relative ${
+                        isToday ? 'bg-green-500' :
+                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
+                      }`}
+                      style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
+                    >
+                      {isMonday && (
+                        <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
+                          isToday ? 'text-white font-bold' :
+                          'text-gray-700'
+                        }`}>
+                          {language === 'en' ? `W${weekNumber}` : `S${weekNumber}`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }).filter(Boolean)}
+              </div>
+              
+              {/* Months Row */}
+              <div className="flex border-b border-gray-100">
+                {timeScale.map((date, index) => {
+                  const isWeekendDay = isWeekend(date);
+                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isFirstOfMonth = date.getDate() === 1;
+                  const monthName = date.toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { month: 'short' });
+                  
+                  // Calculate days in this month from current position (only for first of month)
+                  let daysInMonth = 0;
+                  if (isFirstOfMonth) {
+                    const currentMonth = date.getMonth();
+                    for (let i = 0; (index + i) < timeScale.length; i++) {
+                      const checkDate = timeScale[index + i];
+                      if (checkDate.getMonth() === currentMonth) {
+                        daysInMonth++;
+                      } else {
+                        break;
+                      }
+                    }
+                  }
+                  
+                  // Skip non-first-of-month days if they're part of a month that started with first day
+                  const isNotFirstOfMonth = date.getDate() !== 1;
+                  const firstOfMonthIndex = index - (date.getDate() - 1);
+                  const hasFirstOfMonth = firstOfMonthIndex >= 0 && timeScale[firstOfMonthIndex] && timeScale[firstOfMonthIndex].getDate() === 1 && timeScale[firstOfMonthIndex].getMonth() === date.getMonth();
+                  
+                  if (isNotFirstOfMonth && hasFirstOfMonth) {
+                    return null; // Skip rendering non-first days when first of month exists
+                  }
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`w-4 border-r border-gray-100 h-4 relative ${
+                        isToday ? 'bg-green-500' :
+                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
+                      }`}
+                      style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
+                    >
+                      {isFirstOfMonth && (
+                        <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
+                            isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
+                          }`}>
+                          {monthName}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }).filter(Boolean)}
+              </div>
+              
+              {/* Dates Row */}
+              <div className="flex">
+                {timeScale.map((date, index) => {
+                  const isWeekendDay = isWeekend(date);
+                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isNewYear = date.getMonth() === 0 && date.getDate() === 1;
+                  
+                  return (
+                    <div
+                      key={index}
+                     className={`flex-1 border-r border-gray-100 h-3 relative ${
+                        isToday ? 'bg-green-500' :
+                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
+                      }`}
+                      title={date.toLocaleDateString('fr-FR')}
+                    >
+                     <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
+                          isToday ? 'text-white font-bold' :
+                          'text-gray-700'
+                        }`}>
+                        {date.getDate()}
+                      </div>
+                      {/* Weekend grid line */}
+                      {isWeekendDay && (
+                        <div className="absolute inset-0 bg-gray-400 bg-opacity-20 pointer-events-none" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Project Rows */}
+            <div className="flex-1 min-w-max">
+              {sortedProjects.map((project) => {
+                const color = getStatusColor(project.status);
+                const isExpanded = expandedProjects.has(project.id);
+                const weekNumber = getWeekNumber(new Date());
+                
+                // Calculate project position as percentage of total timeline
+                const projectStart = new Date(project.key_dates.start_in_be);
+                const projectEnd = new Date(project.key_dates.last_call);
+                const timelineStart = startDate.getTime();
+                const timelineEnd = endDate.getTime();
+                const timelineWidth = timelineEnd - timelineStart;
+                
+                const startPercentage = Math.max(0, (projectStart.getTime() - timelineStart) / timelineWidth * 100);
+                const endPercentage = Math.min(100, (projectEnd.getTime() - timelineStart) / timelineWidth * 100);
+                const widthPercentage = endPercentage - startPercentage;
+                
+                return (
+                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center min-w-max`}>
+                    <div className="flex w-full min-w-max">
+                      {timeScale.map((date, index) => {
+                        const isWeekendDay = isWeekend(date);
+                        const isToday = date.toDateString() === new Date().toDateString();
+                        
+                        return (
+                          <div
+                            key={index}
+                            className={`flex-1 border-r border-gray-100 relative h-[60px] min-w-0 ${
+                              isToday ? 'bg-green-100' :
+                              isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
+                            }`}
+                          >
+                            {/* Weekend grid line */}
+                            {isWeekendDay && (
+                              <div className="absolute inset-0 bg-gray-400 bg-opacity-30 pointer-events-none" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Project Timeline Bar */}
+                    <div
+                      className="absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center cursor-pointer z-10 shadow-sm border border-white whitespace-nowrap"
+                      title={`Week ${weekNumber} - ${new Date().toDateString()}`}
+                      onClick={() => onProjectClick?.(project)}
+                      onMouseEnter={(e) => handleProjectHover(project, e)}
+                      onMouseLeave={handleProjectLeave}
+                      style={{
+                        left: `${startPercentage}%`,
+                        width: `${widthPercentage}%`,
+                        backgroundColor: color,
+                        opacity: 0.8
+                      }}
+                    >
+                      <div className="text-white px-2 truncate font-medium flex-1 text-xs">
+                        {project.name}
+                      </div>
+                      <div className="text-white px-2 opacity-75 text-xs">
+                        {Math.round((project.hours_completed / project.hours_previewed) * 100)}%
+                      </div>
+                    </div>
+                    
+                    {/* Key Date Markers */}
+                    {[
+                      { key: 'wood_foam_launch', date: project.key_dates.wood_foam_launch, color: '#F59E0B', label: 'Lancement Bois/Mousse' },
+                      { key: 'previewed_delivery', date: project.key_dates.previewed_delivery, color: '#10B981', label: 'Livraison Prévue' },
+                      { key: 'last_call', date: project.key_dates.last_call, color: '#EF4444', label: 'Dernier Appel' }
+                    ].map(({ key, date, color: markerColor, label }) => {
+                      const keyDate = new Date(date);
+                      const keyDatePercentage = Math.max(0, Math.min(100, (keyDate.getTime() - timelineStart) / timelineWidth * 100));
+                      
+                      // Only show marker if date is within timeline (for all view modes)
+                      if (keyDate >= startDate && keyDate <= endDate) {
+                        return (
+                          <div
+                            key={key}
+                            className="absolute top-0 bottom-0 w-0.5 z-20 pointer-events-none"
+                            style={{
+                              left: `${keyDatePercentage}%`,
+                              backgroundColor: markerColor,
+                              boxShadow: `0 0 4px ${markerColor}`
+                            }}
+                            title={`${label}: ${keyDate.toLocaleDateString('fr-FR')}`}
+                          >
+                            {/* Diamond marker at top */}
+                            <div
+                              className="absolute -top-1 -left-1 w-2 h-2 transform rotate-45"
+                              style={{ backgroundColor: markerColor }}
+                            />
+                            {/* Diamond marker at bottom */}
+                            <div
+                              className="absolute -bottom-1 -left-1 w-2 h-2 transform rotate-45"
+                              style={{ backgroundColor: markerColor }}
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Project Hover Popup */}
+      {hoveredProject && (
+        <ProjectHover
+          project={hoveredProject.project}
+          position={hoveredProject.position}
+          onClose={handleProjectLeave}
+        />
+      )}
+      
+      {/* Legend for Key Dates - Shows in all view modes */}
+      <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-yellow-500 rounded-sm"></div>
+          <span className="text-gray-700">Lancement Bois/Mousse</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+          <span className="text-gray-700">Livraison Prévue</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+          <span className="text-gray-700">Dernier Appel</span>
+        </div>
+      </div>
+    </div>
+  );
+};
