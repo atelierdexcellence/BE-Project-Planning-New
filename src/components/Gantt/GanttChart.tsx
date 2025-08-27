@@ -74,6 +74,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [hoveredProject, setHoveredProject] = useState<{ project: Project; position: { x: number; y: number } } | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
 
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
@@ -199,6 +201,56 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   useEffect(() => {
     setCurrentDate(new Date());
   }, [viewMode]);
+
+  // Mouse drag handlers for horizontal scrolling
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!timelineRef.current) return;
+    setIsDragging(true);
+    setDragStart({
+      x: e.pageX - timelineRef.current.offsetLeft,
+      scrollLeft: timelineRef.current.scrollLeft
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !timelineRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - timelineRef.current.offsetLeft;
+    const walk = (x - dragStart.x) * 2; // Scroll speed multiplier
+    timelineRef.current.scrollLeft = dragStart.scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Touch handlers for mobile scrolling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!timelineRef.current) return;
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragStart({
+      x: touch.pageX - timelineRef.current.offsetLeft,
+      scrollLeft: timelineRef.current.scrollLeft
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !timelineRef.current) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const x = touch.pageX - timelineRef.current.offsetLeft;
+    const walk = (x - dragStart.x) * 2;
+    timelineRef.current.scrollLeft = dragStart.scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
 
   // Format current period display
   const getCurrentPeriodLabel = () => {
@@ -467,10 +519,22 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         </div>
 
         {/* Scrollable Timeline */}
-        <div className="flex-1 overflow-x-scroll overflow-y-scroll scrollbar-always-visible" ref={timelineRef}>
+        <div className="flex-1 overflow-x-scroll overflow-y-scroll scrollbar-always-visible" ref={timelineRef} style={{
+          scrollbarWidth: 'auto',
+          scrollbarColor: '#6B7280 #E5E7EB',
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        >
           <div className="min-w-full min-h-full">
             {/* Timeline Header */}
-            <div className="border-b border-gray-200 sticky top-0 bg-white z-20">
+            <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-max">
               {/* Week Numbers Row */}
               <div className="flex border-b border-gray-100">
                 {timeScale.map((date, index) => {
@@ -505,14 +569,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`border-r border-gray-100 h-6 relative ${
-                        isToday ? 'bg-green-500' :
-                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
-                      }`}
                       className={`w-4 border-r border-gray-100 h-6 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
+                      style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
                     >
                       {isMonday && (
                         <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
@@ -561,22 +622,16 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`border-r border-gray-100 h-4 relative ${
-                        isToday ? 'bg-green-500' :
-                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
-                      }`}
                       className={`w-4 border-r border-gray-100 h-4 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
+                      style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
                     >
                       {isFirstOfMonth && (
-                        <div 
-                          className={`text-xs font-medium text-center leading-none absolute top-0 flex items-center justify-center border border-gray-300 bg-white ${
+                        <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
                             isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
-                          }`}
-                          style={{ left: 0, width: `${daysInMonth * 16}px`, height: '100%' }}
-                        >
+                          }`}>
                           {monthName}
                         </div>
                       )}
@@ -595,12 +650,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                     className={`border-r border-gray-100 h-3 relative ${
-                        isToday ? 'bg-green-500' :
-                        isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
-                      }`}
-                      title={date.toLocaleDateString('fr-FR')}
-                     className={`w-4 border-r border-gray-100 h-3 relative ${
+                     className={`flex-1 border-r border-gray-100 h-3 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
@@ -623,7 +673,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             </div>
 
             {/* Project Rows */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-max">
               {sortedProjects.map((project) => {
                 const color = getStatusColor(project.status);
                 const isExpanded = expandedProjects.has(project.id);
@@ -641,8 +691,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const widthPercentage = endPercentage - startPercentage;
                 
                 return (
-                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center`}>
-                    <div className="flex w-full">
+                  <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center min-w-max`}>
+                    <div className="flex w-full min-w-max">
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
                         const isToday = date.toDateString() === new Date().toDateString();
@@ -650,11 +700,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`border-r border-gray-100 relative h-[60px] ${
-                              isToday ? 'bg-green-100' :
-                              isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
-                            }`}
-                           className={`w-4 border-r border-gray-100 relative h-[60px] ${
+                            className={`flex-1 border-r border-gray-100 relative h-[60px] min-w-0 ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
@@ -675,6 +721,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       onClick={() => onProjectClick?.(project)}
                       onMouseEnter={(e) => handleProjectHover(project, e)}
                       onMouseLeave={handleProjectLeave}
+                      onMouseDown={(e) => e.stopPropagation()} // Prevent drag when clicking on project bars
                       style={{
                         left: `${startPercentage}%`,
                         width: `${widthPercentage}%`,
