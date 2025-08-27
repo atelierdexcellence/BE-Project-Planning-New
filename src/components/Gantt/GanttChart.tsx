@@ -76,6 +76,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
+  const [weekScrollOffset, setWeekScrollOffset] = useState(0);
 
   // Horizontal scroll offset for navigation
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -109,38 +110,31 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const { timeScale, startDate, endDate } = useMemo(() => {
     const now = new Date(currentDate);
     
-    // Calculate extended timeline based on scroll offset
     let startDate: Date;
     let endDate: Date;
-    let totalPeriods = 3; // Show current + 1 before + 1 after by default
     
-    // Adjust timeline based on view mode
     switch (viewMode) {
       case 'week':
-        // Show multiple weeks for scrolling
+        // Generate extended timeline for horizontal scrolling
         const currentDay = now.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay; // Handle Sunday as 0
         startDate = new Date(now);
-        startDate.setDate(now.getDate() + mondayOffset - (7 * Math.abs(scrollOffset)));
+        startDate.setDate(now.getDate() + mondayOffset + (7 * weekScrollOffset) - 14); // Show 2 weeks before
         endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + (7 * totalPeriods) - 1);
+        endDate.setDate(startDate.getDate() + (7 * 5) - 1); // Show 5 weeks total
         break;
       case 'year':
-        // Show multiple years for scrolling
-        startDate = new Date(now.getFullYear() - Math.abs(scrollOffset), 0, 1);
-        endDate = new Date(now.getFullYear() - Math.abs(scrollOffset) + totalPeriods - 1, 11, 31);
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear(), 11, 31);
         break;
       case 'quarter':
-        // Show multiple quarters for scrolling
         const currentQuarter = Math.floor(now.getMonth() / 3);
-        const quarterOffset = Math.floor(scrollOffset / 3);
-        startDate = new Date(now.getFullYear(), (currentQuarter * 3) - (Math.abs(scrollOffset) * 3), 1);
-        endDate = new Date(now.getFullYear(), (currentQuarter * 3) - (Math.abs(scrollOffset) * 3) + (totalPeriods * 3), 0);
+        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        endDate = new Date(now.getFullYear(), (currentQuarter * 3) + 3, 0);
         break;
       case 'month':
-        // Show multiple months for scrolling
-        startDate = new Date(now.getFullYear(), now.getMonth() - Math.abs(scrollOffset), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() - Math.abs(scrollOffset) + totalPeriods, 0);
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         break;
       default:
         startDate = new Date(now);
@@ -158,7 +152,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     }
     
     return { timeScale, startDate, endDate, totalDays };
-  }, [viewMode, currentDate, scrollOffset]);
+  }, [viewMode, currentDate, weekScrollOffset]);
 
   // Navigation functions
   const navigatePrevious = () => {
@@ -166,17 +160,26 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   };
 
   const navigateNext = () => {
-    setScrollOffset(prev => prev + 1);
+    if (viewMode === 'week') {
+      setWeekScrollOffset(prev => prev - 1);
+    } else {
+      setScrollOffset(prev => prev + 1);
+    }
   };
 
   const navigateToday = () => {
-    setScrollOffset(0);
+    if (viewMode === 'week') {
+      setWeekScrollOffset(0);
+    } else {
+      setScrollOffset(0);
+    }
     setCurrentDate(new Date());
   };
 
   // Reset scroll offset when view mode changes
   useEffect(() => {
     setScrollOffset(0);
+    setWeekScrollOffset(0);
     setCurrentDate(new Date());
   }, [viewMode]);
 
@@ -256,19 +259,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         const weekStart = new Date(date);
         const currentDay = date.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-        weekStart.setDate(date.getDate() + mondayOffset - (7 * scrollOffset));
+        weekStart.setDate(date.getDate() + mondayOffset + (7 * weekScrollOffset));
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
         return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
       case 'month':
-        const monthDate = new Date(date.getFullYear(), date.getMonth() - scrollOffset, 1);
+        const monthDate = new Date(date.getFullYear(), date.getMonth(), 1);
         return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
       case 'quarter':
-        const quarterDate = new Date(date.getFullYear(), date.getMonth() - (scrollOffset * 3), 1);
+        const quarterDate = new Date(date.getFullYear(), date.getMonth(), 1);
         const quarter = Math.floor(quarterDate.getMonth() / 3) + 1;
         return `Q${quarter} ${quarterDate.getFullYear()}`;
       case 'year':
-        return (date.getFullYear() - scrollOffset).toString();
+        return date.getFullYear().toString();
       default:
         return '';
     }
@@ -517,22 +520,25 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         </div>
 
         {/* Scrollable Timeline */}
-        <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible" ref={timelineRef} style={{
+        <div 
+          className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible" 
+          ref={timelineRef} 
+          style={{
           scrollbarWidth: 'auto',
           scrollbarColor: '#6B7280 #E5E7EB',
           cursor: isDragging ? 'grabbing' : 'grab'
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          <div className="min-w-full min-h-full">
+          <div className={viewMode === 'week' ? 'min-w-max min-h-full' : 'min-w-full min-h-full'}>
             {/* Timeline Header */}
-            <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-max">
+            <div className={`border-b border-gray-200 sticky top-0 bg-white z-20 ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
               {/* Week Numbers Row */}
               <div className="flex border-b border-gray-100">
                 {timeScale.map((date, index) => {
@@ -671,7 +677,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             </div>
 
             {/* Project Rows */}
-            <div className="flex-1 min-w-max">
+            <div className={`flex-1 ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
               {sortedProjects.map((project) => {
                 const color = getStatusColor(project.status);
                 const isExpanded = expandedProjects.has(project.id);
@@ -690,7 +696,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 
                 return (
                   <div key={project.id} className={`border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center min-w-max`}>
-                    <div className="flex w-full min-w-max">
+                    <div className={`flex w-full ${viewMode === 'week' ? 'min-w-max' : 'min-w-full'}`}>
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
                         const isToday = date.toDateString() === new Date().toDateString();
