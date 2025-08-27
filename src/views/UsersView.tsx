@@ -5,7 +5,6 @@ import { UserPermissions } from '../components/Users/UserPermissions';
 import { Plus, Search, Filter, Users, Shield, Settings, Download, Upload } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
-import { useLanguage } from '../hooks/useLanguage';
 import type { User } from '../types';
 
 // Extended user type for management
