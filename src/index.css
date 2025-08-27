@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Team Workload Overview font styling */
+.team-workload-overview {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
 /* Force scrollbars to always be visible */
 .scrollbar-always-visible {
   scrollbar-width: auto !important;

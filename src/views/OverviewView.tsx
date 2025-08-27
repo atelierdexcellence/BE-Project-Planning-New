@@ -83,7 +83,7 @@ export const OverviewView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6 space-y-6 team-workload-overview">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <img 
