@@ -77,6 +77,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
   const [weekScrollOffset, setWeekScrollOffset] = useState(0);
+  const [monthScrollOffset, setMonthScrollOffset] = useState(0);
+  const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
+  const [yearScrollOffset, setYearScrollOffset] = useState(0);
 
   // Add wheel event handler for timeline navigation
   const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
@@ -84,16 +87,22 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
       e.preventDefault();
       
-      if (viewMode === 'week') {
-        // Determine scroll direction
-        const scrollDirection = e.deltaX > 0 || (e.shiftKey && e.deltaY > 0) ? 1 : -1;
-        
-        // Add small delay to prevent too rapid scrolling
-        const now = Date.now();
-        if (!handleTimelineWheel.lastScroll || now - handleTimelineWheel.lastScroll > 150) {
+      // Determine scroll direction
+      const scrollDirection = e.deltaX > 0 || (e.shiftKey && e.deltaY > 0) ? 1 : -1;
+      
+      // Add small delay to prevent too rapid scrolling
+      const now = Date.now();
+      if (!handleTimelineWheel.lastScroll || now - handleTimelineWheel.lastScroll > 150) {
+        if (viewMode === 'week') {
           setWeekScrollOffset(prev => prev + scrollDirection);
-          handleTimelineWheel.lastScroll = now;
+        } else if (viewMode === 'month') {
+          setMonthScrollOffset(prev => prev + scrollDirection);
+        } else if (viewMode === 'quarter') {
+          setQuarterScrollOffset(prev => prev + scrollDirection);
+        } else if (viewMode === 'year') {
+          setYearScrollOffset(prev => prev + scrollDirection);
         }
+        handleTimelineWheel.lastScroll = now;
       }
     }
   }, [viewMode]);
@@ -142,18 +151,24 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6); // Show only 7 days (one week)
         break;
-      case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31);
+      case 'month':
+        // Show only one month at a time, but allow navigation through monthScrollOffset
+        startDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset, 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset + 1, 0);
         break;
       case 'quarter':
+        // Show only one quarter at a time, but allow navigation through quarterScrollOffset
         const currentQuarter = Math.floor(now.getMonth() / 3);
-        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        endDate = new Date(now.getFullYear(), (currentQuarter * 3) + 3, 0);
+        const targetQuarter = currentQuarter + quarterScrollOffset;
+        const targetYear = now.getFullYear() + Math.floor(targetQuarter / 4);
+        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+        startDate = new Date(targetYear, adjustedQuarter * 3, 1);
+        endDate = new Date(targetYear, (adjustedQuarter * 3) + 3, 0);
         break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      case 'year':
+        // Show only one year at a time, but allow navigation through yearScrollOffset
+        startDate = new Date(now.getFullYear() + yearScrollOffset, 0, 1);
+        endDate = new Date(now.getFullYear() + yearScrollOffset, 11, 31);
         break;
       default:
         startDate = new Date(now);
@@ -171,12 +186,18 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     }
     
     return { timeScale, startDate, endDate, totalDays };
-  }, [viewMode, currentDate, weekScrollOffset]);
+  }, [viewMode, currentDate, weekScrollOffset, monthScrollOffset, quarterScrollOffset, yearScrollOffset]);
 
   // Navigation functions
   const navigatePrevious = () => {
     if (viewMode === 'week') {
       setWeekScrollOffset(prev => prev - 1); // Go to previous week
+    } else if (viewMode === 'month') {
+      setMonthScrollOffset(prev => prev - 1); // Go to previous month
+    } else if (viewMode === 'quarter') {
+      setQuarterScrollOffset(prev => prev - 1); // Go to previous quarter
+    } else if (viewMode === 'year') {
+      setYearScrollOffset(prev => prev - 1); // Go to previous year
     } else {
       // Handle other view modes later
     }
@@ -185,6 +206,12 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const navigateNext = () => {
     if (viewMode === 'week') {
       setWeekScrollOffset(prev => prev + 1); // Go to next week
+    } else if (viewMode === 'month') {
+      setMonthScrollOffset(prev => prev + 1); // Go to next month
+    } else if (viewMode === 'quarter') {
+      setQuarterScrollOffset(prev => prev + 1); // Go to next quarter
+    } else if (viewMode === 'year') {
+      setYearScrollOffset(prev => prev + 1); // Go to next year
     } else {
       // Handle other view modes later
     }
@@ -193,6 +220,12 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const navigateToday = () => {
     if (viewMode === 'week') {
       setWeekScrollOffset(0);
+    } else if (viewMode === 'month') {
+      setMonthScrollOffset(0);
+    } else if (viewMode === 'quarter') {
+      setQuarterScrollOffset(0);
+    } else if (viewMode === 'year') {
+      setYearScrollOffset(0);
     } else {
       // Handle other view modes later
     }
@@ -202,6 +235,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   // Reset scroll offset when view mode changes
   useEffect(() => {
     setWeekScrollOffset(0);
+    setMonthScrollOffset(0);
+    setQuarterScrollOffset(0);
+    setYearScrollOffset(0);
     setCurrentDate(new Date());
   }, [viewMode]);
 
@@ -286,14 +322,16 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         weekEnd.setDate(weekStart.getDate() + 6);
         return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
       case 'month':
-        const monthDate = new Date(date.getFullYear(), date.getMonth() + scrollOffset, 1);
+        const monthDate = new Date(date.getFullYear(), date.getMonth() + monthScrollOffset, 1);
         return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
       case 'quarter':
-        const quarterDate = new Date(date.getFullYear(), date.getMonth() + (scrollOffset * 3), 1);
-        const quarter = Math.floor(quarterDate.getMonth() / 3) + 1;
-        return `Q${quarter} ${quarterDate.getFullYear()}`;
+        const currentQuarter = Math.floor(date.getMonth() / 3);
+        const targetQuarter = currentQuarter + quarterScrollOffset;
+        const targetYear = date.getFullYear() + Math.floor(targetQuarter / 4);
+        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+        return `Q${adjustedQuarter + 1} ${targetYear}`;
       case 'year':
-        return (date.getFullYear() + scrollOffset).toString();
+        return (date.getFullYear() + yearScrollOffset).toString();
       default:
         return '';
     }
