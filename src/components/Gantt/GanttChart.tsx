@@ -644,7 +644,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
-                          {language === 'en' ? `W${weekNumber}` : `S${weekNumber}`}
+                          {language === 'en' ? `W${weekNumber} ${date.getFullYear()}` : `S${weekNumber} ${date.getFullYear()}`}
                         </div>
                       )}
                     </div>
@@ -696,7 +696,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
                             isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
                           }`}>
-                          {monthName}
+                          {monthName} {date.getFullYear()}
                         </div>
                       )}
                     </div>
