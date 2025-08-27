@@ -77,6 +77,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
 
+  // Horizontal scroll offset for navigation
+  const [scrollOffset, setScrollOffset] = useState(0);
+
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
     return projects.filter(project => 
@@ -106,35 +109,38 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const { timeScale, startDate, endDate } = useMemo(() => {
     const now = new Date(currentDate);
     
+    // Calculate extended timeline based on scroll offset
     let startDate: Date;
     let endDate: Date;
+    let totalPeriods = 3; // Show current + 1 before + 1 after by default
     
     // Adjust timeline based on view mode
     switch (viewMode) {
       case 'week':
-        // Show current week (Monday to Sunday)
+        // Show multiple weeks for scrolling
         const currentDay = now.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay; // Handle Sunday as 0
         startDate = new Date(now);
-        startDate.setDate(now.getDate() + mondayOffset);
+        startDate.setDate(now.getDate() + mondayOffset - (7 * Math.abs(scrollOffset)));
         endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6); // Sunday (6 days after Monday = 7 total days)
+        endDate.setDate(startDate.getDate() + (7 * totalPeriods) - 1);
         break;
       case 'year':
-        // Show full year from January to December
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31);
+        // Show multiple years for scrolling
+        startDate = new Date(now.getFullYear() - Math.abs(scrollOffset), 0, 1);
+        endDate = new Date(now.getFullYear() - Math.abs(scrollOffset) + totalPeriods - 1, 11, 31);
         break;
       case 'quarter':
-        // Show current quarter (3 months)
+        // Show multiple quarters for scrolling
         const currentQuarter = Math.floor(now.getMonth() / 3);
-        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
-        endDate = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
+        const quarterOffset = Math.floor(scrollOffset / 3);
+        startDate = new Date(now.getFullYear(), (currentQuarter * 3) - (Math.abs(scrollOffset) * 3), 1);
+        endDate = new Date(now.getFullYear(), (currentQuarter * 3) - (Math.abs(scrollOffset) * 3) + (totalPeriods * 3), 0);
         break;
       case 'month':
-        // Show current month
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        // Show multiple months for scrolling
+        startDate = new Date(now.getFullYear(), now.getMonth() - Math.abs(scrollOffset), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() - Math.abs(scrollOffset) + totalPeriods, 0);
         break;
       default:
         startDate = new Date(now);
@@ -152,53 +158,25 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     }
     
     return { timeScale, startDate, endDate, totalDays };
-  }, [viewMode, currentDate]);
+  }, [viewMode, currentDate, scrollOffset]);
 
   // Navigation functions
   const navigatePrevious = () => {
-    const newDate = new Date(currentDate);
-    switch (viewMode) {
-      case 'week':
-        newDate.setDate(newDate.getDate() - 7);
-        break;
-      case 'month':
-        newDate.setMonth(newDate.getMonth() - 1);
-        break;
-      case 'quarter':
-        newDate.setMonth(newDate.getMonth() - 3);
-        break;
-      case 'year':
-        newDate.setFullYear(newDate.getFullYear() - 1);
-        break;
-    }
-    setCurrentDate(newDate);
+    setScrollOffset(prev => prev - 1);
   };
 
   const navigateNext = () => {
-    const newDate = new Date(currentDate);
-    switch (viewMode) {
-      case 'week':
-        newDate.setDate(newDate.getDate() + 7);
-        break;
-      case 'month':
-        newDate.setMonth(newDate.getMonth() + 1);
-        break;
-      case 'quarter':
-        newDate.setMonth(newDate.getMonth() + 3);
-        break;
-      case 'year':
-        newDate.setFullYear(newDate.getFullYear() + 1);
-        break;
-    }
-    setCurrentDate(newDate);
+    setScrollOffset(prev => prev + 1);
   };
 
   const navigateToday = () => {
+    setScrollOffset(0);
     setCurrentDate(new Date());
   };
 
-  // Reset to today when view mode changes
+  // Reset scroll offset when view mode changes
   useEffect(() => {
+    setScrollOffset(0);
     setCurrentDate(new Date());
   }, [viewMode]);
 
@@ -252,6 +230,24 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     setIsDragging(false);
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigatePrevious();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Format current period display
   const getCurrentPeriodLabel = () => {
     const date = new Date(currentDate);
@@ -260,17 +256,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         const weekStart = new Date(date);
         const currentDay = date.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-        weekStart.setDate(date.getDate() + mondayOffset);
+        weekStart.setDate(date.getDate() + mondayOffset - (7 * scrollOffset));
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
         return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
       case 'month':
-        return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        const monthDate = new Date(date.getFullYear(), date.getMonth() - scrollOffset, 1);
+        return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
       case 'quarter':
-        const quarter = Math.floor(date.getMonth() / 3) + 1;
-        return `Q${quarter} ${date.getFullYear()}`;
+        const quarterDate = new Date(date.getFullYear(), date.getMonth() - (scrollOffset * 3), 1);
+        const quarter = Math.floor(quarterDate.getMonth() / 3) + 1;
+        return `Q${quarter} ${quarterDate.getFullYear()}`;
       case 'year':
-        return date.getFullYear().toString();
+        return (date.getFullYear() - scrollOffset).toString();
       default:
         return '';
     }
@@ -519,7 +517,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         </div>
 
         {/* Scrollable Timeline */}
-        <div className="flex-1 overflow-x-scroll overflow-y-scroll scrollbar-always-visible" ref={timelineRef} style={{
+        <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible" ref={timelineRef} style={{
           scrollbarWidth: 'auto',
           scrollbarColor: '#6B7280 #E5E7EB',
           cursor: isDragging ? 'grabbing' : 'grab'
