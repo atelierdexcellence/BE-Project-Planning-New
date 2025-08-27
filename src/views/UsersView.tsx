@@ -5,6 +5,7 @@ import { UserPermissions } from '../components/Users/UserPermissions';
 import { Plus, Search, Filter, Users, Shield, Settings, Download, Upload } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
+import { useLanguage } from '../hooks/useLanguage';
 import type { User } from '../types';
 
 // Extended user type for management
@@ -101,8 +102,8 @@ export const UsersView: React.FC = () => {
       <div className="flex-1 p-6">
         <div className="text-center py-12">
           <Shield className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You need administrator privileges to access user management.</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('common.access_denied')}</h2>
+          <p className="text-gray-600">{t('common.admin_required')}</p>
         </div>
       </div>
     );
@@ -179,27 +180,27 @@ export const UsersView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Manage team members, roles, and permissions • {filteredUsers.length} users
+            {t('users.subtitle')} • {filteredUsers.length} {t('users.users')}
           </p>
         </div>
         
         <div className="flex items-center space-x-3">
           <button className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
             <Download className="h-4 w-4" />
-            <span>Export</span>
+            <span>{t('common.export')}</span>
           </button>
           <button className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
             <Upload className="h-4 w-4" />
-            <span>Import</span>
+            <span>{t('common.import')}</span>
           </button>
           <button
             onClick={() => setShowUserForm(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            <span>Add User</span>
+            <span>{t('users.add_user')}</span>
           </button>
         </div>
       </div>
@@ -211,7 +212,7 @@ export const UsersView: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder={t('users.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
@@ -225,11 +226,11 @@ export const UsersView: React.FC = () => {
               onChange={(e) => setRoleFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="team_member">Team Member</option>
-              <option value="commercial">Commercial</option>
-              <option value="atelier">Atelier</option>
+              <option value="all">{t('users.all_roles')}</option>
+              <option value="admin">{t('users.admin')}</option>
+              <option value="team_member">{t('users.team_member')}</option>
+              <option value="commercial">{t('users.commercial')}</option>
+              <option value="atelier">{t('users.atelier')}</option>
             </select>
           </div>
 
@@ -238,10 +239,10 @@ export const UsersView: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="pending">Pending</option>
+            <option value="all">{t('users.all_status')}</option>
+            <option value="active">{t('users.active')}</option>
+            <option value="inactive">{t('users.inactive')}</option>
+            <option value="pending">{t('users.pending')}</option>
           </select>
         </div>
 
@@ -290,25 +291,25 @@ export const UsersView: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
+                    {t('users.user')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
+                    {t('users.role')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Department
+                    {t('users.department')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('users.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Projects
+                    {t('projects.title')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Login
+                    {t('users.last_login')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t('users.actions')}
                   </th>
                 </tr>
               </thead>
@@ -361,7 +362,7 @@ export const UsersView: React.FC = () => {
                       {user.projects}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('fr-FR') : 'Never'}
+                      {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('fr-FR') : t('users.never')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
@@ -369,19 +370,19 @@ export const UsersView: React.FC = () => {
                           onClick={() => handleEditUser(user)}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          Edit
+                          {t('common.edit')}
                         </button>
                         <button
                           onClick={() => handleManagePermissions(user)}
                           className="text-green-600 hover:text-green-900"
                         >
-                          Permissions
+                          {t('users.permissions')}
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user.id)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          {t('common.delete')}
                         </button>
                       </div>
                     </td>

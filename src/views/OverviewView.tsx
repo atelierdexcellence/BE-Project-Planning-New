@@ -93,10 +93,10 @@ export const OverviewView: React.FC = () => {
           />
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-gray-900">Team Workload Overview</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('overview.title')}</h1>
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              BE Team workload and project distribution analysis
+              {t('overview.subtitle')}
             </p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export const OverviewView: React.FC = () => {
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">BE Team Members</p>
+              <p className="text-sm font-medium text-gray-600">{t('overview.be_team_members')}</p>
               <p className="text-2xl font-bold text-gray-900">{workloadData.length}</p>
             </div>
           </div>
@@ -122,7 +122,7 @@ export const OverviewView: React.FC = () => {
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Projects</p>
+              <p className="text-sm font-medium text-gray-600">{t('overview.active_projects')}</p>
               <p className="text-2xl font-bold text-gray-900">{totalActiveProjects}</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ export const OverviewView: React.FC = () => {
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Overdue Projects</p>
+              <p className="text-sm font-medium text-gray-600">{t('overview.overdue_projects')}</p>
               <p className="text-2xl font-bold text-gray-900">{totalOverdueProjects}</p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export const OverviewView: React.FC = () => {
               <Clock className="h-6 w-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Utilization</p>
+              <p className="text-sm font-medium text-gray-600">{t('overview.avg_utilization')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {Math.round(workloadData.reduce((sum, w) => sum + w.utilization, 0) / workloadData.length)}%
               </p>
@@ -191,7 +191,7 @@ export const OverviewView: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">Capacity:</span>
+                    <span className="text-sm text-gray-600">{t('overview.capacity')}:</span>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       member.utilization > 90 ? 'bg-red-100 text-red-800' :
                       member.utilization > 70 ? 'bg-yellow-100 text-yellow-800' :
@@ -203,7 +203,7 @@ export const OverviewView: React.FC = () => {
                   {member.overdue > 0 && (
                     <div className="flex items-center space-x-1 mt-1">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
-                      <span className="text-sm text-red-600">{member.overdue} overdue</span>
+                      <span className="text-sm text-red-600">{member.overdue} {t('overview.overdue')}</span>
                     </div>
                   )}
                 </div>
@@ -212,11 +212,11 @@ export const OverviewView: React.FC = () => {
               {member.role === 'BE Team' && (
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Total Hours</p>
+                    <p className="text-sm text-gray-600">{t('overview.total_hours')}</p>
                     <p className="text-lg font-semibold text-gray-900">{member.totalHours}h</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Completed</p>
+                    <p className="text-sm text-gray-600">{t('overview.completed')}</p>
                     <p className="text-lg font-semibold text-gray-900">{member.completedHours}h</p>
                   </div>
                 </div>
@@ -226,15 +226,15 @@ export const OverviewView: React.FC = () => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-medium text-gray-900">
-                  Active Projects ({member.activeProjects.length})
+                  {t('overview.active_projects')} ({member.activeProjects.length})
                 </h4>
               </div>
 
               {member.activeProjects.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <User className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No active projects</p>
-                  <p className="text-xs text-green-600 mt-1">Available for new assignments</p>
+                  <p className="text-sm">{t('overview.no_active_projects')}</p>
+                  <p className="text-xs text-green-600 mt-1">{t('overview.available_assignment')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -262,7 +262,7 @@ export const OverviewView: React.FC = () => {
                         {member.role === 'BE Team' && (
                           <div className="mb-2">
                             <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                              <span>Progress</span>
+                              <span>{t('overview.progress')}</span>
                               <span>{progressPercentage}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -277,7 +277,7 @@ export const OverviewView: React.FC = () => {
                         {nextDate && (
                           <div className="flex items-center space-x-1 text-xs text-gray-600">
                             <Calendar className="h-3 w-3" />
-                            <span>Next: {nextDate.label}</span>
+                            <span>{t('overview.next')}: {nextDate.label}</span>
                             <span className="text-gray-900 font-medium">
                               {new Date(nextDate.date).toLocaleDateString('fr-FR')}
                             </span>
@@ -290,7 +290,7 @@ export const OverviewView: React.FC = () => {
                   {member.activeProjects.length > 3 && (
                     <div className="text-center">
                       <span className="text-xs text-gray-500">
-                        +{member.activeProjects.length - 3} more projects
+                        +{member.activeProjects.length - 3} {t('overview.more_projects')}
                       </span>
                     </div>
                   )}

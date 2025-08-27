@@ -67,9 +67,9 @@ export const ProjectsView: React.FC = () => {
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('projects.title')}</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Manage all Bureau d'Études projects • {filteredProjects.length} projects
+            {t('projects.subtitle')} • {filteredProjects.length} {t('projects.title').toLowerCase()}
           </p>
         </div>
         
@@ -78,7 +78,7 @@ export const ProjectsView: React.FC = () => {
           className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>New Project</span>
+          <span>{t('projects.new_project')}</span>
         </button>
       </div>
 
@@ -88,7 +88,7 @@ export const ProjectsView: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search projects..."
+              placeholder={t('projects.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
@@ -137,19 +137,19 @@ export const ProjectsView: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Project
+                    {t('project.name')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
+                    {t('project.client')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('project.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Progress
+                    {t('overview.progress')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Next Date
+                    {t('overview.next')} Date
                   </th>
                 </tr>
               </thead>
@@ -179,7 +179,7 @@ export const ProjectsView: React.FC = () => {
                           project.status === 'overdue' ? 'bg-red-100 text-red-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {project.status.replace('_', ' ')}
+                          {t(`status.${project.status}`)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -210,7 +210,7 @@ export const ProjectsView: React.FC = () => {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500">
-            {searchTerm ? 'No projects found matching your search.' : 'No projects yet.'}
+            {searchTerm ? t('projects.no_search_results') : t('projects.no_projects')}
           </div>
         </div>
       )}

@@ -33,13 +33,13 @@ const translations = {
     'header.subtitle': 'Project Management & Gantt',
     
     // Auth
+    'auth.signIn': 'Sign in to your account',
     'auth.signin': 'Sign in to your account',
     'auth.email': 'Email address',
+    'auth.emailPlaceholder': 'Enter your email',
     'auth.password': 'Password',
-    'auth.signin_button': 'Sign in',
-    'auth.signing_in': 'Signing in...',
-    'auth.demo_accounts': 'Demo accounts:',
-    'auth.invalid_credentials': 'Invalid credentials',
+    'auth.passwordPlaceholder': 'Enter your password',
+    'auth.signingIn': 'Signing in...',
     
     // Projects
     'projects.title': 'Projects',
@@ -96,6 +96,22 @@ const translations = {
     'gantt.today': 'Today',
     
     // Task Categories
+    'overview.title': 'Team Workload Overview',
+    'overview.subtitle': 'BE Team workload and project distribution analysis',
+    'overview.be_team_members': 'BE Team Members',
+    'overview.active_projects': 'Active Projects',
+    'overview.overdue_projects': 'Overdue Projects',
+    'overview.avg_utilization': 'Avg. Utilization',
+    'overview.capacity': 'Capacity',
+    'overview.overdue': 'overdue',
+    'overview.total_hours': 'Total Hours',
+    'overview.completed': 'Completed',
+    'overview.no_active_projects': 'No active projects',
+    'overview.available_assignment': 'Available for new assignments',
+    'overview.progress': 'Progress',
+    'overview.next': 'Next',
+    'overview.more_projects': 'more projects',
+    
     'task.reunion_lancement': 'Réunion de lancement',
     'task.be_plans_validation': 'BE plans pour validation client',
     'task.be_conception_3d': 'BE conception 3D',
@@ -143,6 +159,32 @@ const translations = {
     'common.filter': 'Filter',
     'common.export': 'Export',
     'common.import': 'Import',
+    'common.access_denied': 'Access Denied',
+    'common.admin_required': 'You need administrator privileges to access user management.',
+    
+    // Users
+    'users.title': 'Team Management',
+    'users.subtitle': 'Manage team members, roles, and permissions',
+    'users.users': 'users',
+    'users.add_user': 'Add User',
+    'users.search': 'Search users...',
+    'users.all_roles': 'All Roles',
+    'users.admin': 'Admin',
+    'users.team_member': 'Team Member',
+    'users.commercial': 'Commercial',
+    'users.atelier': 'Atelier',
+    'users.all_status': 'All Status',
+    'users.active': 'Active',
+    'users.inactive': 'Inactive',
+    'users.pending': 'Pending',
+    'users.user': 'User',
+    'users.role': 'Role',
+    'users.department': 'Department',
+    'users.status': 'Status',
+    'users.last_login': 'Last Login',
+    'users.actions': 'Actions',
+    'users.never': 'Never',
+    'users.permissions': 'Permissions',
   },
   fr: {
     // Navigation
@@ -158,13 +200,13 @@ const translations = {
     'header.subtitle': 'Gestion de Projets & Gantt',
     
     // Auth
+    'auth.signIn': 'Connectez-vous à votre compte',
     'auth.signin': 'Connectez-vous à votre compte',
     'auth.email': 'Adresse e-mail',
+    'auth.emailPlaceholder': 'Entrez votre e-mail',
     'auth.password': 'Mot de passe',
-    'auth.signin_button': 'Se connecter',
-    'auth.signing_in': 'Connexion...',
-    'auth.demo_accounts': 'Comptes de démonstration :',
-    'auth.invalid_credentials': 'Identifiants invalides',
+    'auth.passwordPlaceholder': 'Entrez votre mot de passe',
+    'auth.signingIn': 'Connexion...',
     
     // Projects
     'projects.title': 'Projets',
@@ -221,6 +263,22 @@ const translations = {
     'gantt.today': 'Aujourd\'hui',
     
     // Task Categories
+    'overview.title': 'Vue d\'Ensemble de la Charge de Travail',
+    'overview.subtitle': 'Analyse de la charge de travail et de la répartition des projets de l\'équipe BE',
+    'overview.be_team_members': 'Membres de l\'Équipe BE',
+    'overview.active_projects': 'Projets Actifs',
+    'overview.overdue_projects': 'Projets en Retard',
+    'overview.avg_utilization': 'Utilisation Moyenne',
+    'overview.capacity': 'Capacité',
+    'overview.overdue': 'en retard',
+    'overview.total_hours': 'Heures Totales',
+    'overview.completed': 'Terminé',
+    'overview.no_active_projects': 'Aucun projet actif',
+    'overview.available_assignment': 'Disponible pour de nouvelles affectations',
+    'overview.progress': 'Progrès',
+    'overview.next': 'Suivant',
+    'overview.more_projects': 'projets supplémentaires',
+    
     'task.reunion_lancement': 'Réunion de lancement',
     'task.be_plans_validation': 'BE plans pour validation client',
     'task.be_conception_3d': 'BE conception 3D',
@@ -268,11 +326,46 @@ const translations = {
     'common.filter': 'Filtrer',
     'common.export': 'Exporter',
     'common.import': 'Importer',
+    'common.access_denied': 'Accès Refusé',
+    'common.admin_required': 'Vous avez besoin de privilèges administrateur pour accéder à la gestion des utilisateurs.',
+    
+    // Users
+    'users.title': 'Gestion d\'Équipe',
+    'users.subtitle': 'Gérer les membres de l\'équipe, les rôles et les permissions',
+    'users.users': 'utilisateurs',
+    'users.add_user': 'Ajouter Utilisateur',
+    'users.search': 'Rechercher des utilisateurs...',
+    'users.all_roles': 'Tous les Rôles',
+    'users.admin': 'Administrateur',
+    'users.team_member': 'Membre d\'Équipe',
+    'users.commercial': 'Commercial',
+    'users.atelier': 'Atelier',
+    'users.all_status': 'Tous les Statuts',
+    'users.active': 'Actif',
+    'users.inactive': 'Inactif',
+    'users.pending': 'En Attente',
+    'users.user': 'Utilisateur',
+    'users.role': 'Rôle',
+    'users.department': 'Département',
+    'users.status': 'Statut',
+    'users.last_login': 'Dernière Connexion',
+    'users.actions': 'Actions',
+    'users.never': 'Jamais',
+    'users.permissions': 'Permissions',
   }
 };
 
 export const useLanguageHook = () => {
-  const [language, setLanguage] = useState<Language>('fr');
+  const [language, setLanguageState] = useState<Language>(() => {
+    // Get saved language from localStorage or default to 'fr'
+    const saved = localStorage.getItem('language');
+    return (saved === 'en' || saved === 'fr') ? saved : 'fr';
+  });
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('language', lang);
+  };
 
   const t = (key: string): string => {
     return translations[language][key] || key;
