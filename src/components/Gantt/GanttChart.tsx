@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { Plus, Filter, Download, Calendar, Settings } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { PROJECT_SUB_CATEGORIES } from '../../types';
