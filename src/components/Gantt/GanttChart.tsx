@@ -197,7 +197,21 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => 
+    // Remove any potential duplicates by ID first, then filter
+    const uniqueProjects = projects.reduce((acc, project) => {
+      const existingIndex = acc.findIndex(p => p.id === project.id);
+      if (existingIndex >= 0) {
+        // Replace with the more recent version (higher updated_at)
+        if (new Date(project.updated_at) > new Date(acc[existingIndex].updated_at)) {
+          acc[existingIndex] = project;
+        }
+      } else {
+        acc.push(project);
+      }
+      return acc;
+    }, [] as Project[]);
+    
+    return uniqueProjects.filter(project => 
       (statusFilter === 'all' || project.status === statusFilter) &&
       (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter)
     );
