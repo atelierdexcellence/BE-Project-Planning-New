@@ -597,12 +597,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           ref={timelineRef} 
           style={{
             cursor: isTimelineDragging ? 'grabbing' : 'grab',
-            overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
+            overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none'
           }}
           onMouseDown={handleTimelineMouseDown}
-         onMouseMove={handleTimelineMouseMove}
-         onMouseUp={handleTimelineMouseUp}
+          onMouseMove={handleTimelineMouseMove}
+          onMouseUp={handleTimelineMouseUp}
+          onMouseLeave={handleTimelineMouseUp}
           onWheel={handleTimelineWheel}
+          onDragStart={(e) => e.preventDefault()}
+          onSelectStart={(e) => e.preventDefault()}
         >
           <div className="min-w-full min-h-full">
             {/* Timeline Header */}
