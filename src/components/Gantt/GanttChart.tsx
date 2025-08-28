@@ -671,7 +671,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
                     >
                       {isMonday && (
-                        <div className={\`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
+                        <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
