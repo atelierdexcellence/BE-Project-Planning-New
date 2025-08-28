@@ -751,7 +751,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={\`flex-1 border-r border-gray-100 h-3 relative ${
+                      className={`flex-1 border-r border-gray-100 h-3 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
