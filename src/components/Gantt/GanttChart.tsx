@@ -105,7 +105,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       return;
     }
     // Allow normal vertical scrolling for other cases
-  }, [viewMode]);
+  }, []);
 
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -249,8 +249,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       setQuarterScrollOffset(prev => prev - 1); // Go to previous quarter
     } else if (viewMode === 'year') {
       setYearScrollOffset(prev => prev - 1); // Go to previous year
-    } else {
-      // Handle other view modes later
     }
   };
 
@@ -263,8 +261,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       setQuarterScrollOffset(prev => prev + 1); // Go to next quarter
     } else if (viewMode === 'year') {
       setYearScrollOffset(prev => prev + 1); // Go to next year
-    } else {
-      // Handle other view modes later
     }
   };
 
@@ -277,8 +273,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       setQuarterScrollOffset(0);
     } else if (viewMode === 'year') {
       setYearScrollOffset(0);
-    } else {
-      // Handle other view modes later
     }
     setCurrentDate(new Date());
   };
