@@ -732,7 +732,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                           }`}>
                           {viewMode === 'year' 
                             ? monthName
-                            : \`${monthName} ${date.getFullYear()}`
+                            : `${monthName} ${date.getFullYear()}`
                           }
                         </div>
                       )}
