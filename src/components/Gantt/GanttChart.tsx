@@ -877,8 +877,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                             className="absolute w-0.5 z-20 pointer-events-none"
                             style={{
                               left: `${keyDatePercentage}%`,
-                              top: '-4px',
-                              bottom: '-4px',
+                              top: '22px',
+                              bottom: '22px',
                               backgroundColor: markerColor,
                               boxShadow: `0 0 4px ${markerColor}`
                             }}
@@ -886,12 +886,12 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                           >
                             {/* Diamond marker at top */}
                             <div
-                              className="absolute -top-0.5 -left-0.5 w-1 h-1 transform rotate-45"
+                              className="absolute -top-1 -left-0.5 w-1 h-1 transform rotate-45"
                               style={{ backgroundColor: markerColor }}
                             />
                             {/* Diamond marker at bottom */}
                             <div
-                              className="absolute -bottom-0.5 -left-0.5 w-1 h-1 transform rotate-45"
+                              className="absolute -bottom-1 -left-0.5 w-1 h-1 transform rotate-45"
                               style={{ backgroundColor: markerColor }}
                             />
                           </div>
