@@ -676,8 +676,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                           'text-gray-700'
                         }`}>
                           {viewMode === 'year' 
-                            ? (language === 'en' ? \`W${weekNumber}` : \`S${weekNumber}`)
-                            : (language === 'en' ? \`W${weekNumber} ${date.getFullYear()}` : \`S${weekNumber} ${date.getFullYear()}`)
+                            ? (language === 'en' ? (`W${weekNumber}`) : (`S${weekNumber}`))
+                            : (language === 'en' ? (`W${weekNumber} ${date.getFullYear()}`) : (`S${weekNumber} ${date.getFullYear()}`))
                           }
                         </div>
                       )}
