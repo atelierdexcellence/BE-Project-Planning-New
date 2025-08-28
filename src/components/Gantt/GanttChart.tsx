@@ -132,8 +132,35 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
       
-      timelineRef.current.scrollLeft = dragStart.scrollLeft - deltaX;
-      timelineRef.current.scrollTop = dragStart.scrollTop - deltaY;
+      // For Year and Quarter views, use navigation instead of scroll
+      if (viewMode === 'year' || viewMode === 'quarter') {
+        // Calculate drag sensitivity - larger movements trigger navigation
+        const dragThreshold = 50;
+        
+        if (Math.abs(deltaX) > dragThreshold) {
+          if (deltaX > 0) {
+            // Dragging right = go to previous period (backward in time)
+            if (viewMode === 'year') {
+              setYearScrollOffset(prev => prev - 1);
+            } else {
+              setQuarterScrollOffset(prev => prev - 1);
+            }
+          } else {
+            // Dragging left = go to next period (forward in time)
+            if (viewMode === 'year') {
+              setYearScrollOffset(prev => prev + 1);
+            } else {
+              setQuarterScrollOffset(prev => prev + 1);
+            }
+          }
+          // Reset drag start to prevent multiple triggers
+          setDragStart(prev => ({ ...prev, x: e.clientX }));
+        }
+      } else {
+        // For Week and Month views, use normal scrolling
+        timelineRef.current.scrollLeft = dragStart.scrollLeft - deltaX;
+        timelineRef.current.scrollTop = dragStart.scrollTop - deltaY;
+      }
     };
 
     const handleMouseUp = () => {
