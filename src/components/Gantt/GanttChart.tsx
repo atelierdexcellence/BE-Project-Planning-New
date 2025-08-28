@@ -197,24 +197,26 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
-    // Remove any potential duplicates by ID first, then filter
-    const uniqueProjects = projects.reduce((acc, project) => {
-      const existingIndex = acc.findIndex(p => p.id === project.id);
-      if (existingIndex >= 0) {
-        // Replace with the more recent version (higher updated_at)
-        if (new Date(project.updated_at) > new Date(acc[existingIndex].updated_at)) {
-          acc[existingIndex] = project;
-        }
-      } else {
-        acc.push(project);
-      }
-      return acc;
-    }, [] as Project[]);
+    console.log('🎯 Filtering projects. Input count:', projects.length, 'IDs:', projects.map(p => `${p.id}:${p.name}`));
     
-    return uniqueProjects.filter(project => 
+    // Check for duplicates
+    const projectIds = projects.map(p => p.id);
+    const uniqueIds = [...new Set(projectIds)];
+    if (projectIds.length !== uniqueIds.length) {
+      console.error('🚨 DUPLICATE PROJECTS DETECTED!', {
+        total: projectIds.length,
+        unique: uniqueIds.length,
+        duplicates: projectIds.filter((id, index) => projectIds.indexOf(id) !== index)
+      });
+    }
+    
+    const filtered = projects.filter(project => 
       (statusFilter === 'all' || project.status === statusFilter) &&
       (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter)
     );
+    
+    console.log('✅ Filtered projects count:', filtered.length);
+    return filtered;
   }, [projects, statusFilter, subCategoryFilter]);
 
   // Sort projects by priority and name
