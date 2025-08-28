@@ -554,7 +554,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
               const isExpanded = expandedProjects.has(project.id);
               
               return (
-                <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[30px] flex items-center">
+                <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-1 min-h-[40px] flex items-center">
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => toggleProjectExpanded(project.id)}
@@ -805,7 +805,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
                 
                 return (
-                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center">
+                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[40px] flex items-center">
                     <div className="flex w-full">
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
@@ -814,7 +814,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`flex-1 border-r border-gray-100 relative h-[30px] min-w-0 ${
+                            className={`flex-1 border-r border-gray-100 relative h-[40px] min-w-0 ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
@@ -877,8 +877,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                             className="absolute w-0.5 z-20 pointer-events-none"
                             style={{
                               left: `${keyDatePercentage}%`,
-                              top: '11px',
-                              bottom: '11px',
+                              top: '15px',
+                              bottom: '15px',
                               backgroundColor: markerColor,
                               boxShadow: `0 0 4px ${markerColor}`
                             }}
