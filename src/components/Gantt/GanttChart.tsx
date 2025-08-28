@@ -81,10 +81,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
   const [yearScrollOffset, setYearScrollOffset] = useState(0);
 
-  // Drag scrolling state
-  const [isDraggingTimeline, setIsDraggingTimeline] = useState(false);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
-  const [dragStartScroll, setDragStartScroll] = useState({ left: 0, top: 0 });
+  // Timeline drag scrolling state
+  const [isTimelineDragging, setIsTimelineDragging] = useState(false);
+  const [timelineDragStart, setTimelineDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // Add wheel event handler for timeline navigation
   const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
@@ -112,36 +111,66 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     }
   }, [viewMode]);
 
-  // Timeline drag handlers
-  const handleTimelineDragStart = (e: React.MouseEvent) => {
+  // Timeline drag scrolling handlers
+  const handleTimelineMouseDown = (e: React.MouseEvent) => {
     if (!timelineRef.current) return;
-    setIsDraggingTimeline(true);
-    setDragStartPos({
+    
+    setIsTimelineDragging(true);
+    setTimelineDragStart({
       x: e.clientX,
-      y: e.clientY
-    });
-    setDragStartScroll({
-      left: timelineRef.current.scrollLeft,
+      y: e.clientY,
+      scrollLeft: timelineRef.current.scrollLeft,
       top: timelineRef.current.scrollTop
     });
-    // Prevent text selection during drag
+    
+    e.preventDefault();
+    document.body.style.cursor = 'grabbing';
+  };
+
+  const handleTimelineMouseMove = (e: React.MouseEvent) => {
+    if (!isTimelineDragging || !timelineRef.current) return;
+    
+    const deltaX = e.clientX - timelineDragStart.x;
+    const deltaY = e.clientY - timelineDragStart.y;
+    
+    timelineRef.current.scrollLeft = timelineDragStart.scrollLeft - deltaX;
+    timelineRef.current.scrollTop = timelineDragStart.scrollTop - deltaY;
+    
     e.preventDefault();
   };
 
-  const handleTimelineDragMove = (e: React.MouseEvent) => {
-    if (!isDraggingTimeline || !timelineRef.current) return;
-    e.preventDefault();
-    
-    const deltaX = e.clientX - dragStartPos.x;
-    const deltaY = e.clientY - dragStartPos.y;
-    
-    timelineRef.current.scrollLeft = dragStartScroll.left - deltaX;
-    timelineRef.current.scrollTop = dragStartScroll.top - deltaY;
+  const handleTimelineMouseUp = () => {
+    setIsTimelineDragging(false);
+    document.body.style.cursor = '';
   };
 
-  const handleTimelineDragEnd = () => {
-    setIsDraggingTimeline(false);
-  };
+  // Add global mouse event listeners for drag
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isTimelineDragging || !timelineRef.current) return;
+      
+      const deltaX = e.clientX - timelineDragStart.x;
+      const deltaY = e.clientY - timelineDragStart.y;
+      
+      timelineRef.current.scrollLeft = timelineDragStart.scrollLeft - deltaX;
+      timelineRef.current.scrollTop = timelineDragStart.scrollTop - deltaY;
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsTimelineDragging(false);
+      document.body.style.cursor = '';
+    };
+
+    if (isTimelineDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isTimelineDragging, timelineDragStart]);
 
   // Mouse wheel handler for vertical scrolling
   const handleTimelineMouseWheel = (e: React.WheelEvent) => {
@@ -634,13 +663,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
-          cursor: isDraggingTimeline ? 'grabbing' : 'grab',
+          cursor: isTimelineDragging ? 'grabbing' : 'grab',
           overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
           }}
-          onMouseDown={handleTimelineDragStart}
-          onMouseMove={handleTimelineDragMove}
-          onMouseUp={handleTimelineDragEnd}
-          onMouseLeave={handleTimelineDragEnd}
+          onMouseDown={handleTimelineMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
