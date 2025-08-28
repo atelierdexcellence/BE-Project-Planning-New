@@ -132,8 +132,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
       
-      // For Year and Quarter views, use navigation instead of scroll
-      if (viewMode === 'year' || viewMode === 'quarter') {
+      // For all views, use navigation instead of scroll
+      if (viewMode === 'year' || viewMode === 'quarter' || viewMode === 'month' || viewMode === 'week') {
         // Calculate drag sensitivity - larger movements trigger navigation
         const dragThreshold = 50;
         
@@ -142,6 +142,60 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             // Dragging right = go to previous period (backward in time)
             if (viewMode === 'year') {
               setYearScrollOffset(prev => prev - 1);
+            } else if (viewMode === 'quarter') {
+              setQuarterScrollOffset(prev => prev - 1);
+            } else if (viewMode === 'month') {
+              setMonthScrollOffset(prev => prev - 1);
+            } else if (viewMode === 'week') {
+              setWeekScrollOffset(prev => prev - 1);
+            }
+          } else {
+            // Dragging left = go to next period (forward in time)
+            if (viewMode === 'year') {
+              setYearScrollOffset(prev => prev + 1);
+            } else if (viewMode === 'quarter') {
+              setQuarterScrollOffset(prev => prev + 1);
+            } else if (viewMode === 'month') {
+              setMonthScrollOffset(prev => prev + 1);
+            } else if (viewMode === 'week') {
+              setWeekScrollOffset(prev => prev + 1);
+            }
+          }
+          // Reset drag start to prevent multiple triggers
+          setDragStart(prev => ({ ...prev, x: e.clientX }));
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, dragStart, viewMode]);
+
+  // Update timeline container overflow based on view mode
+  const timelineOverflowX = useMemo(() => {
+    // All views now use navigation, so hide horizontal scrollbar
+    return 'hidden';
+  }, []);
+
+@@ .. @@
             } else {
               setQuarterScrollOffset(prev => prev - 1);
             }
@@ -608,7 +662,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           ref={timelineRef} 
           style={{
             cursor: isDragging ? 'grabbing' : 'grab',
-            overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto',
+            overflowX: timelineOverflowX,
             userSelect: 'none',
             WebkitUserSelect: 'none',
             MozUserSelect: 'none',
