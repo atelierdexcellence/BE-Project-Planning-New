@@ -81,6 +81,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
   const [yearScrollOffset, setYearScrollOffset] = useState(0);
 
+  // Drag scrolling state
+  const [isDraggingTimeline, setIsDraggingTimeline] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const [dragStartScroll, setDragStartScroll] = useState({ left: 0, top: 0 });
+
   // Add wheel event handler for timeline navigation
   const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
     // Only handle horizontal scrolling or when shift is held
@@ -106,6 +111,51 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       }
     }
   }, [viewMode]);
+
+  // Timeline drag handlers
+  const handleTimelineDragStart = (e: React.MouseEvent) => {
+    if (!timelineRef.current) return;
+    setIsDraggingTimeline(true);
+    setDragStartPos({
+      x: e.clientX,
+      y: e.clientY
+    });
+    setDragStartScroll({
+      left: timelineRef.current.scrollLeft,
+      top: timelineRef.current.scrollTop
+    });
+    // Prevent text selection during drag
+    e.preventDefault();
+  };
+
+  const handleTimelineDragMove = (e: React.MouseEvent) => {
+    if (!isDraggingTimeline || !timelineRef.current) return;
+    e.preventDefault();
+    
+    const deltaX = e.clientX - dragStartPos.x;
+    const deltaY = e.clientY - dragStartPos.y;
+    
+    timelineRef.current.scrollLeft = dragStartScroll.left - deltaX;
+    timelineRef.current.scrollTop = dragStartScroll.top - deltaY;
+  };
+
+  const handleTimelineDragEnd = () => {
+    setIsDraggingTimeline(false);
+  };
+
+  // Mouse wheel handler for vertical scrolling
+  const handleTimelineMouseWheel = (e: React.WheelEvent) => {
+    if (!timelineRef.current) return;
+    
+    // If shift is held or horizontal scroll, use existing navigation logic
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      handleTimelineWheel(e);
+      return;
+    }
+    
+    // Otherwise, allow normal vertical scrolling
+    // Don't prevent default to allow native vertical scrolling
+  };
 
   // Horizontal scroll offset for navigation
 
@@ -584,17 +634,17 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDraggingTimeline ? 'grabbing' : 'grab',
           overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
           }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          onMouseDown={handleTimelineDragStart}
+          onMouseMove={handleTimelineDragMove}
+          onMouseUp={handleTimelineDragEnd}
+          onMouseLeave={handleTimelineDragEnd}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onWheel={handleTimelineWheel}
+          onWheel={handleTimelineMouseWheel}
         >
           <div className="min-w-full min-h-full">
             {/* Timeline Header */}
