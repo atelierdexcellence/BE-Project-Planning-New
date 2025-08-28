@@ -73,6 +73,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const timelineRef = useRef<HTMLDivElement>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [hoveredProject, setHoveredProject] = useState<{ project: Project; position: { x: number; y: number } } | null>(null);
+  
+  // Date and navigation state
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [weekScrollOffset, setWeekScrollOffset] = useState(0);
+  const [monthScrollOffset, setMonthScrollOffset] = useState(0);
+  const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
+  const [yearScrollOffset, setYearScrollOffset] = useState(0);
+  
   // Drag scrolling state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
