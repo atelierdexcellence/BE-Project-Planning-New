@@ -757,7 +757,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       }`}
                       title={date.toLocaleDateString('fr-FR')}
                     >
-                      <div className={\`text-xs font-medium flex items-center justify-center h-full leading-none ${
+                      <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
