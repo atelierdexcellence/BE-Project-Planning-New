@@ -558,16 +558,16 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => toggleProjectExpanded(project.id)}
-                     className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                      className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                     <svg 
-                       className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                       fill="none" 
-                          className={`flex-1 border-r border-gray-100 relative h-[20px] min-w-0 ${
-                       viewBox="0 0 24 24"
-                     >
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                     </svg>
+                      <svg 
+                        className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        fill="none" 
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </button>
                     <div 
                       className="w-3 h-3 rounded-full flex-shrink-0"
@@ -631,8 +631,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             {/* Timeline Header */}
             <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-full">
               {/* Week Numbers Row */}
-                            top: '7px',
-                            bottom: '7px',
+              <div className="flex border-b border-gray-100">
+                {timeScale.map((date, index) => {
                   const isToday = date.toDateString() === new Date().toDateString();
                   const isWeekendDay = isWeekend(date);
                   const isMonday = date.getDay() === 1;
@@ -671,13 +671,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
                     >
                       {isMonday && (
-                        <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
+                        <div className={\`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
                           {viewMode === 'year' 
-                            ? (language === 'en' ? `W${weekNumber}` : `S${weekNumber}`)
-                            : (language === 'en' ? `W${weekNumber} ${date.getFullYear()}` : `S${weekNumber} ${date.getFullYear()}`)
+                            ? (language === 'en' ? \`W${weekNumber}` : \`S${weekNumber}`)
+                            : (language === 'en' ? \`W${weekNumber} ${date.getFullYear()}` : \`S${weekNumber} ${date.getFullYear()}`)
                           }
                         </div>
                       )}
@@ -720,19 +720,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`w-4 border-r border-gray-100 h-4 relative ${
+                      className={\`w-4 border-r border-gray-100 h-4 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
                       style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
                     >
                       {isFirstOfMonth && (
-                        <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
+                        <div className={\`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
                             isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
                           }`}>
                           {viewMode === 'year' 
                             ? monthName
-                            : `${monthName} ${date.getFullYear()}`
+                            : \`${monthName} ${date.getFullYear()}`
                           }
                         </div>
                       )}
@@ -751,13 +751,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   return (
                     <div
                       key={index}
-                     className={`flex-1 border-r border-gray-100 h-3 relative ${
+                      className={\`flex-1 border-r border-gray-100 h-3 relative ${
                         isToday ? 'bg-green-500' :
                         isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                       }`}
                       title={date.toLocaleDateString('fr-FR')}
                     >
-                     <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
+                      <div className={\`text-xs font-medium flex items-center justify-center h-full leading-none ${
                           isToday ? 'text-white font-bold' :
                           'text-gray-700'
                         }`}>
@@ -813,7 +813,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`flex-1 border-r border-gray-100 relative h-[30px] min-w-0 ${
+                            className={\`flex-1 border-r border-gray-100 relative h-[30px] min-w-0 ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
@@ -830,14 +830,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                     {/* Project Timeline Bar */}
                     <div
                       className="absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center cursor-pointer z-10 shadow-sm border border-white whitespace-nowrap"
-                      title={`Week ${weekNumber} - ${new Date().toDateString()}`}
+                      title={\`Week ${weekNumber} - ${new Date().toDateString()}`}
                       onClick={() => onProjectClick?.(project)}
                       onMouseEnter={(e) => handleProjectHover(project, e)}
                       onMouseLeave={handleProjectLeave}
                       onMouseDown={(e) => e.stopPropagation()}
                       style={{
-                        left: `${startPercentage}%`,
-                        width: `${widthPercentage}%`,
+                        left: \`${startPercentage}%`,
+                        width: \`${widthPercentage}%`,
                         backgroundColor: color,
                         opacity: 0.8
                       }}
@@ -875,13 +875,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                             key={key}
                             className="absolute w-0.5 z-20 pointer-events-none"
                             style={{
-                              left: `${keyDatePercentage}%`,
+                              left: \`${keyDatePercentage}%`,
                               top: '11px',
                               bottom: '11px',
                               backgroundColor: markerColor,
-                              boxShadow: `0 0 4px ${markerColor}`
+                              boxShadow: \`0 0 4px ${markerColor}`
                             }}
-                            title={`${label}: ${keyDate.toLocaleDateString('fr-FR')}`}
+                            title={\`${label}: ${keyDate.toLocaleDateString('fr-FR')}`}
                           >
                             {/* Diamond marker at top */}
                             <div
