@@ -81,70 +81,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
   const [yearScrollOffset, setYearScrollOffset] = useState(0);
 
-  // Timeline drag scrolling state
-  const [isTimelineDragging, setIsTimelineDragging] = useState(false);
-  const [timelineDragStart, setTimelineDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
-
-  // Timeline drag scrolling handlers
-  const handleTimelineMouseDown = (e: React.MouseEvent) => {
-    if (!timelineRef.current) return;
-    
-    setIsTimelineDragging(true);
-    setTimelineDragStart({
-      x: e.clientX,
-      y: e.clientY,
-      scrollLeft: timelineRef.current.scrollLeft,
-      scrollTop: timelineRef.current.scrollTop
-    });
-    
-    e.preventDefault();
-    document.body.style.cursor = 'grabbing';
-  };
-
-  const handleTimelineMouseMove = (e: React.MouseEvent) => {
-    if (!isTimelineDragging || !timelineRef.current) return;
-    
-    const deltaX = e.clientX - timelineDragStart.x;
-    const deltaY = e.clientY - timelineDragStart.y;
-    
-    timelineRef.current.scrollLeft = timelineDragStart.scrollLeft - deltaX;
-    timelineRef.current.scrollTop = timelineDragStart.scrollTop - deltaY;
-    
-    e.preventDefault();
-  };
-
-  const handleTimelineMouseUp = () => {
-    setIsTimelineDragging(false);
-    document.body.style.cursor = '';
-  };
-
-  // Add global mouse event listeners for drag
-  useEffect(() => {
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (!isTimelineDragging || !timelineRef.current) return;
-      
-      const deltaX = e.clientX - timelineDragStart.x;
-      const deltaY = e.clientY - timelineDragStart.y;
-      
-      timelineRef.current.scrollLeft = timelineDragStart.scrollLeft - deltaX;
-      timelineRef.current.scrollTop = timelineDragStart.scrollTop - deltaY;
-    };
-
-    const handleGlobalMouseUp = () => {
-      setIsTimelineDragging(false);
-      document.body.style.cursor = '';
-    };
-
-    if (isTimelineDragging) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-    };
-  }, [isTimelineDragging, timelineDragStart]);
+  // Drag scrolling state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // Mouse wheel handler for vertical scrolling
   const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
@@ -165,8 +104,59 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       }
       return;
     }
-    
+    // Allow normal vertical scrolling for other cases
   }, [viewMode]);
+
+  // Drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!timelineRef.current) return;
+    
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: timelineRef.current.scrollLeft,
+      scrollTop: timelineRef.current.scrollTop
+    });
+    
+    e.preventDefault();
+  }, []);
+
+  // Global mouse move and up handlers
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !timelineRef.current) return;
+      
+      e.preventDefault();
+      
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      
+      timelineRef.current.scrollLeft = dragStart.scrollLeft - deltaX;
+      timelineRef.current.scrollTop = dragStart.scrollTop - deltaY;
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, dragStart]);
 
   // Horizontal scroll offset for navigation
 
@@ -596,17 +586,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
-            cursor: isTimelineDragging ? 'grabbing' : 'grab',
+            cursor: isDragging ? 'grabbing' : 'grab',
             overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto',
             userSelect: 'none',
             WebkitUserSelect: 'none',
             MozUserSelect: 'none',
             msUserSelect: 'none'
           }}
-          onMouseDown={handleTimelineMouseDown}
-          onMouseMove={handleTimelineMouseMove}
-          onMouseUp={handleTimelineMouseUp}
-          onMouseLeave={handleTimelineMouseUp}
+          onMouseDown={handleMouseDown}
           onWheel={handleTimelineWheel}
           onDragStart={(e) => e.preventDefault()}
           onSelectStart={(e) => e.preventDefault()}
@@ -806,7 +793,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       onClick={() => onProjectClick?.(project)}
                       onMouseEnter={(e) => handleProjectHover(project, e)}
                       onMouseLeave={handleProjectLeave}
-                      onMouseDown={(e) => e.stopPropagation()} // Prevent drag when clicking on project bars
+                      onMouseDown={(e) => e.stopPropagation()}
                       style={{
                         left: `${startPercentage}%`,
                         width: `${widthPercentage}%`,
