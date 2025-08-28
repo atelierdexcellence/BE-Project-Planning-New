@@ -858,10 +858,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       { key: 'last_call', date: project.key_dates.last_call, color: '#EF4444', label: 'Dernier Appel' }
                     ].map(({ key, date, color: markerColor, label }) => {
                       const keyDate = new Date(date);
-                      const keyDatePercentage = Math.max(0, Math.min(100, (keyDate.getTime() - timelineStart) / timelineWidth * 100));
                       
-                      // Only show marker if date is within timeline (for all view modes)
-                      if (keyDate >= startDate && keyDate <= endDate) {
+                      // Find the exact day index for this key date
+                      const keyDateDayIndex = timeScale.findIndex(timelineDate => 
+                        timelineDate.toDateString() === keyDate.toDateString()
+                      );
+                      
+                      // Position marker in the middle of the day column
+                      const keyDatePercentage = keyDateDayIndex >= 0 
+                        ? (keyDateDayIndex * dayWidth) + (dayWidth * 0.5)  // Middle of the day
+                        : -1; // Not found in timeline
+                      
+                      // Only show marker if date is found in timeline
+                      if (keyDatePercentage >= 0) {
                         return (
                           <div
                             key={key}
