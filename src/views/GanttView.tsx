@@ -30,7 +30,15 @@ export const GanttView: React.FC = () => {
   };
 
   const handleSaveProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
-    await createProject(projectData);
+    if (selectedProject) {
+      // This is an update to an existing project
+      console.log('🔄 UPDATING existing project:', selectedProject.id, selectedProject.name);
+      await updateProject(selectedProject.id, projectData);
+    } else {
+      // This is a new project
+      console.log('➕ CREATING new project:', projectData.name);
+      await createProject(projectData);
+    }
     setShowProjectForm(false);
     setSelectedProject(null);
   };

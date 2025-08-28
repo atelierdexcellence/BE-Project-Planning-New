@@ -253,18 +253,24 @@ export const useProjects = () => {
       updated_at: new Date().toISOString()
     };
     setProjects(prev => [...prev, newProject]);
+    console.log('✅ Created project with ID:', newProject.id);
     return newProject;
   }, []);
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
+    console.log('🔄 updateProject called for ID:', id, 'Current projects count:', projects.length);
+    console.log('📝 Updates:', updates);
+    
     setProjects(prev => {
       // Find the project to update
       const projectIndex = prev.findIndex(p => p.id === id);
       if (projectIndex === -1) {
-        console.warn('Project not found for update:', id);
+        console.error('❌ Project not found for update:', id);
         return prev; // Return unchanged if project not found
       }
 
+      console.log('✅ Found project at index:', projectIndex, 'Name:', prev[projectIndex].name);
+      
       // Create new array with updated project
       const updatedProjects = [...prev];
       updatedProjects[projectIndex] = {
@@ -273,11 +279,17 @@ export const useProjects = () => {
         updated_at: new Date().toISOString()
       };
 
+      console.log('✅ Updated projects count:', updatedProjects.length);
+      console.log('📋 Project IDs after update:', updatedProjects.map(p => `${p.id}:${p.name}`));
+      
       return updatedProjects;
     });
   }, []);
 
   const addProjectUpdate = useCallback(async (projectId: string, content: string, authorId: string, authorName: string) => {
+    console.log('➕ createProject called for:', projectData.name);
+    console.log('📊 Current projects count before create:', projects.length);
+    
     const newUpdate: ProjectNote = {
       id: Date.now().toString(),
       project_id: projectId,
@@ -364,6 +376,7 @@ export const useProjects = () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    
     setTimeEntries(prev => [...prev, newTimeEntry]);
     
     // Update project's hours_completed
