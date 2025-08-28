@@ -558,16 +558,16 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => toggleProjectExpanded(project.id)}
-                     className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                      className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                     <svg 
-                       className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                       fill="none" 
-                       stroke="currentColor" 
-                       viewBox="0 0 24 24"
-                     >
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                     </svg>
+                      <svg 
+                        className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </button>
                     <div 
                       className="w-3 h-3 rounded-full flex-shrink-0"
@@ -805,7 +805,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
                 
                 return (
-                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center">
+                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[30px] flex items-center">
                     <div className="flex w-full">
                       {timeScale.map((date, index) => {
                         const isWeekendDay = isWeekend(date);
@@ -814,7 +814,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`flex-1 border-r border-gray-100 relative h-[60px] min-w-0 ${
+                            className={`flex-1 border-r border-gray-100 relative h-[30px] min-w-0 ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
@@ -830,7 +830,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                     
                     {/* Project Timeline Bar */}
                     <div
-                      className="absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center cursor-pointer z-10 shadow-sm border border-white whitespace-nowrap"
+                      className="absolute top-1/2 transform -translate-y-1/2 h-4 rounded flex items-center cursor-pointer z-10 shadow-sm border border-white whitespace-nowrap"
                       title={`Week ${weekNumber} - ${new Date().toDateString()}`}
                       onClick={() => onProjectClick?.(project)}
                       onMouseEnter={(e) => handleProjectHover(project, e)}
@@ -843,10 +843,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         opacity: 0.8
                       }}
                     >
-                      <div className="text-white px-2 truncate font-medium flex-1 text-xs">
+                      <div className="text-white px-1 truncate font-medium flex-1 text-xs">
                         {project.name}
                       </div>
-                      <div className="text-white px-2 opacity-75 text-xs">
+                      <div className="text-white px-1 opacity-75 text-xs">
                         {Math.round((project.hours_completed / project.hours_previewed) * 100)}%
                       </div>
                     </div>
@@ -877,8 +877,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                             className="absolute w-0.5 z-20 pointer-events-none"
                             style={{
                               left: `${keyDatePercentage}%`,
-                              top: '22px',
-                              bottom: '22px',
+                              top: '11px',
+                              bottom: '11px',
                               backgroundColor: markerColor,
                               boxShadow: `0 0 4px ${markerColor}`
                             }}
