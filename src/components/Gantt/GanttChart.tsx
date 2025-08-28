@@ -85,32 +85,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const [isTimelineDragging, setIsTimelineDragging] = useState(false);
   const [timelineDragStart, setTimelineDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
-  // Add wheel event handler for timeline navigation
-  const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
-    // Only handle horizontal scrolling or when shift is held
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
-      e.preventDefault();
-      
-      // Determine scroll direction
-      const scrollDirection = e.deltaX > 0 || (e.shiftKey && e.deltaY > 0) ? 1 : -1;
-      
-      // Add small delay to prevent too rapid scrolling
-      const now = Date.now();
-      if (!handleTimelineWheel.lastScroll || now - handleTimelineWheel.lastScroll > 150) {
-        if (viewMode === 'week') {
-          setWeekScrollOffset(prev => prev + scrollDirection);
-        } else if (viewMode === 'month') {
-          setMonthScrollOffset(prev => prev + scrollDirection);
-        } else if (viewMode === 'quarter') {
-          setQuarterScrollOffset(prev => prev + scrollDirection);
-        } else if (viewMode === 'year') {
-          setYearScrollOffset(prev => prev + scrollDirection);
-        }
-        handleTimelineWheel.lastScroll = now;
-      }
-    }
-  }, [viewMode]);
-
   // Timeline drag scrolling handlers
   const handleTimelineMouseDown = (e: React.MouseEvent) => {
     if (!timelineRef.current) return;
@@ -120,7 +94,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       x: e.clientX,
       y: e.clientY,
       scrollLeft: timelineRef.current.scrollLeft,
-      top: timelineRef.current.scrollTop
+      scrollTop: timelineRef.current.scrollTop
     });
     
     e.preventDefault();
@@ -173,18 +147,26 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   }, [isTimelineDragging, timelineDragStart]);
 
   // Mouse wheel handler for vertical scrolling
-  const handleTimelineMouseWheel = (e: React.WheelEvent) => {
+  const handleTimelineWheel = useCallback((e: React.WheelEvent) => {
     if (!timelineRef.current) return;
     
     // If shift is held or horizontal scroll, use existing navigation logic
     if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-      handleTimelineWheel(e);
+      e.preventDefault();
+      
+      // Determine scroll direction
+      const scrollDirection = e.deltaX > 0 || (e.shiftKey && e.deltaY > 0) ? 1 : -1;
+      
+      // Navigate time periods
+      if (scrollDirection > 0) {
+        navigateNext();
+      } else {
+        navigatePrevious();
+      }
       return;
     }
     
-    // Otherwise, allow normal vertical scrolling
-    // Don't prevent default to allow native vertical scrolling
-  };
+  }, [viewMode]);
 
   // Horizontal scroll offset for navigation
 
@@ -320,101 +302,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     setCurrentDate(new Date());
   }, [viewMode]);
 
-  // Mouse drag handlers for horizontal scrolling
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!timelineRef.current) return;
-    setIsDragging(true);
-    setDragStart({
-      x: e.pageX - timelineRef.current.offsetLeft,
-      scrollLeft: timelineRef.current.scrollLeft
-    });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !timelineRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - timelineRef.current.offsetLeft;
-    const walk = (x - dragStart.x) * 2; // Scroll speed multiplier
-    timelineRef.current.scrollLeft = dragStart.scrollLeft - walk;
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-
-  // Touch handlers for mobile scrolling
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!timelineRef.current) return;
-    const touch = e.touches[0];
-    setIsDragging(true);
-    setDragStart({
-      x: touch.pageX - timelineRef.current.offsetLeft,
-      scrollLeft: timelineRef.current.scrollLeft
-    });
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !timelineRef.current) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    const x = touch.pageX - timelineRef.current.offsetLeft;
-    const walk = (x - dragStart.x) * 2;
-    timelineRef.current.scrollLeft = dragStart.scrollLeft - walk;
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        navigatePrevious();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        navigateNext();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  // Format current period display
-  const getCurrentPeriodLabel = () => {
-    const date = new Date(currentDate);
-    switch (viewMode) {
-      case 'week':
-        const weekStart = new Date(date);
-        const currentDay = date.getDay();
-        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-        weekStart.setDate(date.getDate() + mondayOffset + (7 * weekScrollOffset));
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
-      case 'month':
-        const monthDate = new Date(date.getFullYear(), date.getMonth() + monthScrollOffset, 1);
-        return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-      case 'quarter':
-        const currentQuarter = Math.floor(date.getMonth() / 3);
-        const targetQuarter = currentQuarter + quarterScrollOffset;
-        const targetYear = date.getFullYear() + Math.floor(targetQuarter / 4);
-        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
-        return `Q${adjustedQuarter + 1} ${targetYear}`;
-      case 'year':
-        return (date.getFullYear() + yearScrollOffset).toString();
-      default:
-        return '';
-    }
-  };
   const getProjectPosition = (project: Project) => {
     const projectStart = new Date(project.key_dates.start_in_be);
     const projectEnd = new Date(project.key_dates.last_call);
@@ -475,6 +362,52 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
   const handleProjectLeave = () => {
     setHoveredProject(null);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigatePrevious();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Format current period display
+  const getCurrentPeriodLabel = () => {
+    const date = new Date(currentDate);
+    switch (viewMode) {
+      case 'week':
+        const weekStart = new Date(date);
+        const currentDay = date.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        weekStart.setDate(date.getDate() + mondayOffset + (7 * weekScrollOffset));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+      case 'month':
+        const monthDate = new Date(date.getFullYear(), date.getMonth() + monthScrollOffset, 1);
+        return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      case 'quarter':
+        const currentQuarter = Math.floor(date.getMonth() / 3);
+        const targetQuarter = currentQuarter + quarterScrollOffset;
+        const targetYear = date.getFullYear() + Math.floor(targetQuarter / 4);
+        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+        return `Q${adjustedQuarter + 1} ${targetYear}`;
+      case 'year':
+        return (date.getFullYear() + yearScrollOffset).toString();
+      default:
+        return '';
+    }
   };
 
   return (
@@ -663,14 +596,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           className="flex-1 overflow-x-auto overflow-y-auto scrollbar-always-visible"
           ref={timelineRef} 
           style={{
-          cursor: isTimelineDragging ? 'grabbing' : 'grab',
-          overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
+            cursor: isTimelineDragging ? 'grabbing' : 'grab',
+            overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
           }}
           onMouseDown={handleTimelineMouseDown}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onWheel={handleTimelineMouseWheel}
+          onWheel={handleTimelineWheel}
         >
           <div className="min-w-full min-h-full">
             {/* Timeline Header */}
