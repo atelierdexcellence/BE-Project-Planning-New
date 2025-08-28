@@ -257,13 +257,27 @@ export const useProjects = () => {
   }, []);
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === id) {
-        // Return a new object with updates to ensure proper re-rendering
-        return { ...p, ...updates, updated_at: new Date().toISOString() };
+    setProjects(prev => {
+      // First, remove any existing project with this ID to prevent duplicates
+      const filteredProjects = prev.filter(p => p.id !== id);
+      
+      // Find the original project to update
+      const originalProject = prev.find(p => p.id === id);
+      if (!originalProject) {
+        console.warn(`Project with id ${id} not found for update`);
+        return prev;
       }
-      return p;
-    }));
+      
+      // Create the updated project
+      const updatedProject = { 
+        ...originalProject, 
+        ...updates, 
+        updated_at: new Date().toISOString() 
+      };
+      
+      // Add the updated project back
+      return [...filteredProjects, updatedProject];
+    });
   }, []);
 
   const addProjectUpdate = useCallback(async (projectId: string, content: string, authorId: string, authorName: string) => {
