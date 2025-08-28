@@ -600,6 +600,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             overflowX: viewMode === 'quarter' || viewMode === 'year' ? 'hidden' : 'auto'
           }}
           onMouseDown={handleTimelineMouseDown}
+         onMouseMove={handleTimelineMouseMove}
+         onMouseUp={handleTimelineMouseUp}
           onWheel={handleTimelineWheel}
         >
           <div className="min-w-full min-h-full">
