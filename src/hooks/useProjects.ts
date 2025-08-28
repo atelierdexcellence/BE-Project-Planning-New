@@ -262,27 +262,11 @@ export const useProjects = () => {
     console.log('📝 Updates:', updates);
     
     setProjects(prev => {
-      // Find the project to update
-      const projectIndex = prev.findIndex(p => p.id === id);
-      if (projectIndex === -1) {
-        console.error('❌ Project not found for update:', id);
-        return prev; // Return unchanged if project not found
-      }
-
-      console.log('✅ Found project at index:', projectIndex, 'Name:', prev[projectIndex].name);
-      
-      // Create new array with updated project
-      const updatedProjects = [...prev];
-      updatedProjects[projectIndex] = {
-        ...prev[projectIndex],
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('✅ Updated projects count:', updatedProjects.length);
-      console.log('📋 Project IDs after update:', updatedProjects.map(p => `${p.id}:${p.name}`));
-      
-      return updatedProjects;
+      return prev.map(p => 
+        p.id === id 
+          ? { ...p, ...updates, updated_at: new Date().toISOString() }
+          : p
+      );
     });
   }, []);
 
