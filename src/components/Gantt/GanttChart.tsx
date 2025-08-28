@@ -780,7 +780,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const isExpanded = expandedProjects.has(project.id);
                 const weekNumber = getWeekNumber(new Date());
                 
-                // Calculate project position as percentage of total timeline
+                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-2 min-h-[30px] flex items-center">
                 const projectStart = new Date(project.key_dates.start_in_be);
                 const projectEnd = new Date(project.key_dates.last_call);
                 const timelineStart = startDate.getTime();
@@ -814,7 +814,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         return (
                           <div
                             key={index}
-                            className={`flex-1 border-r border-gray-100 relative h-[60px] min-w-0 ${
+                            className={`flex-1 border-r border-gray-100 relative h-[30px] min-w-0 ${
                               isToday ? 'bg-green-100' :
                               isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                             }`}
@@ -877,8 +877,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                             className="absolute w-0.5 z-20 pointer-events-none"
                             style={{
                               left: `${keyDatePercentage}%`,
-                              top: '22px',
-                              bottom: '22px',
+                              top: '11px',
+                              bottom: '11px',
                               backgroundColor: markerColor,
                               boxShadow: `0 0 4px ${markerColor}`
                             }}
