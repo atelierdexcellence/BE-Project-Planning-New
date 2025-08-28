@@ -259,9 +259,8 @@ export const useProjects = () => {
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
     setProjects(prev => prev.map(p => {
       if (p.id === id) {
-        // Update the existing object in place to maintain reference stability
-        Object.assign(p, updates);
-        return p;
+        // Return a new object with updates to ensure proper re-rendering
+        return { ...p, ...updates, updated_at: new Date().toISOString() };
       }
       return p;
     }));
