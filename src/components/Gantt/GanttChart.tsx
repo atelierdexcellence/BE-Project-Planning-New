@@ -780,7 +780,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const isExpanded = expandedProjects.has(project.id);
                 const weekNumber = getWeekNumber(new Date());
                 
-                  <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-2 min-h-[30px] flex items-center">
                 const projectStart = new Date(project.key_dates.start_in_be);
                 const projectEnd = new Date(project.key_dates.last_call);
                 const timelineStart = startDate.getTime();
