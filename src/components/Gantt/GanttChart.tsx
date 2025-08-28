@@ -195,52 +195,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     return 'hidden';
   }, []);
 
-@@ .. @@
-            } else {
-              setQuarterScrollOffset(prev => prev - 1);
-            }
-          } else {
-            // Dragging left = go to next period (forward in time)
-            if (viewMode === 'year') {
-              setYearScrollOffset(prev => prev + 1);
-            } else {
-              setQuarterScrollOffset(prev => prev + 1);
-            }
-          }
-          // Reset drag start to prevent multiple triggers
-          setDragStart(prev => ({ ...prev, x: e.clientX }));
-        }
-      } else {
-        // For Week and Month views, use normal scrolling
-        timelineRef.current.scrollLeft = dragStart.scrollLeft - deltaX;
-        timelineRef.current.scrollTop = dragStart.scrollTop - deltaY;
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'grabbing';
-      document.body.style.userSelect = 'none';
-    } else {
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isDragging, dragStart]);
-
-  // Horizontal scroll offset for navigation
-
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
     return projects.filter(project => 
