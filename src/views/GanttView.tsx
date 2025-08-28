@@ -9,7 +9,7 @@ import { Filter, Plus, Download } from 'lucide-react';
 import type { Project } from '../types';
 
 export const GanttView: React.FC = () => {
-  const { projects, tasks, sortProjectsByNextDate, createProject, getTasksForProject, updateProjectTasks } = useProjects();
+  const { projects, tasks, sortProjectsByNextDate, createProject, updateProject, getTasksForProject, updateProjectTasks } = useProjects();
   const { t } = useLanguage();
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showTaskManager, setShowTaskManager] = useState(false);
