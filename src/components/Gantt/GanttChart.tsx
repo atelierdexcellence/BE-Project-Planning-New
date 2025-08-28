@@ -787,9 +787,22 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const timelineEnd = endDate.getTime();
                 const timelineWidth = timelineEnd - timelineStart;
                 
-                const startPercentage = Math.max(0, (projectStart.getTime() - timelineStart) / timelineWidth * 100);
-                const endPercentage = Math.min(100, (projectEnd.getTime() - timelineStart) / timelineWidth * 100);
-                const widthPercentage = endPercentage - startPercentage;
+                // Calculate exact positioning based on days
+                const totalDays = timeScale.length;
+                const dayWidth = 100 / totalDays; // Each day takes this percentage of width
+                
+                // Find the day index for start and end dates
+                const startDayIndex = timeScale.findIndex(date => 
+                  date.toDateString() === projectStart.toDateString()
+                );
+                const endDayIndex = timeScale.findIndex(date => 
+                  date.toDateString() === projectEnd.toDateString()
+                );
+                
+                // Position start at left edge of start day, end at middle of end day
+                const startPercentage = startDayIndex >= 0 ? startDayIndex * dayWidth : 0;
+                const endPercentage = endDayIndex >= 0 ? (endDayIndex * dayWidth) + (dayWidth * 0.5) : 100;
+                const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
                 
                 return (
                   <div key={project.id} className="border-b border-gray-50 hover:bg-gray-50 relative min-h-[60px] flex items-center">
