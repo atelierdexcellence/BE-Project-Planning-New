@@ -727,7 +727,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                       style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
                     >
                       {isFirstOfMonth && (
-                        <div className={\`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
+                        <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
                             isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
                           }`}>
                           {viewMode === 'year' 
