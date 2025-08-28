@@ -29,8 +29,10 @@ export const ProjectsView: React.FC = () => {
 
   const handleSaveProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
     if (selectedProject) {
+      // Update existing project
       await updateProject(selectedProject.id, projectData);
     } else {
+      // Create new project
       await createProject(projectData);
     }
     setShowProjectForm(false);

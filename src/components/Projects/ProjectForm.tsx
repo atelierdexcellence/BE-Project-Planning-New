@@ -106,6 +106,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       return;
     }
     
+    // Pass the form data to the parent component
     onSave(formData as Omit<Project, 'id' | 'created_at' | 'updated_at'>);
   };
 
