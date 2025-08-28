@@ -554,7 +554,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
               const isExpanded = expandedProjects.has(project.id);
               
               return (
-                <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-2 min-h-[60px] flex items-center">
+                <div key={project.id} className="border-b border-gray-50 hover:bg-gray-100 p-1 min-h-[20px] flex items-center">
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => toggleProjectExpanded(project.id)}
@@ -563,7 +563,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                      <svg 
                        className={`w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                        fill="none" 
-                       stroke="currentColor" 
+                          className={`flex-1 border-r border-gray-100 relative h-[20px] min-w-0 ${
                        viewBox="0 0 24 24"
                      >
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -631,8 +631,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             {/* Timeline Header */}
             <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-full">
               {/* Week Numbers Row */}
-              <div className="flex border-b border-gray-100">
-                {timeScale.map((date, index) => {
+                            top: '7px',
+                            bottom: '7px',
                   const isToday = date.toDateString() === new Date().toDateString();
                   const isWeekendDay = isWeekend(date);
                   const isMonday = date.getDay() === 1;
