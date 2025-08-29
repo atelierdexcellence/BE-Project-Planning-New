@@ -134,6 +134,7 @@ const translations = {
     'task.compte_rendu': 'Compte rendu',
     'task.modifs_bois_mousse': 'Modifs bois / mousse post RDV',
     'task.nomenclature_bc': 'Nomenclature mis sur BC',
+    'task.general': 'General',
     
     // Task Management
     'tasks.manage': 'Manage Project Tasks',
@@ -329,6 +330,7 @@ const translations = {
     'task.compte_rendu': 'Compte rendu',
     'task.modifs_bois_mousse': 'Modifs bois / mousse post RDV',
     'task.nomenclature_bc': 'Nomenclature mis sur BC',
+    'task.general': 'Général',
     
     // Task Management
     'tasks.manage': 'Gérer les Tâches du Projet',
