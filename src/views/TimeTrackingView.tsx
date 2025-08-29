@@ -295,7 +295,7 @@ export const TimeTrackingView: React.FC = () => {
                     ].includes(category.id)
                   ).map(category => (
                     <option key={category.id} value={category.id}>
-                      {category.id === 'general' ? 'General' : 
+                      {category.id === 'general' ? t('task.general') : 
                         `${category.phase === 'pre_prod' ? 'Pre-Prod: ' : 'Prod: '}${category.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
                       }
                     </option>
