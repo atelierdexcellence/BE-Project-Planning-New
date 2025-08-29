@@ -242,8 +242,9 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
                         ].includes(category.id)
                       ).map(category => (
                         <option key={category.id} value={category.id}>
-                          {category.phase === 'pre_prod' ? 'Pre-Prod: ' : 'Prod: '}
-                          {category.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {category.id === 'general' ? 'General' : 
+                            `${category.phase === 'pre_prod' ? 'Pre-Prod: ' : 'Prod: '}${category.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                          }
                         </option>
                       ))}
                     </select>
