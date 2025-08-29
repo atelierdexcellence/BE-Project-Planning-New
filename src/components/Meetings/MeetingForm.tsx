@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square } from 'lucide-react';
+import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { PhotoEditor } from './PhotoEditor';
@@ -136,12 +136,29 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
             id: Date.now().toString() + Math.random(),
             url: event.target?.result as string,
             caption: ''
-        ? `${currentNotes}\n\n\n${voiceSection}`
-        : voiceSection;
+          });
+          setShowPhotoEditor(true);
         };
         reader.readAsDataURL(file);
       }
     });
+  };
+
+  const handleVoiceTranscript = (transcript: string) => {
+    const newEntry = transcript;
+    setVoiceEntries(prev => [...prev, newEntry]);
+    
+    // Update notes with voice entries
+    const currentNotes = formData.notes;
+    const allVoiceEntries = [...voiceEntries, newEntry];
+    const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
+    
+    setFormData(prev => ({
+      ...prev,
+      notes: currentNotes
+        ? `${currentNotes}\n\n\n${voiceSection}`
+        : voiceSection
+    }));
   };
 
   const handleEditPhoto = (photo: MeetingPhoto) => {
@@ -230,9 +247,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     }
   };
 
-      // Add voice entry with bullet point and double spacing
-      const allVoiceEntries = [...voiceEntries, newEntry];
-      const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
       
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
