@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
+import { PhotoEditor } from './PhotoEditor';
 import type { Meeting, Project, MeetingPhoto, VoiceNote } from '../../types';
 import { BE_TEAM_MEMBERS, COMMERCIAL_USERS } from '../../types';
 
@@ -36,6 +37,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const recordingInterval = useRef<NodeJS.Timeout>();
+  
+  // Photo editing state
+  const [showPhotoEditor, setShowPhotoEditor] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string; caption?: string } | null>(null);
 
   // Speech recognition
   const [recognition, setRecognition] = useState<any>(null);
@@ -114,20 +119,64 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          const newPhoto: MeetingPhoto = {
+          // Open photo editor for new uploads
+          setEditingPhoto({
             id: Date.now().toString() + Math.random(),
             url: event.target?.result as string,
-            caption: '',
-            timestamp: new Date().toISOString()
-          };
-          setFormData(prev => ({
-            ...prev,
-            photos: [...prev.photos, newPhoto]
-          }));
+            caption: ''
+          });
+          setShowPhotoEditor(true);
         };
         reader.readAsDataURL(file);
       }
     });
+  };
+
+  const handleEditPhoto = (photo: MeetingPhoto) => {
+    setEditingPhoto({
+      id: photo.id,
+      url: photo.url,
+      caption: photo.caption || ''
+    });
+    setShowPhotoEditor(true);
+  };
+
+  const handlePhotoSave = (editedImageUrl: string, caption: string) => {
+    if (!editingPhoto) return;
+    
+    const isNewPhoto = !formData.photos.find(p => p.id === editingPhoto.id);
+    
+    if (isNewPhoto) {
+      // Add new photo
+      const newPhoto: MeetingPhoto = {
+        id: editingPhoto.id,
+        url: editedImageUrl,
+        caption: caption,
+        timestamp: new Date().toISOString()
+      };
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, newPhoto]
+      }));
+    } else {
+      // Update existing photo
+      setFormData(prev => ({
+        ...prev,
+        photos: prev.photos.map(photo =>
+          photo.id === editingPhoto.id 
+            ? { ...photo, url: editedImageUrl, caption: caption }
+            : photo
+        )
+      }));
+    }
+    
+    setShowPhotoEditor(false);
+    setEditingPhoto(null);
+  };
+
+  const handlePhotoCancel = () => {
+    setShowPhotoEditor(false);
+    setEditingPhoto(null);
   };
 
   const handlePhotoCaption = (photoId: string, caption: string) => {
@@ -353,11 +402,21 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {formData.photos.map(photo => (
                       <div key={photo.id} className="border border-gray-200 rounded-lg p-3">
+                        <div className="relative group">
                         <img
                           src={photo.url}
                           alt="Meeting photo"
                           className="w-full h-32 object-cover rounded-md mb-2"
                         />
+                          <button
+                            type="button"
+                            onClick={() => handleEditPhoto(photo)}
+                            className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Edit photo"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </button>
+                        </div>
                         <input
                           type="text"
                           placeholder={t('meetings.photo_caption')}
@@ -475,6 +534,16 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Photo Editor Modal */}
+      {showPhotoEditor && editingPhoto && (
+        <PhotoEditor
+          imageUrl={editingPhoto.url}
+          caption={editingPhoto.caption}
+          onSave={handlePhotoSave}
+          onCancel={handlePhotoCancel}
+        />
+      )}
     </div>
   );
 };
