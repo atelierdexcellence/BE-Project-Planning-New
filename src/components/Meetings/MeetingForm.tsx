@@ -136,8 +136,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
             id: Date.now().toString() + Math.random(),
             url: event.target?.result as string,
             caption: ''
-          });
-          setShowPhotoEditor(true);
+        ? `${currentNotes}\n\n\n${voiceSection}`
+        : voiceSection;
         };
         reader.readAsDataURL(file);
       }
@@ -230,10 +230,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     }
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      // Add voice entry with bullet point and double spacing
+      const allVoiceEntries = [...voiceEntries, newEntry];
+      const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
       
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
