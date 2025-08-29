@@ -6,6 +6,7 @@ import { NotificationPanel } from './components/Notifications/NotificationPanel'
 import { OverviewView } from './views/OverviewView';
 import { GanttView } from './views/GanttView';
 import { ProjectsView } from './views/ProjectsView';
+import { TimeTrackingView } from './views/TimeTrackingView';
 import { UsersView } from './views/UsersView';
 import { useAuthHook, AuthContext } from './hooks/useAuth';
 import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
@@ -46,6 +47,8 @@ function App() {
         return <GanttView />;
       case 'projects':
         return <ProjectsView />;
+      case 'timetracking':
+        return <TimeTrackingView />;
       case 'analytics':
         return (
           <div className="flex-1 p-6">

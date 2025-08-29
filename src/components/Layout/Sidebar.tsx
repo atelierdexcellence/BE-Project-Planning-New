@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, FolderOpen, BarChart3, Settings, Users } from 'lucide-react';
+import { Calendar, FolderOpen, BarChart3, Settings, Users, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -16,6 +16,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
     { id: 'overview', label: t('nav.overview'), icon: BarChart3 },
     { id: 'gantt', label: t('nav.gantt'), icon: Calendar },
     { id: 'projects', label: t('nav.projects'), icon: FolderOpen },
+    { id: 'timetracking', label: t('nav.timetracking'), icon: Clock },
     ...(user?.role === 'admin' ? [
       { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
       { id: 'users', label: t('nav.users'), icon: Users },

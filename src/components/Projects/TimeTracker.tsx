@@ -147,14 +147,18 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Add Time Entry Button */}
-          <div className="mb-6">
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Time Entry</span>
-            </button>
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center">
+              <Clock className="h-5 w-5 text-blue-600 mr-2" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-800">
+                  Time Tracking Moved
+                </h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  Time tracking is now available in the main Time Tracking tab for easier daily use. This view shows a summary of logged hours.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Time Entry Form */}

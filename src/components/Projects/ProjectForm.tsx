@@ -208,7 +208,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 }`}
               >
                 <Clock className="w-4 h-4" />
-                Time Tracking
+                Time Summary
                 <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
                   {actualHours}h
                 </span>
