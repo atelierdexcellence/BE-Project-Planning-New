@@ -66,7 +66,8 @@ export type TaskCategory =
   | 'rdv_confort_validation'
   | 'compte_rendu'
   | 'modifs_bois_mousse'
-  | 'nomenclature_bc';
+  | 'nomenclature_bc'
+  | 'general';
 
 export const TASK_CATEGORIES: { id: TaskCategory; phase: 'pre_prod' | 'prod' }[] = [
   { id: 'reunion_lancement', phase: 'pre_prod' },
@@ -84,7 +85,8 @@ export const TASK_CATEGORIES: { id: TaskCategory; phase: 'pre_prod' | 'prod' }[]
   { id: 'rdv_confort_validation', phase: 'prod' },
   { id: 'compte_rendu', phase: 'prod' },
   { id: 'modifs_bois_mousse', phase: 'prod' },
-  { id: 'nomenclature_bc', phase: 'prod' }
+  { id: 'nomenclature_bc', phase: 'prod' },
+  { id: 'general', phase: 'pre_prod' }
 ];
 
 export interface ProjectNote {
