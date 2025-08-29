@@ -25,7 +25,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
   ];
 
   return (
-    <aside className="w-64 bg-gray-50 border-r border-gray-200">
+    <aside className="w-64 bg-gray-50 border-r border-gray-200 h-full overflow-y-auto">
+      <div className="p-4 border-b border-gray-200 md:hidden">
+        <div className="flex items-center space-x-3">
+          <img 
+            src="/PHOTO-2023-09-13-11-16-45 copy.jpg" 
+            alt="Atelier d'Excellence" 
+            className="h-8 w-auto"
+          />
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">{t('header.title')}</h2>
+            <p className="text-xs text-gray-500">{t('header.subtitle')}</p>
+          </div>
+        </div>
+      </div>
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -33,14 +46,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
                 activeView === item.id
                   ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <Icon className="h-5 w-5" />
-              <span className="font-medium">{item.label}</span>
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium text-sm md:text-base">{item.label}</span>
             </button>
           );
         })}

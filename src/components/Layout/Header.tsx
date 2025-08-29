@@ -1,37 +1,46 @@
 import React from 'react';
-import { Bell, User, LogOut, Calendar, Globe, Award } from 'lucide-react';
+import { Bell, User, LogOut, Calendar, Globe, Award, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
   onNotificationsClick: () => void;
+  onMobileMenuClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNotificationsClick }) => {
+export const Header: React.FC<HeaderProps> = ({ onNotificationsClick, onMobileMenuClick }) => {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications(user?.id || '');
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={onMobileMenuClick}
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          
           <div className="flex items-center space-x-3">
             <img 
               src="/PHOTO-2023-09-13-11-16-45 copy.jpg" 
               alt="Atelier d'Excellence" 
-              className="h-12 w-auto"
+              className="h-8 md:h-12 w-auto"
             />
           </div>
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">{t('header.title')}</h1>
-            <p className="text-sm text-gray-500">{t('header.subtitle')}</p>
+          <div className="hidden sm:block">
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900">{t('header.title')}</h1>
+            <p className="text-xs md:text-sm text-gray-500">{t('header.subtitle')}</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex border border-gray-300 rounded-md">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="hidden sm:flex border border-gray-300 rounded-md">
             <button
               onClick={() => setLanguage('fr')}
               className={`px-3 py-1 text-sm ${
@@ -66,11 +75,11 @@ export const Header: React.FC<HeaderProps> = ({ onNotificationsClick }) => {
             )}
           </button>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
               {user?.initials}
             </div>
-            <div className="text-sm">
+            <div className="hidden sm:block text-sm">
               <p className="font-medium text-gray-900">{user?.name}</p>
               <p className="text-gray-500 capitalize">{user?.role.replace('_', ' ')}</p>
             </div>
