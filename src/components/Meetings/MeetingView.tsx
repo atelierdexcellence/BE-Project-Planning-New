@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Calendar, Users, Camera, Mic, Edit, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Calendar, Users, Camera, Mic, Edit, FileText, ZoomIn } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import type { Meeting, Project } from '../../types';
 import { BE_TEAM_MEMBERS, COMMERCIAL_USERS } from '../../types';
@@ -18,6 +18,7 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
   onClose
 }) => {
   const { t } = useLanguage();
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   const getUserName = (userId: string) => {
     const allUsers = [...BE_TEAM_MEMBERS, ...COMMERCIAL_USERS];
@@ -118,12 +119,22 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {meeting.photos.map(photo => (
-                    <div key={photo.id} className="space-y-2">
-                      <img
-                        src={photo.url}
-                        alt="Meeting photo"
-                        className="w-full h-48 object-cover rounded-lg border border-gray-200"
-                      />
+                    <div key={photo.id} className="space-y-2 group">
+                      <div className="relative">
+                        <img
+                          src={photo.url}
+                          alt="Meeting photo"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setSelectedPhoto(photo.url)}
+                        />
+                        <button
+                          onClick={() => setSelectedPhoto(photo.url)}
+                          className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="View full size"
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </button>
+                      </div>
                       {photo.caption && (
                         <p className="text-sm text-gray-600 px-1">{photo.caption}</p>
                       )}
@@ -195,6 +206,28 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Photo Lightbox */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-w-full max-h-full">
+            <img
+              src={selectedPhoto}
+              alt="Full size photo"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute top-4 right-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-opacity"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

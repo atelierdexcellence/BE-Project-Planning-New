@@ -252,6 +252,24 @@ const translations = {
     'meetings.create': 'Create Meeting',
     'meetings.update': 'Update Meeting',
     'meetings.confirm_delete': 'Are you sure you want to delete this meeting?',
+    
+    // Photo Editor
+    'photo.edit_annotate': 'Edit & Annotate Photo',
+    'photo.drawing_tools': 'Drawing Tools',
+    'photo.pen': 'Pen',
+    'photo.eraser': 'Eraser',
+    'photo.text': 'Text',
+    'photo.shapes': 'Shapes',
+    'photo.rectangle': 'Rectangle',
+    'photo.circle': 'Circle',
+    'photo.arrow': 'Arrow',
+    'photo.colors': 'Colors',
+    'photo.brush_size': 'Brush Size',
+    'photo.text_size': 'Text Size',
+    'photo.clear_all': 'Clear All',
+    'photo.download': 'Download',
+    'photo.caption': 'Photo Caption',
+    'photo.caption_placeholder': 'Add a caption for this photo...',
   },
   fr: {
     // Navigation
@@ -486,6 +504,24 @@ const translations = {
     'meetings.create': 'Créer la Réunion',
     'meetings.update': 'Mettre à Jour la Réunion',
     'meetings.confirm_delete': 'Êtes-vous sûr de vouloir supprimer cette réunion ?',
+    
+    // Photo Editor
+    'photo.edit_annotate': 'Modifier et Annoter la Photo',
+    'photo.drawing_tools': 'Outils de Dessin',
+    'photo.pen': 'Stylo',
+    'photo.eraser': 'Gomme',
+    'photo.text': 'Texte',
+    'photo.shapes': 'Formes',
+    'photo.rectangle': 'Rectangle',
+    'photo.circle': 'Cercle',
+    'photo.arrow': 'Flèche',
+    'photo.colors': 'Couleurs',
+    'photo.brush_size': 'Taille du Pinceau',
+    'photo.text_size': 'Taille du Texte',
+    'photo.clear_all': 'Tout Effacer',
+    'photo.download': 'Télécharger',
+    'photo.caption': 'Légende de la Photo',
+    'photo.caption_placeholder': 'Ajouter une légende pour cette photo...',
   }
 };
 
