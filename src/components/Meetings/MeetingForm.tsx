@@ -491,6 +491,24 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     </span>
                   </button>
                   
+                  {voiceEntries.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVoiceEntries([]);
+                        // Remove voice entries from notes
+                        const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
+                          !section.startsWith('• ')
+                        ).join('\n\n');
+                        setFormData(prev => ({ ...prev, notes: notesWithoutVoice }));
+                      }}
+                      className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                      <span>Clear Voice Entries ({voiceEntries.length})</span>
+                    </button>
+                  )}
+                  
                   <button
                     type="button"
                     onClick={isRecording ? stopRecording : startRecording}
