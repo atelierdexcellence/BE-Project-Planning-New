@@ -71,27 +71,20 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
       recognitionInstance.onresult = (event: any) => {
         let finalTranscript = '';
-        let interimTranscript = '';
         
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
           }
         }
         
         // Update with final transcript
         if (finalTranscript.trim()) {
+          console.log('Final transcript received:', finalTranscript);
           setFormData(prev => ({
             ...prev,
-            notes: prev.notes + (prev.notes && !prev.notes.endsWith(' ') ? ' ' : '') + finalTranscript.trim()
+            notes: prev.notes + (prev.notes ? ' ' : '') + finalTranscript.trim()
           }));
-        }
-        
-        // Show interim results in real-time (optional - you can remove this if you only want final results)
-        if (interimTranscript.trim()) {
-          console.log('Interim transcript:', interimTranscript);
         }
       };
 
@@ -103,6 +96,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
       recognitionInstance.onstart = () => {
         console.log('Speech recognition started');
+        setIsListening(true);
       };
 
       recognitionInstance.onend = () => {
@@ -217,9 +211,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const startVoiceToText = () => {
     if (recognition && !isListening) {
       try {
-        recognition.start();
-        setIsListening(true);
         console.log('Starting voice recognition...');
+        recognition.start();
       } catch (error) {
         console.error('Error starting voice recognition:', error);
         alert('Could not start voice recognition. Please check your microphone permissions.');
@@ -230,9 +223,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const stopVoiceToText = () => {
     if (recognition && isListening) {
       try {
-        recognition.stop();
-        setIsListening(false);
         console.log('Stopping voice recognition...');
+        recognition.stop();
       } catch (error) {
         console.error('Error stopping voice recognition:', error);
       }
