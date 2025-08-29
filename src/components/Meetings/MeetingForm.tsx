@@ -81,16 +81,20 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
         // Update with final transcript
         if (finalTranscript.trim()) {
           console.log('Final transcript received:', finalTranscript);
-          setFormData(prev => ({
-            ...prev,
-            notes: prev.notes + (prev.notes ? ' ' : '') + finalTranscript.trim()
-          }));
+          setFormData(prev => {
+            const newNotes = prev.notes + (prev.notes ? ' ' : '') + finalTranscript.trim();
+            console.log('Updating notes from:', prev.notes, 'to:', newNotes);
+            return {
+              ...prev,
+              notes: newNotes
+            };
+          });
         }
       };
 
       recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
-        alert(`Speech recognition error: ${event.error}. Please check your microphone permissions.`);
+        console.log('Speech recognition error details:', event);
         setIsListening(false);
       };
 
@@ -212,10 +216,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     if (recognition && !isListening) {
       try {
         console.log('Starting voice recognition...');
+        console.log('Current notes before starting:', formData.notes);
         recognition.start();
       } catch (error) {
         console.error('Error starting voice recognition:', error);
-        alert('Could not start voice recognition. Please check your microphone permissions.');
       }
     }
   };
@@ -468,14 +472,22 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
               </label>
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
+                  {!recognition && (
+                    <div className="text-sm text-yellow-600 mb-2">
+                      ⚠️ Speech recognition not supported in this browser. Try Chrome or Edge.
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={isListening ? stopVoiceToText : startVoiceToText}
+                    disabled={!recognition}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isListening
                         ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                        : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}
+                        : recognition 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    } ${!recognition ? 'opacity-50' : ''}`}
                   >
                     <Mic className="h-4 w-4" />
                     <span>
