@@ -38,6 +38,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const recordingInterval = useRef<NodeJS.Timeout>();
   
+  // Voice-to-text state
+  const [voiceEntries, setVoiceEntries] = useState<string[]>([]);
+  
   // Photo editing state
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string; caption?: string } | null>(null);
@@ -78,17 +81,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           }
         }
         
-        // Update with final transcript
         if (finalTranscript.trim()) {
           console.log('Final transcript received:', finalTranscript);
-          setFormData(prev => {
-            const newNotes = prev.notes + (prev.notes ? ' ' : '') + finalTranscript.trim();
-            console.log('Updating notes from:', prev.notes, 'to:', newNotes);
-            return {
-              ...prev,
-              notes: newNotes
-            };
-          });
+          handleVoiceTranscript(finalTranscript.trim());
         }
       };
 
