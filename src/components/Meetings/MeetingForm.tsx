@@ -71,29 +71,48 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
       recognitionInstance.onresult = (event: any) => {
         let finalTranscript = '';
+        let interimTranscript = '';
+        
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
           }
         }
-        if (finalTranscript) {
+        
+        // Update with final transcript
+        if (finalTranscript.trim()) {
           setFormData(prev => ({
             ...prev,
-            notes: prev.notes + (prev.notes ? ' ' : '') + finalTranscript
+            notes: prev.notes + (prev.notes && !prev.notes.endsWith(' ') ? ' ' : '') + finalTranscript.trim()
           }));
+        }
+        
+        // Show interim results in real-time (optional - you can remove this if you only want final results)
+        if (interimTranscript.trim()) {
+          console.log('Interim transcript:', interimTranscript);
         }
       };
 
       recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
+        alert(`Speech recognition error: ${event.error}. Please check your microphone permissions.`);
         setIsListening(false);
       };
 
+      recognitionInstance.onstart = () => {
+        console.log('Speech recognition started');
+      };
+
       recognitionInstance.onend = () => {
+        console.log('Speech recognition ended');
         setIsListening(false);
       };
 
       setRecognition(recognitionInstance);
+    } else {
+      console.warn('Speech recognition not supported in this browser');
     }
   }, []);
 
@@ -197,15 +216,26 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
   const startVoiceToText = () => {
     if (recognition && !isListening) {
-      recognition.start();
-      setIsListening(true);
+      try {
+        recognition.start();
+        setIsListening(true);
+        console.log('Starting voice recognition...');
+      } catch (error) {
+        console.error('Error starting voice recognition:', error);
+        alert('Could not start voice recognition. Please check your microphone permissions.');
+      }
     }
   };
 
   const stopVoiceToText = () => {
     if (recognition && isListening) {
-      recognition.stop();
-      setIsListening(false);
+      try {
+        recognition.stop();
+        setIsListening(false);
+        console.log('Stopping voice recognition...');
+      } catch (error) {
+        console.error('Error stopping voice recognition:', error);
+      }
     }
   };
 
@@ -456,7 +486,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     }`}
                   >
                     <Mic className="h-4 w-4" />
-                    <span>{isListening ? t('meetings.stop_voice') : t('meetings.start_voice')}</span>
+                    <span>
+                      {isListening ? t('meetings.stop_voice') : t('meetings.start_voice')}
+                      {isListening && ' (Listening...)'}
+                    </span>
                   </button>
                   
                   <button
