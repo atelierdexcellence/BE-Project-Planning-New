@@ -7,6 +7,7 @@ import { OverviewView } from './views/OverviewView';
 import { GanttView } from './views/GanttView';
 import { ProjectsView } from './views/ProjectsView';
 import { TimeTrackingView } from './views/TimeTrackingView';
+import { MeetingsView } from './views/MeetingsView';
 import { UsersView } from './views/UsersView';
 import { useAuthHook, AuthContext } from './hooks/useAuth';
 import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
@@ -50,6 +51,8 @@ function App() {
         return <ProjectsView />;
       case 'timetracking':
         return <TimeTrackingView />;
+      case 'meetings':
+        return <MeetingsView />;
       case 'analytics':
         return (
           <div className="flex-1 p-6">

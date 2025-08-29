@@ -97,6 +97,36 @@ export interface ProjectNote {
   author_name: string;
   created_at: string;
   type: 'update' | 'status_change' | 'alert' | 'general';
+  meeting_id?: string;
+}
+
+export interface Meeting {
+  id: string;
+  project_id: string;
+  title: string;
+  date: string;
+  attendees: string[];
+  notes: string;
+  photos: MeetingPhoto[];
+  voice_notes: VoiceNote[];
+  author_id: string;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MeetingPhoto {
+  id: string;
+  url: string;
+  caption?: string;
+  timestamp: string;
+}
+
+export interface VoiceNote {
+  id: string;
+  transcript: string;
+  duration: number;
+  timestamp: string;
 }
 
 export interface TimeEntry {

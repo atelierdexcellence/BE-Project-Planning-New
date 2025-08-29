@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { MessageSquare, Send, Clock, User } from 'lucide-react';
+import { MessageSquare, Send, Clock, User, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useProjects } from '../../hooks/useProjects';
 import type { ProjectNote } from '../../types';
 
 interface ProjectUpdatesProps {
   projectId: string;
   updates: ProjectNote[];
   onAddUpdate: (content: string, authorId: string, authorName: string) => void;
+  onViewMeeting?: (meetingId: string) => void;
 }
 
 export const ProjectUpdates: React.FC<ProjectUpdatesProps> = ({ 
   projectId, 
   updates, 
-  onAddUpdate 
+  onAddUpdate,
+  onViewMeeting
 }) => {
   const { user } = useAuth();
+  const { meetings } = useProjects();
   const [newUpdate, setNewUpdate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -122,6 +126,15 @@ export const ProjectUpdates: React.FC<ProjectUpdatesProps> = ({
                     <p className="text-sm text-gray-700 whitespace-pre-wrap">
                       {update.content}
                     </p>
+                    {update.meeting_id && onViewMeeting && (
+                      <button
+                        onClick={() => onViewMeeting(update.meeting_id!)}
+                        className="mt-2 flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        <span>View Meeting Details</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

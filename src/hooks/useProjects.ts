@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Project, Task, TimeEntry } from '../types';
+import type { Project, Task, TimeEntry, Meeting, ProjectNote } from '../types';
 
 // Mock data - replace with real API calls
 const MOCK_PROJECTS: Project[] = [
@@ -232,10 +232,28 @@ const MOCK_TIME_ENTRIES: TimeEntry[] = [
   }
 ];
 
+const MOCK_MEETINGS: Meeting[] = [
+  {
+    id: '1',
+    project_id: '1',
+    title: 'Project Alpha Kickoff Meeting',
+    date: '2024-01-26',
+    attendees: ['as', 'mr', 'virginie'],
+    notes: 'Discussed project timeline and initial requirements. Key decisions made on material selection and delivery schedule.',
+    photos: [],
+    voice_notes: [],
+    author_id: 'as',
+    author_name: 'ALEXANDER SMITH (AS)',
+    created_at: '2024-01-26T10:00:00Z',
+    updated_at: '2024-01-26T10:00:00Z'
+  }
+];
+
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(MOCK_TIME_ENTRIES);
+  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchProjects = useCallback(async () => {
@@ -271,9 +289,6 @@ export const useProjects = () => {
   }, []);
 
   const addProjectUpdate = useCallback(async (projectId: string, content: string, authorId: string, authorName: string) => {
-    console.log('➕ createProject called for:', projectData.name);
-    console.log('📊 Current projects count before create:', projects.length);
-    
     const newUpdate: ProjectNote = {
       id: Date.now().toString(),
       project_id: projectId,
@@ -281,7 +296,8 @@ export const useProjects = () => {
       author_id: authorId,
       author_name: authorName,
       created_at: new Date().toISOString(),
-      type: 'update'
+      type: 'update',
+      meeting_id: undefined
     };
 
     // Add update to project
@@ -393,6 +409,60 @@ export const useProjects = () => {
     }
   }, [timeEntries, getTotalHoursForProject]);
 
+  // Meeting functions
+  const createMeeting = useCallback(async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
+    const newMeeting: Meeting = {
+      ...meetingData,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    setMeetings(prev => [...prev, newMeeting]);
+    
+    // Add meeting reference to project updates
+    const meetingUpdate: ProjectNote = {
+      id: (Date.now() + 1).toString(),
+      project_id: meetingData.project_id,
+      content: `Meeting: ${meetingData.title}`,
+      author_id: meetingData.author_id,
+      author_name: meetingData.author_name,
+      created_at: new Date().toISOString(),
+      type: 'update',
+      meeting_id: newMeeting.id
+    };
+    
+    setProjects(prev => prev.map(p => 
+      p.id === meetingData.project_id 
+        ? { ...p, notes: [...p.notes, meetingUpdate], updated_at: new Date().toISOString() }
+        : p
+    ));
+    
+    return newMeeting;
+  }, []);
+
+  const updateMeeting = useCallback(async (id: string, updates: Partial<Meeting>) => {
+    setMeetings(prev => prev.map(m => 
+      m.id === id 
+        ? { ...m, ...updates, updated_at: new Date().toISOString() }
+        : m
+    ));
+  }, []);
+
+  const deleteMeeting = useCallback(async (id: string) => {
+    const meeting = meetings.find(m => m.id === id);
+    if (meeting) {
+      setMeetings(prev => prev.filter(m => m.id !== id));
+      
+      // Remove meeting reference from project updates
+      setProjects(prev => prev.map(p => 
+        p.id === meeting.project_id 
+          ? { ...p, notes: p.notes.filter(note => note.meeting_id !== id) }
+          : p
+      ));
+    }
+  }, [meetings]);
+
   const deleteTimeEntry = useCallback(async (id: string) => {
     const entryToDelete = timeEntries.find(e => e.id === id);
     if (!entryToDelete) return;
@@ -412,6 +482,7 @@ export const useProjects = () => {
     projects,
     tasks,
     timeEntries,
+    meetings,
     isLoading,
     fetchProjects,
     createProject,
@@ -425,6 +496,9 @@ export const useProjects = () => {
     getTotalHoursForProject,
     addTimeEntry,
     updateTimeEntry,
-    deleteTimeEntry
+    deleteTimeEntry,
+    createMeeting,
+    updateMeeting,
+    deleteMeeting
   };
 };
