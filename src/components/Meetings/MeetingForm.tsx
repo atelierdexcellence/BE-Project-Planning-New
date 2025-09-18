@@ -42,6 +42,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   // Voice-to-text state
   const [voiceEntries, setVoiceEntries] = useState<string[]>([]);
   
+  // Translation state
+  const [originalNotes, setOriginalNotes] = useState<string>('');
+  const [originalLanguage, setOriginalLanguage] = useState<Language>(language);
+  
   // Photo editing state
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string; caption?: string } | null>(null);
