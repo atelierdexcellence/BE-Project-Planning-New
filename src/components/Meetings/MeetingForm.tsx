@@ -150,12 +150,31 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   };
 
   const handleVoiceTranscript = (transcript: string) => {
-    const newEntry = transcript;
-    setVoiceEntries(prev => [...prev, newEntry]);
+    // Check for voice command to separate notes
+    const voiceCommand = 'nouveau note';
+    const parts = transcript.toLowerCase().split(voiceCommand);
     
-    // Update notes with voice entries
+    if (parts.length > 1) {
+      // Multiple parts separated by voice command
+      const newEntries = parts
+        .map(part => part.trim())
+        .filter(part => part.length > 0); // Remove empty parts
+      
+      setVoiceEntries(prev => [...prev, ...newEntries]);
+    } else {
+      // Single entry
+      const newEntry = transcript.trim();
+      if (newEntry.length > 0) {
+        setVoiceEntries(prev => [...prev, newEntry]);
+      }
+    }
+    
+    // Update notes with all voice entries
     const currentNotes = formData.notes;
-    const allVoiceEntries = [...voiceEntries, newEntry];
+    const allVoiceEntries = parts.length > 1 
+      ? [...voiceEntries, ...parts.map(part => part.trim()).filter(part => part.length > 0)]
+      : [...voiceEntries, transcript.trim()].filter(entry => entry.length > 0);
+    
     const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
     
     setFormData(prev => ({
@@ -560,6 +579,11 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   {!recognition && (
                     <div className="text-sm text-yellow-600 mb-2">
                       ⚠️ Speech recognition not supported in this browser. Try Chrome or Edge.
+                    </div>
+                  )}
+                  {recognition && (
+                    <div className="text-sm text-blue-600 mb-2">
+                      💡 Say "Nouveau Note" to create separate bullet points in the same recording session
                     </div>
                   )}
                   <button
