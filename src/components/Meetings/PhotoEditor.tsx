@@ -371,7 +371,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">{t('photo.edit_annotate')}</h3>
@@ -392,9 +392,9 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row max-h-[calc(95vh-200px)] overflow-hidden">
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0">
           {/* Tools Panel */}
-          <div className="w-full lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-y-auto">
+          <div className="w-full lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-y-auto max-h-64 lg:max-h-none">
             <div className="space-y-4">
               {/* Drawing Tools */}
               <div>
@@ -539,14 +539,14 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
           </div>
 
           {/* Canvas Area */}
-          <div className="flex-1 p-4 overflow-auto flex items-center justify-center">
+          <div className="flex-1 p-4 overflow-auto flex items-center justify-center min-h-0">
             <div className="relative inline-block max-w-full max-h-full">
               <canvas
                 ref={canvasRef}
-                className="border border-gray-300 rounded-lg shadow-lg max-w-full max-h-full cursor-crosshair"
+                className="border border-gray-300 rounded-lg shadow-lg max-w-full max-h-[60vh] cursor-crosshair"
                 style={{ 
                   maxWidth: '100%',
-                  maxHeight: 'calc(95vh - 300px)',
+                  maxHeight: '60vh',
                   objectFit: 'contain',
                   cursor: activeTool === 'eraser' ? 'grab' : 
                          activeTool === 'text' ? 'text' : 'crosshair'
@@ -617,7 +617,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
         </div>
 
         {/* Caption Input */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('photo.caption')}
           </label>
@@ -631,7 +631,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end space-x-3 p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-end space-x-3 p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
           <button
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
