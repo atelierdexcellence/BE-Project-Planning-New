@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit, Video, CameraIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useLanguage, Language } from '../../hooks/useLanguage';
 import { PhotoEditor } from './PhotoEditor';
 import { CameraCapture } from './CameraCapture';
 import type { Meeting, Project, MeetingPhoto, VoiceNote } from '../../types';
@@ -21,7 +21,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   onCancel
 }) => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     project_id: '',
     title: '',
@@ -75,7 +75,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       const recognitionInstance = new SpeechRecognition();
       recognitionInstance.continuous = true;
       recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'fr-FR';
+      recognitionInstance.lang = language === 'en' ? 'en-US' : 'fr-FR';
 
       recognitionInstance.onresult = (event: any) => {
         let finalTranscript = '';
@@ -112,7 +112,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     } else {
       console.warn('Speech recognition not supported in this browser');
     }
-  }, []);
+  }, [language]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -150,13 +150,22 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   };
 
   const handleVoiceTranscript = (transcript: string) => {
-    // Check for voice command to separate notes
-    const voiceCommand = 'nouveau note';
-    const parts = transcript.toLowerCase().split(voiceCommand);
+    // Check for voice command to separate notes (supports both languages)
+    const voiceCommandFr = 'nouveau note';
+    const voiceCommandEn = 'new note';
+    const voiceCommand = language === 'en' ? voiceCommandEn : voiceCommandFr;
     
-    if (parts.length > 1) {
+    // Also check for the other language command for flexibility
+    const altCommand = language === 'en' ? voiceCommandFr : voiceCommandEn;
+    const parts = transcript.toLowerCase().split(voiceCommand);
+    const altParts = transcript.toLowerCase().split(altCommand);
+    
+    // Use whichever command was found (prioritize current language)
+    const finalParts = parts.length > 1 ? parts : altParts;
+    
+    if (finalParts.length > 1) {
       // Multiple parts separated by voice command
-      const newEntries = parts
+      const newEntries = finalParts
         .map(part => part.trim())
         .filter(part => part.length > 0); // Remove empty parts
       
@@ -171,11 +180,17 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     
     // Update notes with all voice entries
     const currentNotes = formData.notes;
-    const allVoiceEntries = parts.length > 1 
-      ? [...voiceEntries, ...parts.map(part => part.trim()).filter(part => part.length > 0)]
+    const allVoiceEntries = finalParts.length > 1 
+      ? [...voiceEntries, ...finalParts.map(part => part.trim()).filter(part => part.length > 0)]
       : [...voiceEntries, transcript.trim()].filter(entry => entry.length > 0);
     
     const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
+    
+    // Store original notes and language for translation
+    if (!originalNotes) {
+      setOriginalNotes(currentNotes ? `${currentNotes}\n\n\n${voiceSection}` : voiceSection);
+      setOriginalLanguage(language);
+    }
     
     setFormData(prev => ({
       ...prev,
@@ -280,6 +295,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const startVoiceToText = () => {
     if (recognition && !isListening) {
       try {
+        // Update recognition language
+        recognition.lang = language === 'en' ? 'en-US' : 'fr-FR';
         console.log('Starting voice recognition...');
         console.log('Current notes before starting:', formData.notes);
         recognition.start();
@@ -366,6 +383,32 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
     onSave(meetingData);
   };
+
+  // Simple translation function (in a real app, you'd use a proper translation service)
+  const translateText = async (text: string, fromLang: Language, toLang: Language): Promise<string> => {
+    // This is a mock translation - in production, you'd use Google Translate API, DeepL, etc.
+    if (fromLang === toLang) return text;
+    
+    // For demo purposes, we'll just add a translation indicator
+    const indicator = toLang === 'en' ? '[Translated to English]' : '[Traduit en Français]';
+    return `${indicator}\n${text}`;
+  };
+
+  // Handle language change and translate notes if needed
+  React.useEffect(() => {
+    const translateNotes = async () => {
+      if (originalNotes && originalLanguage !== language && formData.notes) {
+        try {
+          const translatedNotes = await translateText(originalNotes, originalLanguage, language);
+          setFormData(prev => ({ ...prev, notes: translatedNotes }));
+        } catch (error) {
+          console.error('Translation failed:', error);
+        }
+      }
+    };
+
+    translateNotes();
+  }, [language, originalNotes, originalLanguage]);
 
   const formatRecordingTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -582,8 +625,13 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     </div>
                   )}
                   {recognition && (
-                    <div className="text-sm text-blue-600 mb-2">
-                      💡 Say "Nouveau Note" to create separate bullet points in the same recording session
+                    <div className="text-sm text-blue-600 mb-2 flex flex-col space-y-1">
+                      <div>
+                        💡 Say "{language === 'en' ? 'New Note' : 'Nouveau Note'}" to create separate bullet points in the same recording session
+                      </div>
+                      <div className="text-xs">
+                        🌐 Voice recognition: {language === 'en' ? 'English' : 'Français'} | Both "New Note" and "Nouveau Note" commands work
+                      </div>
                     </div>
                   )}
                   <button
@@ -610,6 +658,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                       type="button"
                       onClick={() => {
                         setVoiceEntries([]);
+                        setOriginalNotes('');
                         // Remove voice entries from notes
                         const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
                           !section.startsWith('• ')
