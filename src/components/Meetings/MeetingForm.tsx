@@ -57,6 +57,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   // Speech recognition
   const [recognition, setRecognition] = useState<any>(null);
   const [isListening, setIsListening] = useState(false);
+  const isStoppingIntentionally = useRef(false);
 
   useEffect(() => {
     if (meeting) {
@@ -99,20 +100,54 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         console.log('Speech recognition error details:', event);
-        setIsListening(false);
+        
+        // Only set listening to false if it's a critical error
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setIsListening(false);
+        }
       };
 
       recognitionInstance.onstart = () => {
         console.log('Speech recognition started');
+        isStoppingIntentionally.current = false;
         setIsListening(true);
       };
 
       recognitionInstance.onend = () => {
         console.log('Speech recognition ended');
         setIsListening(false);
+        
+        // If recognition ended unexpectedly and we're not stopping intentionally, restart it
+        if (!isStoppingIntentionally.current && isListening) {
+          console.log('Speech recognition ended unexpectedly, attempting to restart...');
+          setTimeout(() => {
+            if (!isStoppingIntentionally.current) {
+              try {
+                recognitionInstance.start();
+              } catch (error) {
+                console.error('Failed to restart speech recognition:', error);
+              }
+            }
+          }, 1000); // 1 second delay before restart
+        }
+        
+        // Reset the flag after handling
+        isStoppingIntentionally.current = false;
       };
 
       setRecognition(recognitionInstance);
+      
+      // Cleanup function
+      return () => {
+        if (recognitionInstance) {
+          isStoppingIntentionally.current = true;
+          try {
+            recognitionInstance.stop();
+          } catch (error) {
+            console.error('Error stopping recognition during cleanup:', error);
+          }
+        }
+      };
     } else {
       console.warn('Speech recognition not supported in this browser');
     }
@@ -326,6 +361,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const stopVoiceToText = () => {
     if (recognition && isListening) {
       try {
+        isStoppingIntentionally.current = true;
         console.log('Stopping voice recognition...');
         recognition.stop();
       } catch (error) {
