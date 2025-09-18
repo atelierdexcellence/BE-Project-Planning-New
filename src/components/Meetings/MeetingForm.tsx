@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit } from 'lucide-react';
+import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit, Video, CameraIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { PhotoEditor } from './PhotoEditor';
+import { CameraCapture } from './CameraCapture';
 import type { Meeting, Project, MeetingPhoto, VoiceNote } from '../../types';
 import { BE_TEAM_MEMBERS, COMMERCIAL_USERS } from '../../types';
 
@@ -44,6 +45,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   // Photo editing state
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string; caption?: string } | null>(null);
+  
+  // Camera capture state
+  const [showCameraCapture, setShowCameraCapture] = useState(false);
+  const [captureMode, setCaptureMode] = useState<'photo' | 'video'>('photo');
 
   // Speech recognition
   const [recognition, setRecognition] = useState<any>(null);
@@ -206,6 +211,35 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const handlePhotoCancel = () => {
     setShowPhotoEditor(false);
     setEditingPhoto(null);
+  };
+
+  const handleCameraCapture = (mediaUrl: string, type: 'photo' | 'video') => {
+    if (type === 'photo') {
+      // Open photo editor for captured photos
+      setEditingPhoto({
+        id: Date.now().toString() + Math.random(),
+        url: mediaUrl,
+        caption: ''
+      });
+      setShowPhotoEditor(true);
+    } else {
+      // For videos, add directly to photos array (treating as media)
+      const newPhoto: MeetingPhoto = {
+        id: Date.now().toString() + Math.random(),
+        url: mediaUrl,
+        caption: '',
+        timestamp: new Date().toISOString()
+      };
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, newPhoto]
+      }));
+    }
+    setShowCameraCapture(false);
+  };
+
+  const handleCameraCancel = () => {
+    setShowCameraCapture(false);
   };
 
   const handlePhotoCaption = (photoId: string, caption: string) => {
@@ -423,17 +457,43 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
               </label>
               <div className="space-y-4">
                 <div>
-                  <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2">
-                    <Camera className="h-4 w-4" />
-                    <span>{t('meetings.upload_photos')}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                  </label>
+                  <div className="flex items-center space-x-3">
+                    <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2">
+                      <Upload className="h-4 w-4" />
+                      <span>{t('meetings.upload_photos')}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCaptureMode('photo');
+                        setShowCameraCapture(true);
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors inline-flex items-center space-x-2"
+                    >
+                      <Camera className="h-4 w-4" />
+                      <span>Take Photo</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCaptureMode('video');
+                        setShowCameraCapture(true);
+                      }}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 transition-colors inline-flex items-center space-x-2"
+                    >
+                      <Video className="h-4 w-4" />
+                      <span>Record Video</span>
+                    </button>
+                  </div>
                 </div>
                 
                 {formData.photos.length > 0 && (
@@ -441,23 +501,36 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     {formData.photos.map(photo => (
                       <div key={photo.id} className="border border-gray-200 rounded-lg p-3">
                         <div className="relative group">
-                        <img
-                          src={photo.url}
-                          alt="Meeting photo"
-                          className="w-full h-32 object-cover rounded-md mb-2"
-                        />
+                          {photo.url.startsWith('data:video/') ? (
+                            <video
+                              src={photo.url}
+                              controls
+                              className="w-full h-32 object-cover rounded-md mb-2"
+                            />
+                          ) : (
+                            <img
+                              src={photo.url}
+                              alt="Meeting photo"
+                              className="w-full h-32 object-cover rounded-md mb-2"
+                            />
+                          )}
                           <button
                             type="button"
-                            onClick={() => handleEditPhoto(photo)}
+                            onClick={() => !photo.url.startsWith('data:video/') && handleEditPhoto(photo)}
                             className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Edit photo"
+                            title={photo.url.startsWith('data:video/') ? "Video cannot be edited" : "Edit photo"}
+                            disabled={photo.url.startsWith('data:video/')}
                           >
-                            <Edit className="h-3 w-3" />
+                            {photo.url.startsWith('data:video/') ? (
+                              <Video className="h-3 w-3" />
+                            ) : (
+                              <Edit className="h-3 w-3" />
+                            )}
                           </button>
                         </div>
                         <input
                           type="text"
-                          placeholder={t('meetings.photo_caption')}
+                          placeholder={photo.url.startsWith('data:video/') ? "Video caption..." : t('meetings.photo_caption')}
                           value={photo.caption || ''}
                           onChange={(e) => handlePhotoCaption(photo.id, e.target.value)}
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
@@ -468,7 +541,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                           className="text-red-600 hover:text-red-800 text-sm flex items-center space-x-1"
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span>{t('meetings.remove_photo')}</span>
+                          <span>{photo.url.startsWith('data:video/') ? "Remove Video" : t('meetings.remove_photo')}</span>
                         </button>
                       </div>
                     ))}
@@ -609,6 +682,15 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           caption={editingPhoto.caption}
           onSave={handlePhotoSave}
           onCancel={handlePhotoCancel}
+        />
+      )}
+
+      {/* Camera Capture Modal */}
+      {showCameraCapture && (
+        <CameraCapture
+          mode={captureMode}
+          onCapture={handleCameraCapture}
+          onCancel={handleCameraCancel}
         />
       )}
     </div>
