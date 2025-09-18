@@ -10,6 +10,7 @@ import { TimeTrackingView } from './views/TimeTrackingView';
 import { MeetingsView } from './views/MeetingsView';
 import { UsersView } from './views/UsersView';
 import { AnalyticsView } from './views/AnalyticsView';
+import { SettingsView } from './views/SettingsView';
 import { useAuthHook, AuthContext } from './hooks/useAuth';
 import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
 import type { User } from './types';
@@ -63,12 +64,7 @@ function App() {
           <UsersView />
         );
       case 'settings':
-        return (
-          <div className="flex-1 p-6">
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-600 mt-2">Application settings coming soon...</p>
-          </div>
-        );
+        return <SettingsView />;
       default:
         return <GanttView />;
     }
