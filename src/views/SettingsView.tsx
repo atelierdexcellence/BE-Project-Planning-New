@@ -667,7 +667,7 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-hidden">
+    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -711,9 +711,10 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex space-x-6 h-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6 min-h-0">
         {/* Settings Navigation */}
-        <div className="w-64 bg-white rounded-lg shadow-sm border p-4 flex-shrink-0">
+        <div className="w-full lg:w-64 bg-white rounded-lg shadow-sm border p-4 flex-shrink-0">
+          <h3 className="text-sm font-medium text-gray-900 mb-4 lg:hidden">Settings Categories</h3>
           <nav className="space-y-2">
             {sections.map((section) => {
               const Icon = section.icon;
@@ -721,16 +722,16 @@ export const SettingsView: React.FC = () => {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-start space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                  className={`w-full flex items-start space-x-3 px-3 lg:px-4 py-3 text-left rounded-lg transition-colors ${
                     activeSection === section.id
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-sm">{section.title}</div>
-                    <div className="text-xs text-gray-500 mt-1">{section.description}</div>
+                    <div className="text-xs text-gray-500 mt-1 hidden lg:block">{section.description}</div>
                   </div>
                 </button>
               );
@@ -739,12 +740,12 @@ export const SettingsView: React.FC = () => {
         </div>
 
         {/* Settings Content */}
-        <div className="flex-1 bg-white rounded-lg shadow-sm border p-6 overflow-y-auto">
+        <div className="flex-1 bg-white rounded-lg shadow-sm border p-4 lg:p-6 overflow-y-auto min-h-[400px]">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
               {sections.find(s => s.id === activeSection)?.title}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 mt-1 hidden lg:block">
               {sections.find(s => s.id === activeSection)?.description}
             </p>
           </div>
