@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Save, Palette, Type, Eraser, RotateCcw, Download, Pen, Square, Circle, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface PhotoEditorProps {
   imageUrl: string;
@@ -46,6 +47,8 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
   onSave, 
   onCancel 
 }) => {
+  const { t } = useLanguage();
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
