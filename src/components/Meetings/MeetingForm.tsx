@@ -58,7 +58,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const [recognition, setRecognition] = useState<any>(null);
   const [isListening, setIsListening] = useState(false);
   const isStoppingIntentionally = useRef(false);
-  const processedTranscripts = useRef(new Set<string>());
+  const lastProcessedTranscript = useRef<string>('');
+  const lastResultIndex = useRef<number>(0);
 
   useEffect(() => {
     if (meeting) {
@@ -86,18 +87,22 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       recognitionInstance.onresult = (event: any) => {
         let finalTranscript = '';
         
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // Only process results from the last result index we haven't seen
+        for (let i = Math.max(event.resultIndex, lastResultIndex.current); i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
           }
         }
         
+        // Update the last result index
+        lastResultIndex.current = event.results.length;
+        
         if (finalTranscript.trim()) {
           console.log('Final transcript received:', finalTranscript);
-          // Only process if we haven't seen this transcript before
           const trimmedTranscript = finalTranscript.trim();
-          if (trimmedTranscript && !processedTranscripts.current.has(trimmedTranscript)) {
-            processedTranscripts.current.add(trimmedTranscript);
+          // Only process if this is different from the last processed transcript
+          if (trimmedTranscript && trimmedTranscript !== lastProcessedTranscript.current) {
+            lastProcessedTranscript.current = trimmedTranscript;
             handleVoiceTranscript(trimmedTranscript);
           }
         }
@@ -116,6 +121,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       recognitionInstance.onstart = () => {
         console.log('Speech recognition started');
         isStoppingIntentionally.current = false;
+        lastResultIndex.current = 0;
+        lastProcessedTranscript.current = '';
         setIsListening(true);
       };
 
@@ -251,8 +258,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const clearVoiceEntries = () => {
     setVoiceEntries([]);
     setOriginalNotes('');
-    // Clear processed transcripts when clearing entries
-    processedTranscripts.current.clear();
+    // Reset tracking when clearing entries
+    lastResultIndex.current = 0;
+    lastProcessedTranscript.current = '';
     // Remove voice entries from notes
     const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
       !section.startsWith('• ')
@@ -357,8 +365,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       try {
         // Update recognition language
         recognition.lang = language === 'en' ? 'en-US' : 'fr-FR';
-        // Clear processed transcripts when starting new session
-        processedTranscripts.current.clear();
+        // Reset tracking when starting new session
+        lastResultIndex.current = 0;
+        lastProcessedTranscript.current = '';
         console.log('Starting voice recognition...');
         console.log('Current notes before starting:', formData.notes);
         recognition.start();
@@ -372,8 +381,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     if (recognition && isListening) {
       try {
         isStoppingIntentionally.current = true;
-        // Clear processed transcripts when stopping
-        processedTranscripts.current.clear();
+        // Reset tracking when stopping
+        lastResultIndex.current = 0;
+        lastProcessedTranscript.current = '';
         console.log('Stopping voice recognition...');
         recognition.stop();
       } catch (error) {
