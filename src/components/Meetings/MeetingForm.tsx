@@ -58,6 +58,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const [recognition, setRecognition] = useState<any>(null);
   const [isListening, setIsListening] = useState(false);
   const isStoppingIntentionally = useRef(false);
+  const processedTranscripts = useRef(new Set<string>());
 
   useEffect(() => {
     if (meeting) {
@@ -93,7 +94,12 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
         
         if (finalTranscript.trim()) {
           console.log('Final transcript received:', finalTranscript);
-          handleVoiceTranscript(finalTranscript.trim());
+          // Only process if we haven't seen this transcript before
+          const trimmedTranscript = finalTranscript.trim();
+          if (trimmedTranscript && !processedTranscripts.current.has(trimmedTranscript)) {
+            processedTranscripts.current.add(trimmedTranscript);
+            handleVoiceTranscript(trimmedTranscript);
+          }
         }
       };
 
@@ -245,6 +251,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const clearVoiceEntries = () => {
     setVoiceEntries([]);
     setOriginalNotes('');
+    // Clear processed transcripts when clearing entries
+    processedTranscripts.current.clear();
     // Remove voice entries from notes
     const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
       !section.startsWith('• ')
@@ -349,6 +357,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       try {
         // Update recognition language
         recognition.lang = language === 'en' ? 'en-US' : 'fr-FR';
+        // Clear processed transcripts when starting new session
+        processedTranscripts.current.clear();
         console.log('Starting voice recognition...');
         console.log('Current notes before starting:', formData.notes);
         recognition.start();
@@ -362,6 +372,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     if (recognition && isListening) {
       try {
         isStoppingIntentionally.current = true;
+        // Clear processed transcripts when stopping
+        processedTranscripts.current.clear();
         console.log('Stopping voice recognition...');
         recognition.stop();
       } catch (error) {
