@@ -182,26 +182,39 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       }
     }
     
-    // Update notes with all voice entries
-    const currentNotes = formData.notes;
-    const allVoiceEntries = finalParts.length > 1 
-      ? [...voiceEntries, ...finalParts.map(part => part.trim()).filter(part => part.length > 0)]
-      : [...voiceEntries, transcript.trim()].filter(entry => entry.length > 0);
-    
-    const voiceSection = allVoiceEntries.map(entry => `• ${entry}`).join('\n\n');
-    
-    // Store original notes and language for translation
-    if (!originalNotes) {
-      setOriginalNotes(currentNotes ? `${currentNotes}\n\n\n${voiceSection}` : voiceSection);
-      setOriginalLanguage(language);
+    // Update notes will be handled by useEffect watching voiceEntries
+  };
+
+  // Update notes when voice entries change
+  React.useEffect(() => {
+    if (voiceEntries.length > 0) {
+      const currentNotes = formData.notes;
+      const voiceSection = voiceEntries.map(entry => `• ${entry}`).join('\n\n');
+      
+      // Store original notes and language for translation
+      if (!originalNotes) {
+        setOriginalNotes(currentNotes ? `${currentNotes}\n\n\n${voiceSection}` : voiceSection);
+        setOriginalLanguage(language);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        notes: currentNotes
+          ? `${currentNotes}\n\n\n${voiceSection}`
+          : voiceSection
+      }));
     }
-    
-    setFormData(prev => ({
-      ...prev,
-      notes: currentNotes
-        ? `${currentNotes}\n\n\n${voiceSection}`
-        : voiceSection
-    }));
+  }, [voiceEntries, originalNotes, language]);
+
+  // Clear voice entries function
+  const clearVoiceEntries = () => {
+    setVoiceEntries([]);
+    setOriginalNotes('');
+    // Remove voice entries from notes
+    const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
+      !section.startsWith('• ')
+    ).join('\n\n');
+    setFormData(prev => ({ ...prev, notes: notesWithoutVoice }));
   };
 
   const handleEditPhoto = (photo: MeetingPhoto) => {
@@ -660,15 +673,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   {voiceEntries.length > 0 && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setVoiceEntries([]);
-                        setOriginalNotes('');
-                        // Remove voice entries from notes
-                        const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
-                          !section.startsWith('• ')
-                        ).join('\n\n');
-                        setFormData(prev => ({ ...prev, notes: notesWithoutVoice }));
-                      }}
+                      onClick={clearVoiceEntries}
                       className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
                     >
                       <X className="h-4 w-4" />
