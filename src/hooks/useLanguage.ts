@@ -270,6 +270,7 @@ const translations = {
     'photo.download': 'Download',
     'photo.caption': 'Photo Caption',
     'photo.caption_placeholder': 'Add a caption for this photo...',
+    'photo.save': 'Save Photo',
   },
   fr: {
     // Navigation
@@ -522,6 +523,7 @@ const translations = {
     'photo.download': 'Télécharger',
     'photo.caption': 'Légende de la Photo',
     'photo.caption_placeholder': 'Ajouter une légende pour cette photo...',
+    'photo.save': 'Enregistrer la Photo',
   }
 };
 

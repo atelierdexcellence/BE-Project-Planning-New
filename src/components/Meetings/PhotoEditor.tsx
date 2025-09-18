@@ -95,16 +95,36 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size to match image
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    // Set canvas size to maintain aspect ratio
+    const maxWidth = 800;
+    const maxHeight = 600;
+    
+    let canvasWidth = image.naturalWidth;
+    let canvasHeight = image.naturalHeight;
+    
+    // Scale down if image is too large
+    if (canvasWidth > maxWidth || canvasHeight > maxHeight) {
+      const aspectRatio = canvasWidth / canvasHeight;
+      
+      if (aspectRatio > 1) {
+        // Landscape
+        canvasWidth = Math.min(canvasWidth, maxWidth);
+        canvasHeight = canvasWidth / aspectRatio;
+      } else {
+        // Portrait
+        canvasHeight = Math.min(canvasHeight, maxHeight);
+        canvasWidth = canvasHeight * aspectRatio;
+      }
+    }
+    
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw image
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    // Draw image maintaining aspect ratio
+    ctx.drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
     // Draw all strokes
     strokes.forEach(stroke => {
@@ -351,31 +371,31 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Edit & Annotate Photo</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('photo.edit_annotate')}</h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={handleDownload}
               className="flex items-center space-x-2 px-3 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
               <Download className="w-4 h-4" />
-              <span>Download</span>
+              <span>{t('photo.download')}</span>
             </button>
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <X className="w-6 h-6" />
+              {t('photo.save')}
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row max-h-[calc(95vh-140px)]">
+        <div className="flex flex-col lg:flex-row max-h-[calc(95vh-200px)] overflow-hidden">
           {/* Tools Panel */}
-          <div className="w-full lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50">
+          <div className="w-full lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-y-auto">
             <div className="space-y-4">
               {/* Drawing Tools */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Drawing Tools</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">{t('photo.drawing_tools')}</h4>
                 <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                   <button
                     onClick={() => setActiveTool('pen')}
@@ -384,7 +404,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <Pen className="w-4 h-4" />
-                    <span className="hidden lg:inline">Pen</span>
+                    <span className="hidden lg:inline">{t('photo.pen')}</span>
                   </button>
                   <button
                     onClick={() => setActiveTool('eraser')}
@@ -393,7 +413,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <Eraser className="w-4 h-4" />
-                    <span className="hidden lg:inline">Eraser</span>
+                    <span className="hidden lg:inline">{t('photo.eraser')}</span>
                   </button>
                   <button
                     onClick={() => setActiveTool('text')}
@@ -402,14 +422,14 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <Type className="w-4 h-4" />
-                    <span className="hidden lg:inline">Text</span>
+                    <span className="hidden lg:inline">{t('photo.text')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Shape Tools */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Shapes</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">{t('photo.shapes')}</h4>
                 <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                   <button
                     onClick={() => setActiveTool('rectangle')}
@@ -418,7 +438,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <Square className="w-4 h-4" />
-                    <span className="hidden lg:inline">Rectangle</span>
+                    <span className="hidden lg:inline">{t('photo.rectangle')}</span>
                   </button>
                   <button
                     onClick={() => setActiveTool('circle')}
@@ -427,7 +447,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <Circle className="w-4 h-4" />
-                    <span className="hidden lg:inline">Circle</span>
+                    <span className="hidden lg:inline">{t('photo.circle')}</span>
                   </button>
                   <button
                     onClick={() => setActiveTool('arrow')}
@@ -436,14 +456,14 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                     }`}
                   >
                     <ArrowRight className="w-4 h-4" />
-                    <span className="hidden lg:inline">Arrow</span>
+                    <span className="hidden lg:inline">{t('photo.arrow')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Color Palette */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Colors</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">{t('photo.colors')}</h4>
                 <div className="grid grid-cols-6 lg:grid-cols-4 gap-2">
                   {colors.map(color => (
                     <button
@@ -466,7 +486,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
 
               {/* Brush Settings */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Brush Size</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">{t('photo.brush_size')}</h4>
                 <input
                   type="range"
                   min="1"
@@ -485,7 +505,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
               {/* Text Settings */}
               {activeTool === 'text' && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Text Size</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">{t('photo.text_size')}</h4>
                   <input
                     type="range"
                     min="12"
@@ -509,21 +529,22 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
                   className="w-full flex items-center justify-center space-x-2 p-3 text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Clear All</span>
+                  <span>{t('photo.clear_all')}</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* Canvas Area */}
-          <div className="flex-1 p-4 overflow-auto">
-            <div className="relative inline-block">
+          <div className="flex-1 p-4 overflow-auto flex items-center justify-center">
+            <div className="relative inline-block max-w-full max-h-full">
               <canvas
                 ref={canvasRef}
-                className="border border-gray-300 rounded-lg shadow-lg max-w-full h-auto cursor-crosshair"
+                className="border border-gray-300 rounded-lg shadow-lg max-w-full max-h-full cursor-crosshair"
                 style={{ 
-                  width: '100%', 
-                  maxWidth: '800px',
+                  maxWidth: '100%',
+                  maxHeight: 'calc(95vh - 300px)',
+                  objectFit: 'contain',
                   cursor: activeTool === 'eraser' ? 'grab' : 
                          activeTool === 'text' ? 'text' : 'crosshair'
                 }}
@@ -595,13 +616,13 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
         {/* Caption Input */}
         <div className="p-4 border-t border-gray-200">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Photo Caption
+            {t('photo.caption')}
           </label>
           <input
             type="text"
             value={photoCaption}
             onChange={(e) => setPhotoCaption(e.target.value)}
-            placeholder="Add a caption for this photo..."
+            placeholder={t('photo.caption_placeholder')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
