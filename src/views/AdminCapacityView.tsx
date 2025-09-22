@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Shield, TrendingUp, Users, Activity, AlertTriangle, Save, RotateCcw, Filter, Calendar, BarChart3, ScatterChart as Scatter } from 'lucide-react';
+import { Shield, TrendingUp, Users, Activity, AlertTriangle, Save, RotateCcw, Filter, Calendar, BarChart3, ScatterChart as Scatter, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { useProjects } from '../hooks/useProjects';
