@@ -415,7 +415,7 @@ export const AdminCapacityView: React.FC = () => {
               <option value="all">All Projects</option>
               <option value="high_risk">High Risk (D-Level > 7)</option>
               <option value="overdue">Overdue</option>
-              <option value="urgent">Urgent (< 30 days)</option>
+              <option value="urgent">Urgent (&lt; 30 days)</option>
             </select>
           </div>
         </div>
