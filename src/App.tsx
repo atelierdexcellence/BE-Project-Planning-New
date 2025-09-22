@@ -11,7 +11,6 @@ import { MeetingsView } from './views/MeetingsView';
 import { UsersView } from './views/UsersView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
-import { AdminCapacityView } from './views/AdminCapacityView';
 import { useAuthHook, AuthContext } from './hooks/useAuth';
 import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
 import type { User } from './types';
@@ -66,8 +65,6 @@ function App() {
         );
       case 'settings':
         return <SettingsView />;
-      case 'admin-capacity':
-        return <AdminCapacityView />;
       default:
         return <GanttView />;
     }
