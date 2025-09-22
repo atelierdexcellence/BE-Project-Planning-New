@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, FolderOpen, BarChart3, Settings, Users, Clock, MessageSquare, Shield } from 'lucide-react';
+import { Calendar, FolderOpen, BarChart3, Settings, Users, Clock, MessageSquare, Shield, Calculator } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -21,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
     ...(user?.role === 'admin' ? [
       { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
       { id: 'users', label: t('nav.users'), icon: Users },
+      { id: 'admin-dlevel', label: 'D-Level Calculator', icon: Calculator },
       { id: 'settings', label: t('nav.settings'), icon: Settings }
     ] : [])
   ];
