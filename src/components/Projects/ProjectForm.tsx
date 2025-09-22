@@ -574,6 +574,33 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 </div>
               </div>
 
+              {/* D-Level Display */}
+              {project && (project as any).dLevel && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-800">Project D-Level</h4>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Difficulty level calculated by admin
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold ${
+                        (project as any).dLevel >= 8 ? 'bg-red-100 text-red-800' :
+                        (project as any).dLevel >= 6 ? 'bg-yellow-100 text-yellow-800' :
+                        (project as any).dLevel >= 4 ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {(project as any).dLevel}
+                      </span>
+                      {(project as any).dLevelOverride && (
+                        <span className="text-xs text-purple-600 font-medium">Override</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                 {project && onViewGantt && (
                   <button
