@@ -145,6 +145,14 @@ const translations = {
     'tasks.save': 'Save Tasks',
     'tasks.cancel': 'Cancel',
     
+    // Sub Categories
+    'subcategory.dev_in_progress': 'Projects in Development',
+    'subcategory.prod_with_be_tracking': 'Projects in Production with BE Tracking',
+    'subcategory.updates_nomenclature': 'Updates Required / Nomenclature Edition + Series Monitoring',
+    'subcategory.waiting_order': 'Projects Waiting for Order',
+    'subcategory.completed': 'Completed Projects',
+    'subcategory.on_hold': 'Projects On Hold',
+    
     // Status
     'status.planning': 'Planning',
     'status.in_progress': 'In Progress',
@@ -397,6 +405,14 @@ const translations = {
     'tasks.available_tasks': 'Tâches Disponibles',
     'tasks.save': 'Enregistrer les Tâches',
     'tasks.cancel': 'Annuler',
+    
+    // Sub Categories
+    'subcategory.dev_in_progress': 'Projets en cours de développement',
+    'subcategory.prod_with_be_tracking': 'Projets lancés en prod avec suivi BE',
+    'subcategory.updates_nomenclature': 'Mises à jour à faire / Nomenclature édition à faire + surveiller vie série',
+    'subcategory.waiting_order': 'Projets en attente de commande',
+    'subcategory.completed': 'Projets Terminés',
+    'subcategory.on_hold': 'Projets en Attente',
     
     // Status
     'status.planning': 'Planification',
