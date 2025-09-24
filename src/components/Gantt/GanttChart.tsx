@@ -496,7 +496,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
               <option value="all">{t('gantt.all_categories')}</option>
               {PROJECT_SUB_CATEGORIES.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.priority}. {category.name}
+                  {category.priority}. {t(`subcategory.${category.id}`)}
                 </option>
               ))}
             </select>
