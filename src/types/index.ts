@@ -138,6 +138,7 @@ export interface TimeEntry {
   date: string;
   description?: string;
   task_category?: TaskCategory;
+  percentage_completed?: number;
   created_at: string;
   updated_at: string;
 }

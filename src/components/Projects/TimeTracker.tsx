@@ -16,6 +16,7 @@ interface TimeEntryFormData {
   date: string;
   description: string;
   task_category?: TaskCategory;
+  percentage_completed?: number;
 }
 
 export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) => {
@@ -28,7 +29,8 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
     hours: 0,
     date: new Date().toISOString().split('T')[0],
     description: '',
-    task_category: undefined
+    task_category: undefined,
+    percentage_completed: undefined
   });
 
   const timeEntries = getTimeEntriesForProject(project.id);
@@ -68,7 +70,8 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
         hours: 0,
         date: new Date().toISOString().split('T')[0],
         description: '',
-        task_category: undefined
+        task_category: undefined,
+        percentage_completed: undefined
       });
       setShowForm(false);
       setEditingEntry(null);
@@ -85,7 +88,8 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
       hours: entry.hours,
       date: entry.date,
       description: entry.description || '',
-      task_category: entry.task_category
+      task_category: entry.task_category,
+      percentage_completed: entry.percentage_completed
     });
     setShowForm(true);
   };
@@ -109,7 +113,8 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
       hours: 0,
       date: new Date().toISOString().split('T')[0],
       description: '',
-      task_category: undefined
+      task_category: undefined,
+      percentage_completed: undefined
     });
   };
 
@@ -249,6 +254,27 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
                       ))}
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Project Completion %
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.percentage_completed || ''}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        percentage_completed: e.target.value ? parseInt(e.target.value) : undefined 
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Optional: How complete is this project?"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional: Estimate how complete this project is (0-100%)
+                    </p>
+                  </div>
                 </div>
 
                 <div>
@@ -342,6 +368,20 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ project, onClose }) =>
                             </div>
                             {entry.description && (
                               <p className="text-sm text-gray-600">{entry.description}</p>
+                            )}
+                            {entry.percentage_completed !== undefined && (
+                              <div className="flex items-center space-x-2 mt-2">
+                                <span className="text-xs text-gray-500">Project completion:</span>
+                                <div className="w-16 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-green-600 h-2 rounded-full"
+                                    style={{ width: `${entry.percentage_completed}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs text-green-600 font-medium">
+                                  {entry.percentage_completed}%
+                                </span>
+                              </div>
                             )}
                           </div>
                           

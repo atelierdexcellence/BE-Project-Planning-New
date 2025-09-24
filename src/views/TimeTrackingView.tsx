@@ -12,6 +12,7 @@ interface TimeEntryFormData {
   date: string;
   description: string;
   task_category?: TaskCategory;
+  percentage_completed?: number;
 }
 
 export const TimeTrackingView: React.FC = () => {
@@ -24,7 +25,8 @@ export const TimeTrackingView: React.FC = () => {
     hours: 0,
     date: new Date().toISOString().split('T')[0],
     description: '',
-    task_category: undefined
+    task_category: undefined,
+    percentage_completed: undefined
   });
 
   // Filter projects to only show those assigned to the current user
@@ -81,7 +83,8 @@ export const TimeTrackingView: React.FC = () => {
         hours: 0,
         date: new Date().toISOString().split('T')[0],
         description: '',
-        task_category: undefined
+        task_category: undefined,
+        percentage_completed: undefined
       });
       setShowForm(false);
     } catch (error) {
@@ -97,7 +100,8 @@ export const TimeTrackingView: React.FC = () => {
       hours: 0,
       date: new Date().toISOString().split('T')[0],
       description: '',
-      task_category: undefined
+      task_category: undefined,
+      percentage_completed: undefined
     });
   };
 
@@ -303,6 +307,27 @@ export const TimeTrackingView: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
+                  Project Completion %
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.percentage_completed || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    percentage_completed: e.target.value ? parseInt(e.target.value) : undefined 
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                  placeholder="Optional: How complete is this project?"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional: Estimate how complete this project is (0-100%)
+                </p>
+              </div>
             </div>
 
             <div>
@@ -386,6 +411,19 @@ export const TimeTrackingView: React.FC = () => {
                         )}
                       </div>
                       <div className="text-xs md:text-sm text-gray-600">
+                    {entry.percentage_completed !== undefined && (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-12 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-600 h-2 rounded-full"
+                            style={{ width: `${entry.percentage_completed}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-green-600 font-medium">
+                          {entry.percentage_completed}%
+                        </span>
+                      </div>
+                    )}
                         <strong>{project?.name}</strong> - {project?.client}
                       </div>
                       {entry.description && (
