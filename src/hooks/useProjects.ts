@@ -1,331 +1,291 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import type { Project, Task, TimeEntry, Meeting, ProjectNote } from '../types';
 
-// Mock data - replace with real API calls
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: '1',
-    name: 'Project Alpha',
-    status: '65%',
-    sub_category: 'dev_in_progress',
-    color: '#3B82F6',
-    bc_order_number: 'BC001',
-    image_url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client A',
-    collection_models: 'Collection Spring 2024',
-    composition: 'Cotton blend',
-    date_of_brief: '2024-01-15',
-    commercial_id: 'virginie',
-    atelier: 'siegeair',
-    be_team_member_ids: ['as', 'mr'],
-    key_dates: {
-      start_in_be: '2024-02-01',
-      wood_foam_launch: '2024-03-15',
-      previewed_delivery: '2024-04-30',
-      last_call: '2024-05-15'
-    },
-    hours_previewed: 120,
-    hours_completed: 80,
-    notes: [],
-    created_at: '2024-01-15T00:00:00Z',
-    updated_at: '2024-01-20T00:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Project Beta',
-    status: '30%',
-    sub_category: 'prod_with_be_tracking',
-    color: '#F59E0B',
-    bc_order_number: 'BC002',
-    image_url: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client B',
-    collection_models: 'Collection Summer 2024',
-    composition: 'Linen mix',
-    date_of_brief: '2024-01-20',
-    commercial_id: 'nicholas',
-    atelier: 'maison_fey_vannes',
-    be_team_member_ids: ['mr'],
-    key_dates: {
-      start_in_be: '2024-02-15',
-      wood_foam_launch: '2024-03-30',
-      previewed_delivery: '2024-05-15',
-      last_call: '2024-06-01'
-    },
-    hours_previewed: 150,
-    hours_completed: 45,
-    notes: [],
-    created_at: '2024-01-20T00:00:00Z',
-    updated_at: '2024-01-25T00:00:00Z'
-  },
-  {
-    id: '3',
-    name: 'Project Gamma',
-    status: '90%',
-    sub_category: 'updates_nomenclature',
-    color: '#EF4444',
-    bc_order_number: 'BC003',
-    image_url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client C',
-    collection_models: 'Collection Fall 2024',
-    composition: 'Wool blend',
-    date_of_brief: '2023-12-15',
-    commercial_id: 'aurelie',
-    atelier: 'maison_fey_paris',
-    be_team_member_ids: ['aq', 'sr'],
-    key_dates: {
-      start_in_be: '2024-01-01',
-      wood_foam_launch: '2024-02-15',
-      previewed_delivery: '2024-03-30',
-      last_call: '2024-04-15'
-    },
-    hours_previewed: 200,
-    hours_completed: 180,
-    notes: [],
-    created_at: '2023-12-15T00:00:00Z',
-    updated_at: '2024-01-10T00:00:00Z'
-  }
-];
+// Convert database row to Project type
+const dbRowToProject = (row: any): Project => ({
+  id: row.id,
+  name: row.name,
+  status: row.status,
+  sub_category: row.sub_category,
+  color: row.color,
+  bc_order_number: row.bc_order_number,
+  image_url: row.image_url,
+  client: row.client,
+  collection_models: row.collection_models,
+  composition: row.composition,
+  date_of_brief: row.date_of_brief,
+  commercial_id: row.commercial_id,
+  atelier: row.atelier,
+  be_team_member_ids: row.be_team_member_ids,
+  key_dates: row.key_dates,
+  hours_previewed: row.hours_previewed,
+  hours_completed: row.hours_completed,
+  notes: [], // Will be loaded separately
+  created_at: row.created_at,
+  updated_at: row.updated_at
+});
 
-const MOCK_TASKS: Task[] = [
-  {
-    id: '1',
-    project_id: '1',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
-    phase: 'pre_prod',
-    start_date: '2024-02-01',
-    end_date: '2024-02-28',
-    assignee_id: 'as',
-    status: 'completed',
-    progress: 100,
-    dependencies: [],
-    order: 0,
-    enabled: true
-  },
-  {
-    id: '2',
-    project_id: '1',
-    name: 'BE plans pour validation client',
-    category: 'be_plans_validation',
-    phase: 'pre_prod',
-    start_date: '2024-02-15',
-    end_date: '2024-03-01',
-    assignee_id: 'as',
-    status: 'in_progress',
-    progress: 80,
-    dependencies: ['1'],
-    order: 1,
-    enabled: true
-  },
-  {
-    id: '3',
-    project_id: '1',
-    name: 'Commande mousse',
-    category: 'commande_mousse',
-    phase: 'prod',
-    start_date: '2024-03-01',
-    end_date: '2024-03-31',
-    assignee_id: 'as',
-    status: 'in_progress',
-    progress: 65,
-    dependencies: ['2'],
-    order: 2,
-    enabled: true
-  },
-  {
-    id: '4',
-    project_id: '2',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
-    phase: 'pre_prod',
-    start_date: '2024-02-15',
-    end_date: '2024-03-01',
-    assignee_id: 'mr',
-    status: 'completed',
-    progress: 100,
-    dependencies: [],
-    order: 0,
-    enabled: true
-  },
-  {
-    id: '5',
-    project_id: '2',
-    name: 'BE conception 3D',
-    category: 'be_conception_3d',
-    phase: 'pre_prod',
-    start_date: '2024-03-01',
-    end_date: '2024-03-20',
-    assignee_id: 'mr',
-    status: 'in_progress',
-    progress: 40,
-    dependencies: ['4'],
-    order: 1,
-    enabled: true
-  },
-  {
-    id: '6',
-    project_id: '3',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
-    phase: 'pre_prod',
-    start_date: '2024-01-01',
-    end_date: '2024-01-15',
-    assignee_id: 'aq',
-    status: 'completed',
-    progress: 100,
-    dependencies: [],
-    order: 0,
-    enabled: true
-  },
-  {
-    id: '7',
-    project_id: '3',
-    name: 'Tapisserie',
-    category: 'tapisserie',
-    phase: 'prod',
-    start_date: '2024-01-15',
-    end_date: '2024-02-28',
-    assignee_id: 'aq',
-    status: 'blocked',
-    progress: 20,
-    dependencies: ['6'],
-    order: 1,
-    enabled: true
-  }
-];
+// Convert database row to Task type
+const dbRowToTask = (row: any): Task => ({
+  id: row.id,
+  project_id: row.project_id,
+  name: row.name,
+  category: row.category,
+  phase: row.phase,
+  start_date: row.start_date || '',
+  end_date: row.end_date || '',
+  assignee_id: row.assignee_id || '',
+  status: row.status,
+  progress: row.progress,
+  dependencies: row.dependencies,
+  order: row.order_index,
+  enabled: row.enabled
+});
 
-const MOCK_TIME_ENTRIES: TimeEntry[] = [
-  {
-    id: '1',
-    project_id: '1',
-    user_id: 'as',
-    user_name: 'ALEXANDER SMITH (AS)',
-    hours: 8.5,
-    date: '2024-01-20',
-    description: 'Initial design work',
-    task_category: 'be_conception_3d',
-    created_at: '2024-01-20T10:00:00Z',
-    updated_at: '2024-01-20T10:00:00Z'
-  },
-  {
-    id: '2',
-    project_id: '1',
-    user_id: 'mr',
-    user_name: 'MAËLYS DE LA RUÉE (MR)',
-    hours: 4.25,
-    date: '2024-01-21',
-    description: 'Technical review',
-    task_category: 'be_plans_validation',
-    created_at: '2024-01-21T14:00:00Z',
-    updated_at: '2024-01-21T14:00:00Z'
-  },
-  {
-    id: '3',
-    project_id: '2',
-    user_id: 'mr',
-    user_name: 'MAËLYS DE LA RUÉE (MR)',
-    hours: 6.75,
-    date: '2024-01-22',
-    description: 'Project setup and planning',
-    created_at: '2024-01-22T09:00:00Z',
-    updated_at: '2024-01-22T09:00:00Z'
-  }
-];
+// Convert database row to TimeEntry type
+const dbRowToTimeEntry = (row: any): TimeEntry => ({
+  id: row.id,
+  project_id: row.project_id,
+  user_id: row.user_id,
+  user_name: row.user_name,
+  hours: parseFloat(row.hours),
+  date: row.date,
+  description: row.description || '',
+  task_category: row.task_category,
+  percentage_completed: row.percentage_completed,
+  created_at: row.created_at,
+  updated_at: row.updated_at
+});
 
-const MOCK_MEETINGS: Meeting[] = [
-  {
-    id: '1',
-    project_id: '1',
-    title: 'Project Alpha Kickoff Meeting',
-    date: '2024-01-26',
-    attendees: ['as', 'mr', 'virginie'],
-    notes: 'Discussed project timeline and initial requirements. Key decisions made on material selection and delivery schedule.',
-    photos: [],
-    voice_notes: [],
-    author_id: 'as',
-    author_name: 'ALEXANDER SMITH (AS)',
-    created_at: '2024-01-26T10:00:00Z',
-    updated_at: '2024-01-26T10:00:00Z'
-  }
-];
+// Convert database row to Meeting type
+const dbRowToMeeting = (row: any): Meeting => ({
+  id: row.id,
+  project_id: row.project_id,
+  title: row.title,
+  date: row.date,
+  attendees: row.attendees,
+  notes: row.notes,
+  photos: row.photos,
+  voice_notes: row.voice_notes,
+  author_id: row.author_id,
+  author_name: row.author_name,
+  created_at: row.created_at,
+  updated_at: row.updated_at
+});
 
 export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(MOCK_TIME_ENTRIES);
-  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
-  const [isLoading, setIsLoading] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load all data on mount
+  useEffect(() => {
+    loadAllData();
+  }, []);
+
+  const loadAllData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        fetchProjects(),
+        fetchTasks(),
+        fetchTimeEntries(),
+        fetchMeetings()
+      ]);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const projectsWithNotes = await Promise.all(
+        (data || []).map(async (project) => {
+          const { data: notes } = await supabase
+            .from('project_notes')
+            .select('*')
+            .eq('project_id', project.id)
+            .order('created_at', { ascending: false });
+
+          return {
+            ...dbRowToProject(project),
+            notes: notes || []
+          };
+        })
+      );
+
+      setProjects(projectsWithNotes);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  }, []);
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+      if (error) throw error;
+      setTasks((data || []).map(dbRowToTask));
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  }, []);
+
+  const fetchTimeEntries = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setTimeEntries((data || []).map(dbRowToTimeEntry));
+    } catch (error) {
+      console.error('Error fetching time entries:', error);
+    }
+  }, []);
+
+  const fetchMeetings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('meetings')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setMeetings((data || []).map(dbRowToMeeting));
+    } catch (error) {
+      console.error('Error fetching meetings:', error);
+    }
   }, []);
 
   const createProject = useCallback(async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
-    const newProject: Project = {
-      ...projectData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    setProjects(prev => [...prev, newProject]);
-    console.log('✅ Created project with ID:', newProject.id);
-    return newProject;
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([{
+          name: projectData.name,
+          status: projectData.status,
+          sub_category: projectData.sub_category,
+          color: projectData.color,
+          bc_order_number: projectData.bc_order_number,
+          image_url: projectData.image_url,
+          client: projectData.client,
+          collection_models: projectData.collection_models,
+          composition: projectData.composition,
+          date_of_brief: projectData.date_of_brief,
+          commercial_id: projectData.commercial_id,
+          atelier: projectData.atelier,
+          be_team_member_ids: projectData.be_team_member_ids,
+          key_dates: projectData.key_dates,
+          hours_previewed: projectData.hours_previewed,
+          hours_completed: projectData.hours_completed
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newProject = { ...dbRowToProject(data), notes: [] };
+      setProjects(prev => [newProject, ...prev]);
+      return newProject;
+    } catch (error) {
+      console.error('Error creating project:', error);
+      throw error;
+    }
   }, []);
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
-    console.log('🔄 updateProject called for ID:', id, 'Current projects count:', projects.length);
-    console.log('📝 Updates:', updates);
-    
-    setProjects(prev => {
-      return prev.map(p => 
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setProjects(prev => prev.map(p => 
         p.id === id 
           ? { ...p, ...updates, updated_at: new Date().toISOString() }
           : p
-      );
-    });
+      ));
+    } catch (error) {
+      console.error('Error updating project:', error);
+      throw error;
+    }
   }, []);
 
   const addProjectUpdate = useCallback(async (projectId: string, content: string, authorId: string, authorName: string) => {
-    const newUpdate: ProjectNote = {
-      id: Date.now().toString(),
-      project_id: projectId,
-      content,
-      author_id: authorId,
-      author_name: authorName,
-      created_at: new Date().toISOString(),
-      type: 'update',
-      meeting_id: undefined
-    };
+    try {
+      const { data, error } = await supabase
+        .from('project_notes')
+        .insert([{
+          project_id: projectId,
+          content,
+          author_id: authorId,
+          author_name: authorName,
+          type: 'update'
+        }])
+        .select()
+        .single();
 
-    // Add update to project
-    setProjects(prev => prev.map(p => 
-      p.id === projectId 
-        ? { ...p, notes: [...p.notes, newUpdate], updated_at: new Date().toISOString() }
-        : p
-    ));
+      if (error) throw error;
 
-    // Send notifications (mock implementation - replace with real email service)
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      console.log(`📧 Email notification sent to Commercial (${project.commercial_id}): New update on ${project.name}`);
-      console.log(`📧 Email notification sent to BE Team (${project.be_team_member_id}): New update on ${project.name}`);
-      
-      // In a real implementation, you would call your email service here:
-      // await emailService.sendNotification({
-      //   to: [project.commercial_id, project.be_team_member_id],
-      //   subject: `Project Update: ${project.name}`,
-      //   body: `New update added by ${authorName}: ${content}`
-      // });
+      const newUpdate: ProjectNote = {
+        id: data.id,
+        project_id: data.project_id,
+        content: data.content,
+        author_id: data.author_id,
+        author_name: data.author_name,
+        created_at: data.created_at,
+        type: data.type,
+        meeting_id: data.meeting_id
+      };
+
+      setProjects(prev => prev.map(p => 
+        p.id === projectId 
+          ? { ...p, notes: [newUpdate, ...p.notes], updated_at: new Date().toISOString() }
+          : p
+      ));
+
+      return newUpdate;
+    } catch (error) {
+      console.error('Error adding project update:', error);
+      throw error;
     }
-
-    return newUpdate;
-  }, [projects]);
+  }, []);
 
   const deleteProject = useCallback(async (id: string) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setProjects(prev => prev.filter(p => p.id !== id));
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
   }, []);
 
   const getTasksForProject = useCallback((projectId: string) => {
@@ -335,10 +295,44 @@ export const useProjects = () => {
   }, [tasks]);
 
   const updateProjectTasks = useCallback(async (projectId: string, updatedTasks: Task[]) => {
-    setTasks(prev => [
-      ...prev.filter(task => task.project_id !== projectId),
-      ...updatedTasks
-    ]);
+    try {
+      // Delete existing tasks for this project
+      await supabase
+        .from('tasks')
+        .delete()
+        .eq('project_id', projectId);
+
+      // Insert new tasks
+      if (updatedTasks.length > 0) {
+        const { error } = await supabase
+          .from('tasks')
+          .insert(updatedTasks.map(task => ({
+            id: task.id,
+            project_id: task.project_id,
+            name: task.name,
+            category: task.category,
+            phase: task.phase,
+            start_date: task.start_date || null,
+            end_date: task.end_date || null,
+            assignee_id: task.assignee_id || null,
+            status: task.status,
+            progress: task.progress,
+            dependencies: task.dependencies,
+            order_index: task.order,
+            enabled: task.enabled
+          })));
+
+        if (error) throw error;
+      }
+
+      setTasks(prev => [
+        ...prev.filter(task => task.project_id !== projectId),
+        ...updatedTasks
+      ]);
+    } catch (error) {
+      console.error('Error updating project tasks:', error);
+      throw error;
+    }
   }, []);
 
   const sortProjectsByNextDate = useCallback((projects: Project[]) => {
@@ -370,113 +364,178 @@ export const useProjects = () => {
   }, [timeEntries]);
 
   const addTimeEntry = useCallback(async (timeEntryData: Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>) => {
-    const newTimeEntry: TimeEntry = {
-      ...timeEntryData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    setTimeEntries(prev => [...prev, newTimeEntry]);
-    
-    // Update project's hours_completed
-    const totalHours = getTotalHoursForProject(timeEntryData.project_id) + timeEntryData.hours;
-    setProjects(prev => prev.map(p => 
-      p.id === timeEntryData.project_id 
-        ? { ...p, hours_completed: totalHours, updated_at: new Date().toISOString() }
-        : p
-    ));
-    
-    return newTimeEntry;
-  }, [getTotalHoursForProject]);
+    try {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .insert([{
+          project_id: timeEntryData.project_id,
+          user_id: timeEntryData.user_id,
+          user_name: timeEntryData.user_name,
+          hours: timeEntryData.hours,
+          date: timeEntryData.date,
+          description: timeEntryData.description,
+          task_category: timeEntryData.task_category,
+          percentage_completed: timeEntryData.percentage_completed
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newTimeEntry = dbRowToTimeEntry(data);
+      setTimeEntries(prev => [newTimeEntry, ...prev]);
+      
+      // Update project's hours_completed
+      const totalHours = getTotalHoursForProject(timeEntryData.project_id) + timeEntryData.hours;
+      await updateProject(timeEntryData.project_id, { hours_completed: totalHours });
+      
+      return newTimeEntry;
+    } catch (error) {
+      console.error('Error adding time entry:', error);
+      throw error;
+    }
+  }, [getTotalHoursForProject, updateProject]);
 
   const updateTimeEntry = useCallback(async (id: string, updates: Partial<TimeEntry>) => {
-    setTimeEntries(prev => prev.map(entry => 
-      entry.id === id 
-        ? { ...entry, ...updates, updated_at: new Date().toISOString() }
-        : entry
-    ));
-    
-    // Recalculate project hours
-    const updatedEntry = timeEntries.find(e => e.id === id);
-    if (updatedEntry) {
-      const totalHours = getTotalHoursForProject(updatedEntry.project_id);
-      setProjects(prev => prev.map(p => 
-        p.id === updatedEntry.project_id 
-          ? { ...p, hours_completed: totalHours, updated_at: new Date().toISOString() }
-          : p
+    try {
+      const { error } = await supabase
+        .from('time_entries')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setTimeEntries(prev => prev.map(entry => 
+        entry.id === id 
+          ? { ...entry, ...updates, updated_at: new Date().toISOString() }
+          : entry
       ));
+      
+      // Recalculate project hours
+      const updatedEntry = timeEntries.find(e => e.id === id);
+      if (updatedEntry) {
+        const totalHours = getTotalHoursForProject(updatedEntry.project_id);
+        await updateProject(updatedEntry.project_id, { hours_completed: totalHours });
+      }
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      throw error;
     }
-  }, [timeEntries, getTotalHoursForProject]);
+  }, [timeEntries, getTotalHoursForProject, updateProject]);
+
+  const deleteTimeEntry = useCallback(async (id: string) => {
+    try {
+      const entryToDelete = timeEntries.find(e => e.id === id);
+      if (!entryToDelete) return;
+
+      const { error } = await supabase
+        .from('time_entries')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setTimeEntries(prev => prev.filter(entry => entry.id !== id));
+      
+      // Recalculate project hours
+      const totalHours = getTotalHoursForProject(entryToDelete.project_id) - entryToDelete.hours;
+      await updateProject(entryToDelete.project_id, { hours_completed: Math.max(0, totalHours) });
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      throw error;
+    }
+  }, [timeEntries, getTotalHoursForProject, updateProject]);
 
   // Meeting functions
   const createMeeting = useCallback(async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
-    const newMeeting: Meeting = {
-      ...meetingData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    setMeetings(prev => [...prev, newMeeting]);
-    
-    // Add meeting reference to project updates
-    const meetingUpdate: ProjectNote = {
-      id: (Date.now() + 1).toString(),
-      project_id: meetingData.project_id,
-      content: `Meeting: ${meetingData.title}`,
-      author_id: meetingData.author_id,
-      author_name: meetingData.author_name,
-      created_at: new Date().toISOString(),
-      type: 'update',
-      meeting_id: newMeeting.id
-    };
-    
-    setProjects(prev => prev.map(p => 
-      p.id === meetingData.project_id 
-        ? { ...p, notes: [...p.notes, meetingUpdate], updated_at: new Date().toISOString() }
-        : p
-    ));
-    
-    return newMeeting;
-  }, []);
+    try {
+      const { data, error } = await supabase
+        .from('meetings')
+        .insert([{
+          project_id: meetingData.project_id,
+          title: meetingData.title,
+          date: meetingData.date,
+          attendees: meetingData.attendees,
+          notes: meetingData.notes,
+          photos: meetingData.photos,
+          voice_notes: meetingData.voice_notes,
+          author_id: meetingData.author_id,
+          author_name: meetingData.author_name
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newMeeting = dbRowToMeeting(data);
+      setMeetings(prev => [newMeeting, ...prev]);
+      
+      // Add meeting reference to project updates
+      await addProjectUpdate(meetingData.project_id, `Meeting: ${meetingData.title}`, meetingData.author_id, meetingData.author_name);
+      
+      return newMeeting;
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+      throw error;
+    }
+  }, [addProjectUpdate]);
 
   const updateMeeting = useCallback(async (id: string, updates: Partial<Meeting>) => {
-    setMeetings(prev => prev.map(m => 
-      m.id === id 
-        ? { ...m, ...updates, updated_at: new Date().toISOString() }
-        : m
-    ));
+    try {
+      const { error } = await supabase
+        .from('meetings')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setMeetings(prev => prev.map(m => 
+        m.id === id 
+          ? { ...m, ...updates, updated_at: new Date().toISOString() }
+          : m
+      ));
+    } catch (error) {
+      console.error('Error updating meeting:', error);
+      throw error;
+    }
   }, []);
 
   const deleteMeeting = useCallback(async (id: string) => {
-    const meeting = meetings.find(m => m.id === id);
-    if (meeting) {
+    try {
+      const meeting = meetings.find(m => m.id === id);
+      if (!meeting) return;
+
+      const { error } = await supabase
+        .from('meetings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
       setMeetings(prev => prev.filter(m => m.id !== id));
       
       // Remove meeting reference from project updates
+      await supabase
+        .from('project_notes')
+        .delete()
+        .eq('meeting_id', id);
+
       setProjects(prev => prev.map(p => 
         p.id === meeting.project_id 
           ? { ...p, notes: p.notes.filter(note => note.meeting_id !== id) }
           : p
       ));
+    } catch (error) {
+      console.error('Error deleting meeting:', error);
+      throw error;
     }
   }, [meetings]);
-
-  const deleteTimeEntry = useCallback(async (id: string) => {
-    const entryToDelete = timeEntries.find(e => e.id === id);
-    if (!entryToDelete) return;
-    
-    setTimeEntries(prev => prev.filter(entry => entry.id !== id));
-    
-    // Recalculate project hours
-    const totalHours = getTotalHoursForProject(entryToDelete.project_id) - entryToDelete.hours;
-    setProjects(prev => prev.map(p => 
-      p.id === entryToDelete.project_id 
-        ? { ...p, hours_completed: Math.max(0, totalHours), updated_at: new Date().toISOString() }
-        : p
-    ));
-  }, [timeEntries, getTotalHoursForProject]);
 
   return {
     projects,
