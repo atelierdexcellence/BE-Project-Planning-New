@@ -6,7 +6,7 @@ const MOCK_PROJECTS: Project[] = [
   {
     id: '1',
     name: 'Project Alpha',
-    status: 'in_progress',
+    status: '65%',
     sub_category: 'dev_in_progress',
     color: '#3B82F6',
     bc_order_number: 'BC001',
@@ -33,7 +33,7 @@ const MOCK_PROJECTS: Project[] = [
   {
     id: '2',
     name: 'Project Beta',
-    status: 'at_risk',
+    status: '30%',
     sub_category: 'prod_with_be_tracking',
     color: '#F59E0B',
     bc_order_number: 'BC002',
@@ -60,7 +60,7 @@ const MOCK_PROJECTS: Project[] = [
   {
     id: '3',
     name: 'Project Gamma',
-    status: 'overdue',
+    status: '90%',
     sub_category: 'updates_nomenclature',
     color: '#EF4444',
     bc_order_number: 'BC003',

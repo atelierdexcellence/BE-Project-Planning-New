@@ -20,7 +20,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   onViewGantt,
 }) => {
   const { t } = useLanguage();
-  const { addProjectUpdate, getTotalHoursForProject } = useProjects();
+  const { addProjectUpdate, getTotalHoursForProject, timeEntries } = useProjects();
   const [activeTab, setActiveTab] = useState<'details' | 'updates' | 'time'>('details');
   const [showTimeTracker, setShowTimeTracker] = useState(false);
   const [formData, setFormData] = useState({
@@ -165,6 +165,22 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     if (project) {
       await addProjectUpdate(project.id, content, authorId, authorName);
     }
+  };
+
+  const getLatestCompletionPercentage = () => {
+    if (!project) return 0;
+    
+    const projectTimeEntries = timeEntries.filter(entry => entry.project_id === project.id);
+    const entriesWithPercentage = projectTimeEntries.filter(entry => entry.percentage_completed !== undefined);
+    
+    if (entriesWithPercentage.length === 0) return 0;
+    
+    // Get the most recent entry with percentage
+    const latestEntry = entriesWithPercentage.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0];
+    
+    return latestEntry.percentage_completed || 0;
   };
 
   const actualHours = project ? getTotalHoursForProject(project.id) : 0;
@@ -361,23 +377,27 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
 
                 <div>
                   <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('project.status')} *
+                    Project Completion Status
                   </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    required
+                  <div
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="planning">{t('status.planning')}</option>
-                    <option value="in_progress">{t('status.in_progress')}</option>
-                    <option value="at_risk">{t('status.at_risk')}</option>
-                    <option value="overdue">{t('status.overdue')}</option>
-                    <option value="completed">{t('status.completed')}</option>
-                    <option value="on_hold">{t('status.on_hold')}</option>
-                  </select>
+                    {project ? (
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-1 bg-gray-200 rounded-full h-3">
+                          <div 
+                            className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(getLatestCompletionPercentage(), 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-gray-900 min-w-0">
+                          {getLatestCompletionPercentage()}%
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-500">Completion percentage will be calculated from time entries</span>
+                    )}
+                  </div>
                 </div>
 
                 <div>

@@ -9,8 +9,8 @@ export interface User {
 export interface Project {
   id: string;
   name: string;
-  status: 'planning' | 'in_progress' | 'at_risk' | 'overdue' | 'completed' | 'on_hold';
-  sub_category: 'dev_in_progress' | 'prod_with_be_tracking' | 'updates_nomenclature' | 'waiting_order' | 'completed';
+  status: string; // Now stores completion percentage or status text
+  sub_category: 'dev_in_progress' | 'prod_with_be_tracking' | 'updates_nomenclature' | 'waiting_order' | 'completed' | 'on_hold';
   color: string;
   bc_order_number?: string;
   image_url?: string;
@@ -187,5 +187,6 @@ export const PROJECT_SUB_CATEGORIES = [
   { id: 'prod_with_be_tracking', name: 'Projets lancés en prod avec suivi BE', priority: 2 },
   { id: 'updates_nomenclature', name: 'Mises à jour à faire / Nomenclature édition à faire + surveiller vie série', priority: 3 },
   { id: 'waiting_order', name: 'Projets en attente de commande', priority: 4 },
-  { id: 'completed', name: 'Projets Terminés', priority: 5 }
+  { id: 'completed', name: 'Projets Terminés', priority: 5 },
+  { id: 'on_hold', name: 'Projets en Attente', priority: 6 }
 ] as const;
