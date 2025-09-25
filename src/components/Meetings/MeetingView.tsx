@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Users, Camera, Mic, Edit, FileText, ZoomIn } from 'lucide-react';
+import { X, Calendar, Users, Camera, Mic, CreditCard as Edit, FileText, ZoomIn } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import type { Meeting, Project } from '../../types';
 import { BE_TEAM_MEMBERS, COMMERCIAL_USERS } from '../../types';

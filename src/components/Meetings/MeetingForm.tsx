@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit, Video, CameraIcon } from 'lucide-react';
+import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, CreditCard as Edit, Video, Camera as CameraIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage, Language } from '../../hooks/useLanguage';
 import { PhotoEditor } from './PhotoEditor';
