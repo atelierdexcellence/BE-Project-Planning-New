@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calculator, Search, Settings, AlertTriangle, ExternalLink, ChevronDown, ChevronRight, Save, RotateCcw } from 'lucide-react';
+import { Calculator, Search, Settings, TriangleAlert as AlertTriangle, ExternalLink, ChevronDown, ChevronRight, Save, RotateCcw } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import type { Project, DLevelWeights, DLevelReferences, DLevelBreakdown } from '../types';
 
