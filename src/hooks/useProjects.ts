@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Project, Task, TimeEntry, Meeting, ProjectNote } from '../types';
+import type { Project, Task, TimeEntry, ProjectNote } from '../types';
 
 // Mock projects for testing
 const MOCK_PROJECTS: Project[] = [
@@ -163,7 +163,6 @@ export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load all data on mount
@@ -177,8 +176,7 @@ export const useProjects = () => {
       await Promise.all([
         fetchProjects(),
         fetchTasks(),
-        fetchTimeEntries(),
-        fetchMeetings()
+        fetchTimeEntries()
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -248,20 +246,6 @@ export const useProjects = () => {
       setTimeEntries((data || []).map(dbRowToTimeEntry));
     } catch (error) {
       console.error('Error fetching time entries:', error);
-    }
-  }, []);
-
-  const fetchMeetings = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('meetings')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-      setMeetings((data || []).map(dbRowToMeeting));
-    } catch (error) {
-      console.error('Error fetching meetings:', error);
     }
   }, []);
 
@@ -558,99 +542,10 @@ export const useProjects = () => {
     }
   }, [timeEntries, getTotalHoursForProject, updateProject]);
 
-  // Meeting functions
-  const createMeeting = useCallback(async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('meetings')
-        .insert([{
-          project_id: meetingData.project_id,
-          title: meetingData.title,
-          date: meetingData.date,
-          attendees: meetingData.attendees,
-          notes: meetingData.notes,
-          photos: meetingData.photos,
-          voice_notes: meetingData.voice_notes,
-          author_id: meetingData.author_id,
-          author_name: meetingData.author_name
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newMeeting = dbRowToMeeting(data);
-      setMeetings(prev => [newMeeting, ...prev]);
-      
-      // Add meeting reference to project updates
-      await addProjectUpdate(meetingData.project_id, `Meeting: ${meetingData.title}`, meetingData.author_id, meetingData.author_name);
-      
-      return newMeeting;
-    } catch (error) {
-      console.error('Error creating meeting:', error);
-      throw error;
-    }
-  }, [addProjectUpdate]);
-
-  const updateMeeting = useCallback(async (id: string, updates: Partial<Meeting>) => {
-    try {
-      const { error } = await supabase
-        .from('meetings')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setMeetings(prev => prev.map(m => 
-        m.id === id 
-          ? { ...m, ...updates, updated_at: new Date().toISOString() }
-          : m
-      ));
-    } catch (error) {
-      console.error('Error updating meeting:', error);
-      throw error;
-    }
-  }, []);
-
-  const deleteMeeting = useCallback(async (id: string) => {
-    try {
-      const meeting = meetings.find(m => m.id === id);
-      if (!meeting) return;
-
-      const { error } = await supabase
-        .from('meetings')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      setMeetings(prev => prev.filter(m => m.id !== id));
-      
-      // Remove meeting reference from project updates
-      await supabase
-        .from('project_notes')
-        .delete()
-        .eq('meeting_id', id);
-
-      setProjects(prev => prev.map(p => 
-        p.id === meeting.project_id 
-          ? { ...p, notes: p.notes.filter(note => note.meeting_id !== id) }
-          : p
-      ));
-    } catch (error) {
-      console.error('Error deleting meeting:', error);
-      throw error;
-    }
-  }, [meetings]);
-
   return {
     projects,
     tasks,
     timeEntries,
-    meetings,
     isLoading,
     fetchProjects,
     createProject,
@@ -664,9 +559,6 @@ export const useProjects = () => {
     getTotalHoursForProject,
     addTimeEntry,
     updateTimeEntry,
-    deleteTimeEntry,
-    createMeeting,
-    updateMeeting,
-    deleteMeeting
+    deleteTimeEntry
   };
 };

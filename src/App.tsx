@@ -7,11 +7,9 @@ import { OverviewView } from './views/OverviewView';
 import { GanttView } from './views/GanttView';
 import { ProjectsView } from './views/ProjectsView';
 import { TimeTrackingView } from './views/TimeTrackingView';
-import { MeetingsView } from './views/MeetingsView';
 import { UsersView } from './views/UsersView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
-import { AdminDLevelView } from './views/AdminDLevelView';
 import { useAuthHook, AuthContext } from './hooks/useAuth';
 import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
 import type { User } from './types';
@@ -54,8 +52,6 @@ function App() {
         return <ProjectsView />;
       case 'timetracking':
         return <TimeTrackingView />;
-      case 'meetings':
-        return <MeetingsView />;
       case 'analytics':
         return (
           <AnalyticsView />
@@ -66,8 +62,6 @@ function App() {
         );
       case 'settings':
         return <SettingsView />;
-      case 'admin-dlevel':
-        return <AdminDLevelView />;
       default:
         return <GanttView />;
     }
