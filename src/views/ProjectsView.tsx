@@ -3,7 +3,7 @@ import { ProjectCard } from '../components/Projects/ProjectCard';
 import { ProjectForm } from '../components/Projects/ProjectForm';
 import { useProjects } from '../hooks/useProjects';
 import { useLanguage } from '../hooks/useLanguage';
-import { Plus, Search, Grid, List, FolderOpen } from 'lucide-react';
+import { Plus, Search, Grid2x2 as Grid, List, FolderOpen } from 'lucide-react';
 import type { Project } from '../types';
 
 export const ProjectsView: React.FC = () => {
