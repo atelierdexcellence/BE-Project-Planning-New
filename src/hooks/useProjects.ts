@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Project } from '../types';
+import type { Project, Meeting } from '../types';
 
 const MOCK_PROJECTS: Project[] = [
   {
@@ -174,8 +174,38 @@ const MOCK_PROJECTS: Project[] = [
   }
 ];
 
+const MOCK_MEETINGS: Meeting[] = [
+  {
+    id: '1',
+    title: 'Kick-off Meeting - Canapé Modulaire',
+    project_id: '1',
+    date: '2024-01-20',
+    attendees: ['as', 'mr', 'virginie'],
+    notes: 'Initial project discussion. Client requirements reviewed. Technical specifications defined.',
+    photos: [],
+    voice_notes: [],
+    author_id: 'as',
+    created_at: '2024-01-20T10:00:00Z',
+    updated_at: '2024-01-20T10:00:00Z'
+  },
+  {
+    id: '2',
+    title: 'Design Review - Executive Chairs',
+    project_id: '2',
+    date: '2024-01-25',
+    attendees: ['aq', 'sr', 'virginie'],
+    notes: 'Design concepts presented. Material selection discussed. Timeline confirmed.',
+    photos: [],
+    voice_notes: [],
+    author_id: 'aq',
+    created_at: '2024-01-25T14:00:00Z',
+    updated_at: '2024-01-25T14:00:00Z'
+  }
+];
+
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
+  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
 
   const updateProject = async (id: string, updates: Partial<Project>) => {
     setProjects(prev => prev.map(p => 
@@ -194,9 +224,34 @@ export const useProjects = () => {
     return newProject;
   };
 
+  const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
+    const newMeeting: Meeting = {
+      ...meetingData,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    setMeetings(prev => [...prev, newMeeting]);
+    return newMeeting;
+  };
+
+  const updateMeeting = async (id: string, updates: Partial<Meeting>) => {
+    setMeetings(prev => prev.map(m => 
+      m.id === id ? { ...m, ...updates, updated_at: new Date().toISOString() } : m
+    ));
+  };
+
+  const deleteMeeting = async (id: string) => {
+    setMeetings(prev => prev.filter(m => m.id !== id));
+  };
+
   return {
     projects,
+    meetings,
     updateProject,
-    createProject
+    createProject,
+    createMeeting,
+    updateMeeting,
+    deleteMeeting
   };
 };

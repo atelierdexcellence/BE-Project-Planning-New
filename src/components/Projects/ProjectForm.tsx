@@ -19,9 +19,33 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     name: '',
     client: '',
     status: 'planning' as Project['status'],
+    sub_category: 'seating' as Project['sub_category'],
+    color: '#3B82F6',
+    bc_order_number: '',
+    image_url: '',
+    collection_models: '',
+    composition: '',
+    date_of_brief: '',
+    commercial_id: 'virginie',
+    atelier: 'paris' as Project['atelier'],
+    be_team_member_ids: [] as string[],
+    key_dates: {
+      start_in_be: '',
+      wood_foam_launch: '',
+      previewed_delivery: '',
+      last_call: ''
+    },
+    hours_previewed: 0,
+    hours_completed: 0,
+    pieces: 1,
+    size: 'Medium' as Project['size'],
+    geometry: 'Square' as Project['geometry'],
+    target_cost_constraint: 'Moderate' as Project['target_cost_constraint'],
+    modelling: '3D' as Project['modelling'],
+    outsourced_suppliers: 0,
+    d_level_override: null as number | null,
+    d_level: 5,
     description: '',
-    startDate: '',
-    endDate: '',
     teamMembers: [] as string[]
   });
 
@@ -31,10 +55,29 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         name: project.name,
         client: project.client,
         status: project.status,
+        sub_category: project.sub_category,
+        color: project.color,
+        bc_order_number: project.bc_order_number,
+        image_url: project.image_url || '',
+        collection_models: project.collection_models || '',
+        composition: project.composition || '',
+        date_of_brief: project.date_of_brief,
+        commercial_id: project.commercial_id,
+        atelier: project.atelier,
+        be_team_member_ids: project.be_team_member_ids,
+        key_dates: project.key_dates,
+        hours_previewed: project.hours_previewed,
+        hours_completed: project.hours_completed,
+        pieces: project.pieces,
+        size: project.size,
+        geometry: project.geometry,
+        target_cost_constraint: project.target_cost_constraint,
+        modelling: project.modelling,
+        outsourced_suppliers: project.outsourced_suppliers,
+        d_level_override: project.d_level_override,
+        d_level: project.d_level,
         description: project.description || '',
-        startDate: project.startDate,
-        endDate: project.endDate,
-        teamMembers: project.teamMembers
+        teamMembers: project.be_team_member_ids
       });
     }
   }, [project]);
@@ -52,24 +95,39 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       return;
     }
     
-    if (!formData.startDate) {
+    if (!formData.key_dates.start_in_be) {
       alert('Start date is required');
       return;
     }
     
-    if (!formData.endDate) {
+    if (!formData.key_dates.previewed_delivery) {
       alert('End date is required');
       return;
     }
     
-    onSave(formData);
+    const projectData = {
+      ...formData,
+      be_team_member_ids: formData.teamMembers
+    };
+    onSave(projectData);
   };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name.startsWith('key_dates.')) {
+      const dateField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        key_dates: {
+          ...prev.key_dates,
+          [dateField]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleTeamMemberChange = (memberId: string, isChecked: boolean) => {
@@ -149,14 +207,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             </div>
 
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="key_dates.start_in_be" className="block text-sm font-medium text-gray-700 mb-2">
                 Start Date *
               </label>
               <input
                 type="date"
-                id="startDate"
-                name="startDate"
-                value={formData.startDate}
+                id="key_dates.start_in_be"
+                name="key_dates.start_in_be"
+                value={formData.key_dates.start_in_be}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -164,14 +222,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             </div>
 
             <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="key_dates.previewed_delivery" className="block text-sm font-medium text-gray-700 mb-2">
                 End Date *
               </label>
               <input
                 type="date"
-                id="endDate"
-                name="endDate"
-                value={formData.endDate}
+                id="key_dates.previewed_delivery"
+                name="key_dates.previewed_delivery"
+                value={formData.key_dates.previewed_delivery}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

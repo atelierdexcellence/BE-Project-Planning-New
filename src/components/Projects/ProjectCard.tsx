@@ -41,12 +41,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) =>
       <div className="space-y-3">
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <Calendar className="h-4 w-4" />
-          <span>Start: {new Date(project.startDate).toLocaleDateString('fr-FR')}</span>
+          <span>Start: {new Date(project.key_dates.start_in_be).toLocaleDateString('fr-FR')}</span>
         </div>
         
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <Clock className="h-4 w-4" />
-          <span>End: {new Date(project.endDate).toLocaleDateString('fr-FR')}</span>
+          <span>End: {new Date(project.key_dates.previewed_delivery).toLocaleDateString('fr-FR')}</span>
         </div>
         
         <div className="flex items-center space-x-2 text-sm text-gray-600">
