@@ -2,6 +2,91 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Project, Task, TimeEntry, Meeting, ProjectNote } from '../types';
 
+// Mock projects for testing
+const MOCK_PROJECTS: Project[] = [
+  {
+    id: 'mock-1',
+    name: 'Canapé Modulaire Premium',
+    status: '65%',
+    sub_category: 'prod_with_be_tracking',
+    color: '#3B82F6',
+    bc_order_number: 'BC001',
+    image_url: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=800',
+    client: 'Hôtel Le Bristol',
+    collection_models: 'Collection Prestige 2024',
+    composition: 'Canapé 3 places modulaire avec méridienne',
+    date_of_brief: '2024-01-15',
+    commercial_id: 'virginie',
+    atelier: 'maison_fey_paris',
+    be_team_member_ids: ['as', 'mr'],
+    key_dates: {
+      start_in_be: '2024-02-01',
+      wood_foam_launch: '2024-02-15',
+      previewed_delivery: '2024-03-30',
+      last_call: '2024-04-15'
+    },
+    hours_previewed: 120,
+    hours_completed: 78,
+    notes: [],
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-01-26T14:30:00Z'
+  },
+  {
+    id: 'mock-2',
+    name: 'Fauteuils Direction Executive',
+    status: '30%',
+    sub_category: 'dev_in_progress',
+    color: '#10B981',
+    bc_order_number: 'BC002',
+    image_url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+    client: 'Banque Rothschild',
+    collection_models: 'Executive Line',
+    composition: '6 fauteuils direction cuir pleine fleur',
+    date_of_brief: '2024-01-20',
+    commercial_id: 'nicholas',
+    atelier: 'siegeair',
+    be_team_member_ids: ['aq', 'sr'],
+    key_dates: {
+      start_in_be: '2024-02-05',
+      wood_foam_launch: '2024-02-20',
+      previewed_delivery: '2024-04-10',
+      last_call: '2024-04-25'
+    },
+    hours_previewed: 95,
+    hours_completed: 28,
+    notes: [],
+    created_at: '2024-01-20T09:00:00Z',
+    updated_at: '2024-01-25T16:45:00Z'
+  },
+  {
+    id: 'mock-3',
+    name: 'Banquette Restaurant Gastronomique',
+    status: '85%',
+    sub_category: 'updates_nomenclature',
+    color: '#F59E0B',
+    bc_order_number: 'BC003',
+    image_url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=800',
+    client: 'Restaurant Le Meurice',
+    collection_models: 'Hospitality Collection',
+    composition: 'Banquettes sur mesure avec dossiers capitonnés',
+    date_of_brief: '2023-12-10',
+    commercial_id: 'aurelie',
+    atelier: 'maison_fey_vannes',
+    be_team_member_ids: ['ld', 'ps'],
+    key_dates: {
+      start_in_be: '2024-01-08',
+      wood_foam_launch: '2024-01-22',
+      previewed_delivery: '2024-03-15',
+      last_call: '2024-03-30'
+    },
+    hours_previewed: 85,
+    hours_completed: 72,
+    notes: [],
+    created_at: '2023-12-10T14:00:00Z',
+    updated_at: '2024-01-24T11:20:00Z'
+  }
+];
+
 // Convert database row to Project type
 const dbRowToProject = (row: any): Project => ({
   id: row.id,
@@ -109,7 +194,11 @@ export const useProjects = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Supabase not available, using mock data');
+        setProjects(MOCK_PROJECTS);
+        return;
+      }
 
       const projectsWithNotes = await Promise.all(
         (data || []).map(async (project) => {
@@ -129,6 +218,8 @@ export const useProjects = () => {
       setProjects(projectsWithNotes);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      // Fallback to mock data
+      setProjects(MOCK_PROJECTS);
     }
   }, []);
 
