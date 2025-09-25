@@ -41,36 +41,79 @@ export interface User {
   initials: string;
 }
 
-export interface Meeting {
+export interface Task {
   id: string;
   project_id: string;
-  title: string;
-  date: string;
-  attendees: string[];
-  notes: string;
-  photos: MeetingPhoto[];
-  voice_notes: VoiceNote[];
-  author_id: string;
-  author_name: string;
+  name: string;
+  category: TaskCategory;
+  phase: 'pre_prod' | 'prod';
+  start_date: string;
+  end_date: string;
+  assignee_id: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked';
+  progress: number;
+  dependencies: string[];
+  order_index: number;
+  enabled: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface MeetingPhoto {
+export interface TimeEntry {
   id: string;
-  url: string;
-  caption?: string;
-  timestamp: string;
+  project_id: string;
+  user_id: string;
+  user_name: string;
+  hours: number;
+  date: string;
+  description: string;
+  task_category?: TaskCategory;
+  percentage_completed?: number;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface VoiceNote {
+export interface ProjectNote {
   id: string;
-  transcript: string;
-  duration: number;
-  timestamp: string;
+  project_id: string;
+  content: string;
+  author_id: string;
+  author_name: string;
+  type: 'update' | 'meeting';
+  meeting_id?: string;
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  project_id: string;
+  type: 'overdue_start' | 'upcoming_deadline' | 'status_update';
+  message: string;
+  read: boolean;
+  created_at: string;
 }
 
 export type Language = 'en' | 'fr';
+
+export type TaskCategory = 
+  | 'general'
+  | 'analyse_brief'
+  | 'recherche_references'
+  | 'esquisse_croquis'
+  | 'plan_2d'
+  | 'plan_3d'
+  | 'fiche_technique'
+  | 'devis_fournisseurs'
+  | 'commande_fournisseurs'
+  | 'suivi_livraisons'
+  | 'reception_mousse'
+  | 'decoupe_bois_montage'
+  | 'reception_structure_bois'
+  | 'mise_en_mousse'
+  | 'reception_tissu'
+  | 'confection'
+  | 'tapisserie';
 
 // Team Members
 export const BE_TEAM_MEMBERS = [
@@ -91,4 +134,39 @@ export const TEAM_MEMBERS = [
   ...BE_TEAM_MEMBERS,
   ...COMMERCIAL_USERS,
   { id: 'admin', name: 'Admin User', email: 'admin@company.com', role: 'admin' as const, initials: 'AU' }
+];
+
+export const ATELIERS = [
+  { id: 'paris', name: 'Paris' },
+  { id: 'lyon', name: 'Lyon' },
+  { id: 'marseille', name: 'Marseille' },
+  { id: 'siegeair', name: 'Siège Air' }
+];
+
+export const PROJECT_SUB_CATEGORIES = [
+  { id: 'seating', name: 'Seating', priority: 1 },
+  { id: 'tables', name: 'Tables', priority: 2 },
+  { id: 'storage', name: 'Storage', priority: 3 },
+  { id: 'lighting', name: 'Lighting', priority: 4 },
+  { id: 'accessories', name: 'Accessories', priority: 5 }
+];
+
+export const TASK_CATEGORIES = [
+  { id: 'general', phase: 'pre_prod' as const },
+  { id: 'analyse_brief', phase: 'pre_prod' as const },
+  { id: 'recherche_references', phase: 'pre_prod' as const },
+  { id: 'esquisse_croquis', phase: 'pre_prod' as const },
+  { id: 'plan_2d', phase: 'pre_prod' as const },
+  { id: 'plan_3d', phase: 'pre_prod' as const },
+  { id: 'fiche_technique', phase: 'pre_prod' as const },
+  { id: 'devis_fournisseurs', phase: 'pre_prod' as const },
+  { id: 'commande_fournisseurs', phase: 'prod' as const },
+  { id: 'suivi_livraisons', phase: 'prod' as const },
+  { id: 'reception_mousse', phase: 'prod' as const },
+  { id: 'decoupe_bois_montage', phase: 'prod' as const },
+  { id: 'reception_structure_bois', phase: 'prod' as const },
+  { id: 'mise_en_mousse', phase: 'prod' as const },
+  { id: 'reception_tissu', phase: 'prod' as const },
+  { id: 'confection', phase: 'prod' as const },
+  { id: 'tapisserie', phase: 'prod' as const }
 ];

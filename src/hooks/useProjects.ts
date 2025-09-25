@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Project, Meeting } from '../types';
+import type { Project, Meeting, Task, TimeEntry, ProjectNote } from '../types';
 
 const MOCK_PROJECTS: Project[] = [
   {
@@ -106,67 +106,191 @@ const MOCK_PROJECTS: Project[] = [
   }
 ];
 
-const MOCK_MEETINGS: Meeting[] = [
+const MOCK_TASKS: Task[] = [
   {
     id: '1',
-    title: 'Kick-off Meeting - Canapé Modulaire',
     project_id: '1',
-    date: '2024-01-20',
-    attendees: ['as', 'mr', 'virginie'],
-    notes: 'Initial project discussion. Client requirements reviewed. Technical specifications defined.',
-    photos: [],
-    voice_notes: [],
-    author_id: 'as',
-    author_name: 'ALEXANDER SMITH',
-    created_at: '2024-01-20T10:00:00Z',
-    updated_at: '2024-01-20T10:00:00Z'
+    name: 'Analyse du Brief',
+    category: 'analyse_brief',
+    phase: 'pre_prod',
+    start_date: '2024-02-01',
+    end_date: '2024-02-03',
+    assignee_id: 'as',
+    status: 'completed',
+    progress: 100,
+    dependencies: [],
+    order_index: 0,
+    enabled: true,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-02-03T17:00:00Z'
   },
   {
     id: '2',
-    title: 'Design Review - Executive Chairs',
-    project_id: '2',
-    date: '2024-01-25',
-    attendees: ['aq', 'sr', 'virginie'],
-    notes: 'Design concepts presented. Material selection discussed. Timeline confirmed.',
-    photos: [],
-    voice_notes: [],
-    author_id: 'aq',
-    author_name: 'ALEXIA QUENTIN',
-    created_at: '2024-01-25T14:00:00Z',
-    updated_at: '2024-01-25T14:00:00Z'
+    project_id: '1',
+    name: 'Recherche Références',
+    category: 'recherche_references',
+    phase: 'pre_prod',
+    start_date: '2024-02-04',
+    end_date: '2024-02-08',
+    assignee_id: 'mr',
+    status: 'completed',
+    progress: 100,
+    dependencies: ['1'],
+    order_index: 1,
+    enabled: true,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-02-08T16:30:00Z'
+  }
+];
+
+const MOCK_TIME_ENTRIES: TimeEntry[] = [
+  {
+    id: '1',
+    project_id: '1',
+    user_id: 'as',
+    user_name: 'ALEXANDER SMITH',
+    hours: 8,
+    date: '2024-01-26',
+    description: 'Analyse du brief client et définition des spécifications techniques',
+    task_category: 'analyse_brief',
+    percentage_completed: 25,
+    created_at: '2024-01-26T17:00:00Z',
+    updated_at: '2024-01-26T17:00:00Z'
+  },
+  {
+    id: '2',
+    project_id: '1',
+    user_id: 'mr',
+    user_name: 'MAËLYS DE LA RUÉE',
+    hours: 6,
+    date: '2024-01-26',
+    description: 'Recherche de références et création de moodboard',
+    task_category: 'recherche_references',
+    percentage_completed: 30,
+    created_at: '2024-01-26T16:30:00Z',
+    updated_at: '2024-01-26T16:30:00Z'
   }
 ];
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
-  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
+  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(MOCK_TIME_ENTRIES);
+  const [projectNotes, setProjectNotes] = useState<ProjectNote[]>([]);
 
-  const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
-    const newMeeting: Meeting = {
-      ...meetingData,
+  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+    const newProject: Project = {
+      ...projectData,
       id: Date.now().toString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    setMeetings(prev => [...prev, newMeeting]);
-    return newMeeting;
+    setProjects(prev => [...prev, newProject]);
+    return newProject;
   };
 
-  const updateMeeting = async (id: string, updates: Partial<Meeting>) => {
-    setMeetings(prev => prev.map(m => 
-      m.id === id ? { ...m, ...updates, updated_at: new Date().toISOString() } : m
+  const updateProject = async (id: string, updates: Partial<Project>) => {
+    setProjects(prev => prev.map(p => 
+      p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
     ));
   };
 
-  const deleteMeeting = async (id: string) => {
-    setMeetings(prev => prev.filter(m => m.id !== id));
+  const deleteProject = async (id: string) => {
+    setProjects(prev => prev.filter(p => p.id !== id));
+    setTasks(prev => prev.filter(t => t.project_id !== id));
+    setTimeEntries(prev => prev.filter(t => t.project_id !== id));
+  };
+
+  const getTasksForProject = (projectId: string) => {
+    return tasks.filter(task => task.project_id === projectId);
+  };
+
+  const updateProjectTasks = async (projectId: string, updatedTasks: Task[]) => {
+    setTasks(prev => [
+      ...prev.filter(t => t.project_id !== projectId),
+      ...updatedTasks
+    ]);
+  };
+
+  const getTimeEntriesForProject = (projectId: string) => {
+    return timeEntries.filter(entry => entry.project_id === projectId);
+  };
+
+  const getTotalHoursForProject = (projectId: string) => {
+    return timeEntries
+      .filter(entry => entry.project_id === projectId)
+      .reduce((total, entry) => total + entry.hours, 0);
+  };
+
+  const addTimeEntry = async (entryData: Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>) => {
+    const newEntry: TimeEntry = {
+      ...entryData,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    setTimeEntries(prev => [...prev, newEntry]);
+    return newEntry;
+  };
+
+  const updateTimeEntry = async (id: string, updates: Partial<TimeEntry>) => {
+    setTimeEntries(prev => prev.map(entry => 
+      entry.id === id ? { ...entry, ...updates, updated_at: new Date().toISOString() } : entry
+    ));
+  };
+
+  const deleteTimeEntry = async (id: string) => {
+    setTimeEntries(prev => prev.filter(entry => entry.id !== id));
+  };
+
+  const sortProjectsByNextDate = (projects: Project[]) => {
+    return projects.slice().sort((a, b) => {
+      const getNextDate = (project: Project) => {
+        const dates = [
+          new Date(project.key_dates.start_in_be),
+          new Date(project.key_dates.wood_foam_launch),
+          new Date(project.key_dates.previewed_delivery),
+          new Date(project.key_dates.last_call)
+        ].filter(date => date > new Date());
+        
+        return dates.length > 0 ? dates[0] : new Date('2099-12-31');
+      };
+      
+      return getNextDate(a).getTime() - getNextDate(b).getTime();
+    });
+  };
+
+  const addProjectNote = async (noteData: Omit<ProjectNote, 'id' | 'created_at'>) => {
+    const newNote: ProjectNote = {
+      ...noteData,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString()
+    };
+    setProjectNotes(prev => [...prev, newNote]);
+    return newNote;
+  };
+
+  const getProjectNotes = (projectId: string) => {
+    return projectNotes.filter(note => note.project_id === projectId);
   };
 
   return {
     projects,
-    meetings,
-    createMeeting,
-    updateMeeting,
-    deleteMeeting
+    tasks,
+    timeEntries,
+    projectNotes,
+    createProject,
+    updateProject,
+    deleteProject,
+    getTasksForProject,
+    updateProjectTasks,
+    getTimeEntriesForProject,
+    getTotalHoursForProject,
+    addTimeEntry,
+    updateTimeEntry,
+    deleteTimeEntry,
+    sortProjectsByNextDate,
+    addProjectNote,
+    getProjectNotes
   };
 };
