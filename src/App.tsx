@@ -1,34 +1,43 @@
-import React, { useState } from 'react';
-import { AuthContext, useAuthHook } from './hooks/useAuth';
-import { LanguageContext, useLanguageHook } from './hooks/useLanguage';
+import React, { useState, createContext } from 'react';
 import { LoginForm } from './components/Auth/LoginForm';
+import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
+import { NotificationPanel } from './components/Notifications/NotificationPanel';
 import { OverviewView } from './views/OverviewView';
 import { GanttView } from './views/GanttView';
 import { ProjectsView } from './views/ProjectsView';
 import { TimeTrackingView } from './views/TimeTrackingView';
-import { AnalyticsView } from './views/AnalyticsView';
+import { MeetingsView } from './views/MeetingsView';
 import { UsersView } from './views/UsersView';
+import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
-import { TeamView } from './views/TeamView';
+import { AdminDLevelView } from './views/AdminDLevelView';
+import { useAuthHook, AuthContext } from './hooks/useAuth';
+import { useLanguageHook, LanguageContext } from './hooks/useLanguage';
+import type { User } from './types';
 
 function App() {
-  const authHook = useAuthHook();
-  const languageHook = useLanguageHook();
+  const auth = useAuthHook();
+  const language = useLanguageHook();
   const [activeView, setActiveView] = useState('overview');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
-  if (authHook.isLoading) {
+  if (auth.isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  if (!authHook.user) {
+  if (!auth.user) {
     return (
-      <AuthContext.Provider value={authHook}>
-        <LanguageContext.Provider value={languageHook}>
+      <AuthContext.Provider value={auth}>
+        <LanguageContext.Provider value={language}>
           <LoginForm />
         </LanguageContext.Provider>
       </AuthContext.Provider>
@@ -45,27 +54,63 @@ function App() {
         return <ProjectsView />;
       case 'timetracking':
         return <TimeTrackingView />;
+      case 'meetings':
+        return <MeetingsView />;
       case 'analytics':
-        return <AnalyticsView />;
+        return (
+          <AnalyticsView />
+        );
       case 'users':
-        return <UsersView />;
+        return (
+          <UsersView />
+        );
       case 'settings':
         return <SettingsView />;
-      case 'team':
-        return <TeamView />;
+      case 'admin-dlevel':
+        return <AdminDLevelView />;
       default:
-        return <OverviewView />;
+        return <GanttView />;
     }
   };
 
   return (
-    <AuthContext.Provider value={authHook}>
-      <LanguageContext.Provider value={languageHook}>
-        <div className="min-h-screen bg-gray-50 flex">
-          <Sidebar activeView={activeView} onViewChange={setActiveView} />
-          <div className="flex-1 overflow-hidden">
+    <AuthContext.Provider value={auth}>
+      <LanguageContext.Provider value={language}>
+        <div className="min-h-screen bg-gray-100">
+          <Header 
+            onNotificationsClick={() => setShowNotifications(true)}
+            onMobileMenuClick={() => setShowMobileSidebar(true)}
+          />
+          
+          <div className="flex h-screen pt-16">
+            {/* Desktop Sidebar */}
+            <div className="hidden md:block">
+              <Sidebar activeView={activeView} onViewChange={setActiveView} />
+            </div>
+            
+            {/* Mobile Sidebar Overlay */}
+            {showMobileSidebar && (
+              <div className="fixed inset-0 z-50 md:hidden">
+                <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowMobileSidebar(false)} />
+                <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-xl">
+                  <Sidebar 
+                    activeView={activeView} 
+                    onViewChange={(view) => {
+                      setActiveView(view);
+                      setShowMobileSidebar(false);
+                    }} 
+                  />
+                </div>
+              </div>
+            )}
+            
             {renderView()}
           </div>
+
+          <NotificationPanel
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+          />
         </div>
       </LanguageContext.Provider>
     </AuthContext.Provider>

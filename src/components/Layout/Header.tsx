@@ -1,71 +1,85 @@
 import React from 'react';
-import { LogOut, MessageSquare, FolderOpen, Globe } from 'lucide-react';
+import { Bell, User, LogOut, Calendar, Globe, Award, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotifications } from '../../hooks/useNotifications';
 import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
-  activeView: string;
-  onViewChange: (view: string) => void;
+  onNotificationsClick: () => void;
+  onMobileMenuClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeView, onViewChange }) => {
+export const Header: React.FC<HeaderProps> = ({ onNotificationsClick, onMobileMenuClick }) => {
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotifications(user?.id || '');
   const { language, setLanguage, t } = useLanguage();
 
-  const menuItems = [
-    { id: 'meetings', label: t('nav.meetings'), icon: MessageSquare },
-    { id: 'projects', label: t('nav.projects'), icon: FolderOpen }
-  ];
-
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-4">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={onMobileMenuClick}
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <MessageSquare className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Meetings Management</h1>
-              <p className="text-sm text-gray-500">Project Meeting Tracker</p>
-            </div>
+            <img 
+              src="/PHOTO-2023-09-13-11-16-45 copy.jpg" 
+              alt="Atelier d'Excellence" 
+              className="h-8 md:h-12 w-auto"
+            />
           </div>
-
-          <nav className="flex space-x-6">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onViewChange(item.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-                    activeView === item.id
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <div className="hidden sm:block">
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900">{t('header.title')}</h1>
+            <p className="text-xs md:text-sm text-gray-500">{t('header.subtitle')}</p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="hidden sm:flex border border-gray-300 rounded-md">
+            <button
+              onClick={() => setLanguage('fr')}
+              className={`px-3 py-1 text-sm ${
+                language === 'fr'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-50'
+              } rounded-l-md`}
+            >
+              FR
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 text-sm ${
+                language === 'en'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-50'
+              } rounded-r-md`}
+            >
+              EN
+            </button>
+          </div>
+
           <button
-            onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-            className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={onNotificationsClick}
+            className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <Globe className="h-4 w-4" />
-            <span className="text-sm font-medium">{language.toUpperCase()}</span>
+            <Bell className="h-6 w-6" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
           </button>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
               {user?.initials}
             </div>
-            <div className="text-sm">
+            <div className="hidden sm:block text-sm">
               <p className="font-medium text-gray-900">{user?.name}</p>
               <p className="text-gray-500 capitalize">{user?.role.replace('_', ' ')}</p>
             </div>

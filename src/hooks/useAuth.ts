@@ -18,12 +18,12 @@ export const useAuth = () => {
   return context;
 };
 
-// Mock authentication
+// Mock authentication - replace with real auth
 const MOCK_USERS: User[] = [
   { id: '1', name: 'Admin User', email: 'admin@company.com', role: 'admin', initials: 'AU' },
-  { id: 'as', name: 'ALEXANDER SMITH', email: 'as@company.com', role: 'team_member', initials: 'AS' },
-  { id: 'mr', name: 'MAËLYS DE LA RUÉE', email: 'mr@company.com', role: 'team_member', initials: 'MR' },
-  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial', initials: 'V' },
+  { id: '2', name: 'Team Member', email: 'team@company.com', role: 'team_member', initials: 'TM' },
+  { id: '3', name: 'Commercial User', email: 'commercial@company.com', role: 'commercial', initials: 'CU' },
+  { id: '4', name: 'Atelier User', email: 'atelier@company.com', role: 'atelier', initials: 'AT' },
 ];
 
 export const useAuthHook = () => {
@@ -31,8 +31,8 @@ export const useAuthHook = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('meetings_user');
+    // Simulate checking for existing session
+    const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -41,25 +41,20 @@ export const useAuthHook = () => {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    try {
-      const foundUser = MOCK_USERS.find(u => u.email === email);
-      if (foundUser && password === 'password') {
-        setUser(foundUser);
-        localStorage.setItem('meetings_user', JSON.stringify(foundUser));
-      } else {
-        throw new Error('Invalid credentials');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+    // Mock login - replace with real authentication
+    const foundUser = MOCK_USERS.find(u => u.email === email);
+    if (foundUser && password === 'password') {
+      setUser(foundUser);
+      localStorage.setItem('user', JSON.stringify(foundUser));
+    } else {
+      throw new Error('Invalid credentials');
     }
+    setIsLoading(false);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('meetings_user');
+    localStorage.removeItem('user');
   };
 
   return { user, login, logout, isLoading };

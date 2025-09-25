@@ -1,34 +1,89 @@
 import React, { useState } from 'react';
 import { ProjectCard } from '../components/Projects/ProjectCard';
+import { ProjectForm } from '../components/Projects/ProjectForm';
+import { ProjectGanttChart } from '../components/Gantt/ProjectGanttChart';
 import { useProjects } from '../hooks/useProjects';
 import { useLanguage } from '../hooks/useLanguage';
-import { Plus, Search, Grid2x2 as Grid, List, FolderOpen } from 'lucide-react';
+import { Plus, Search, Grid, List } from 'lucide-react';
 import type { Project } from '../types';
 
 export const ProjectsView: React.FC = () => {
-  const { projects } = useProjects();
+  const { projects, sortProjectsByNextDate, createProject, updateProject, getTasksForProject } = useProjects();
   const { t } = useLanguage();
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showProjectGantt, setShowProjectGantt] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredProjects = projects.filter(project =>
+  const filteredProjects = sortProjectsByNextDate(projects).filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.composition?.toLowerCase().includes(searchTerm.toLowerCase())
+    project.bc_order_number?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    setShowProjectForm(true);
+  };
+
+  const handleSaveProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+    if (selectedProject) {
+      // Update existing project
+      await updateProject(selectedProject.id, projectData);
+    } else {
+      // Create new project
+      await createProject(projectData);
+    }
+    setShowProjectForm(false);
+    setSelectedProject(null);
+  };
+
+  const handleCloseForm = () => {
+    setShowProjectForm(false);
+    setSelectedProject(null);
+  };
+
+  const handleViewProjectGantt = (project: Project) => {
+    setSelectedProject(project);
+    setShowProjectGantt(true);
+    setShowProjectForm(false);
+  };
+
+  const handleBackFromProjectGantt = () => {
+    setShowProjectGantt(false);
+    setSelectedProject(null);
+  };
+
+  if (showProjectGantt && selectedProject) {
+    return (
+      <div className="flex-1 p-6">
+        <ProjectGanttChart
+          project={selectedProject}
+          tasks={getTasksForProject(selectedProject.id)}
+          onBack={handleBackFromProjectGantt}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <FolderOpen className="h-8 w-8 mr-3 text-blue-600" />
-            {t('nav.projects')}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('projects.title')}</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Project information for meeting management • {filteredProjects.length} projects
+            {t('projects.subtitle')} • {filteredProjects.length} {t('projects.title').toLowerCase()}
           </p>
         </div>
+        
+        <button
+          onClick={() => setShowProjectForm(true)}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          <span>{t('projects.new_project')}</span>
+        </button>
       </div>
 
       <div className="flex items-center justify-between">
@@ -37,7 +92,7 @@ export const ProjectsView: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search projects..."
+              placeholder={t('projects.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
@@ -75,7 +130,7 @@ export const ProjectsView: React.FC = () => {
             <ProjectCard
               key={project.id}
               project={project}
-              onClick={() => {}}
+              onClick={() => handleProjectClick(project)}
             />
           ))}
         </div>
@@ -86,51 +141,70 @@ export const ProjectsView: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Project Name
+                    {t('project.name')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
+                    {t('project.client')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('project.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Start Date
+                    {t('overview.progress')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Delivery Date
+                    {t('overview.next')} Date
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProjects.map((project) => (
-                  <tr key={project.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                      <div className="text-sm text-gray-500">{project.composition}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {project.client}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full capitalize ${
-                        project.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                        project.status === 'at_risk' ? 'bg-yellow-100 text-yellow-800' :
-                        project.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {project.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(project.key_dates.start_in_be).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(project.key_dates.previewed_delivery).toLocaleDateString('fr-FR')}
-                    </td>
-                  </tr>
-                ))}
+                {filteredProjects.map((project) => {
+                  const progressPercentage = Math.round((project.hours_completed / project.hours_previewed) * 100);
+                  return (
+                    <tr
+                      key={project.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleProjectClick(project)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                          <div className="text-sm text-gray-500">{project.bc_order_number}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {project.client}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full capitalize ${
+                          project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                          project.status === 'at_risk' ? 'bg-yellow-100 text-yellow-800' :
+                          project.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {t(`status.${project.status}`)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${Math.min(Math.round((getTasksForProject ? getTasksForProject(project.id).reduce((sum, task) => sum + (task.progress || 0), 0) / Math.max(getTasksForProject(project.id).length, 1) : progressPercentage)), 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {Math.round((getTasksForProject ? getTasksForProject(project.id).reduce((sum, task) => sum + (task.progress || 0), 0) / Math.max(getTasksForProject(project.id).length, 1) : progressPercentage))}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(project.key_dates.start_in_be).toLocaleDateString('fr-FR')}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -140,9 +214,18 @@ export const ProjectsView: React.FC = () => {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500">
-            {searchTerm ? 'No projects found matching your search.' : 'No projects available.'}
+            {searchTerm ? t('projects.no_search_results') : t('projects.no_projects')}
           </div>
         </div>
+      )}
+
+      {showProjectForm && (
+        <ProjectForm
+          project={selectedProject}
+          onSave={handleSaveProject}
+          onCancel={handleCloseForm}
+          onViewGantt={handleViewProjectGantt}
+        />
       )}
     </div>
   );
