@@ -23,7 +23,6 @@ const translations = {
     // Navigation
     'nav.meetings': 'Meetings',
     'nav.projects': 'Projects',
-    'nav.team': 'Team',
     
     // Meetings
     'meetings.title': 'Project Meetings',
@@ -97,7 +96,6 @@ const translations = {
     // Navigation
     'nav.meetings': 'Réunions',
     'nav.projects': 'Projets',
-    'nav.team': 'Équipe',
     
     // Meetings
     'meetings.title': 'Réunions de Projet',
@@ -181,7 +179,7 @@ export const useLanguageHook = () => {
   };
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
   return { language, setLanguage, t };

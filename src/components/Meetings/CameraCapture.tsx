@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Video, Square, RotateCcw, Download } from 'lucide-react';
+import { X, Camera, Video, Square, RotateCcw } from 'lucide-react';
 
 interface CameraCaptureProps {
   mode: 'photo' | 'video';
@@ -32,7 +32,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
         video: { 
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'user' // Default to front camera, can be changed to 'environment' for back camera
+          facingMode: 'user'
         },
         audio: mode === 'video'
       });
@@ -66,14 +66,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
 
     if (!context) return;
 
-    // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw the video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert to data URL
     const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedPhoto(photoDataUrl);
   };
@@ -83,7 +80,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
 
     try {
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9' // Use VP9 codec if available
+        mimeType: 'video/webm;codecs=vp9'
       });
 
       mediaRecorderRef.current = mediaRecorder;
@@ -99,7 +96,6 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
         const videoUrl = URL.createObjectURL(blob);
         
-        // Convert to data URL for storage
         const reader = new FileReader();
         reader.onload = () => {
           onCapture(reader.result as string, 'video');
@@ -107,7 +103,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
         reader.readAsDataURL(blob);
       };
 
-      mediaRecorder.start(1000); // Collect data every second
+      mediaRecorder.start(1000);
       setIsRecording(true);
       setRecordingTime(0);
 
@@ -226,9 +222,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
             {/* Camera Switch Button */}
             <button
               onClick={() => {
-                // Toggle between front and back camera
                 stopCamera();
-                // This would require more complex logic to switch cameras
                 startCamera();
               }}
               className="absolute top-4 right-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70"

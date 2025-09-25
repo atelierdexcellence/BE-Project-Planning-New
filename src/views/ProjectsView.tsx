@@ -1,44 +1,21 @@
 import React, { useState } from 'react';
 import { ProjectCard } from '../components/Projects/ProjectCard';
-import { ProjectForm } from '../components/Projects/ProjectForm';
 import { useProjects } from '../hooks/useProjects';
 import { useLanguage } from '../hooks/useLanguage';
 import { Plus, Search, Grid2x2 as Grid, List, FolderOpen } from 'lucide-react';
 import type { Project } from '../types';
 
 export const ProjectsView: React.FC = () => {
-  const { projects, createProject, updateProject } = useProjects();
+  const { projects } = useProjects();
   const { t } = useLanguage();
-  const [showProjectForm, setShowProjectForm] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    project.composition?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleProjectClick = (project: Project) => {
-    setSelectedProject(project);
-    setShowProjectForm(true);
-  };
-
-  const handleSaveProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
-    if (selectedProject) {
-      await updateProject(selectedProject.id, projectData);
-    } else {
-      await createProject(projectData);
-    }
-    setShowProjectForm(false);
-    setSelectedProject(null);
-  };
-
-  const handleCloseForm = () => {
-    setShowProjectForm(false);
-    setSelectedProject(null);
-  };
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -49,17 +26,9 @@ export const ProjectsView: React.FC = () => {
             {t('nav.projects')}
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Manage project information and details • {filteredProjects.length} projects
+            Project information for meeting management • {filteredProjects.length} projects
           </p>
         </div>
-        
-        <button
-          onClick={() => setShowProjectForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Project</span>
-        </button>
       </div>
 
       <div className="flex items-center justify-between">
@@ -106,7 +75,7 @@ export const ProjectsView: React.FC = () => {
             <ProjectCard
               key={project.id}
               project={project}
-              onClick={() => handleProjectClick(project)}
+              onClick={() => {}}
             />
           ))}
         </div>
@@ -129,20 +98,16 @@ export const ProjectsView: React.FC = () => {
                     Start Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    End Date
+                    Delivery Date
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProjects.map((project) => (
-                  <tr
-                    key={project.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleProjectClick(project)}
-                  >
+                  <tr key={project.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                      <div className="text-sm text-gray-500">{project.description}</div>
+                      <div className="text-sm text-gray-500">{project.composition}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {project.client}
@@ -159,10 +124,10 @@ export const ProjectsView: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(project.startDate).toLocaleDateString('fr-FR')}
+                      {new Date(project.key_dates.start_in_be).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(project.endDate).toLocaleDateString('fr-FR')}
+                      {new Date(project.key_dates.previewed_delivery).toLocaleDateString('fr-FR')}
                     </td>
                   </tr>
                 ))}
@@ -175,17 +140,9 @@ export const ProjectsView: React.FC = () => {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500">
-            {searchTerm ? 'No projects found matching your search.' : 'No projects yet.'}
+            {searchTerm ? 'No projects found matching your search.' : 'No projects available.'}
           </div>
         </div>
-      )}
-
-      {showProjectForm && (
-        <ProjectForm
-          project={selectedProject}
-          onSave={handleSaveProject}
-          onCancel={handleCloseForm}
-        />
       )}
     </div>
   );

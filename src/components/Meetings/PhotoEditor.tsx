@@ -98,23 +98,19 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size to maintain aspect ratio
     const maxWidth = 800;
     const maxHeight = 600;
     
     let canvasWidth = image.naturalWidth;
     let canvasHeight = image.naturalHeight;
     
-    // Scale down if image is too large
     if (canvasWidth > maxWidth || canvasHeight > maxHeight) {
       const aspectRatio = canvasWidth / canvasHeight;
       
       if (aspectRatio > 1) {
-        // Landscape
         canvasWidth = Math.min(canvasWidth, maxWidth);
         canvasHeight = canvasWidth / aspectRatio;
       } else {
-        // Portrait
         canvasHeight = Math.min(canvasHeight, maxHeight);
         canvasWidth = canvasHeight * aspectRatio;
       }
@@ -123,10 +119,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    // Draw image maintaining aspect ratio
     ctx.drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
     // Draw all strokes
@@ -149,7 +142,6 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
       ctx.stroke();
     });
 
-    // Reset composite operation
     ctx.globalCompositeOperation = 'source-over';
 
     // Draw shapes
@@ -188,7 +180,6 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 2;
       
-      // Draw text outline for better visibility
       ctx.strokeText(annotation.text, annotation.x, annotation.y);
       ctx.fillText(annotation.text, annotation.x, annotation.y);
     });
@@ -201,13 +192,11 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
     
-    // Draw line
     ctx.beginPath();
     ctx.moveTo(fromX, fromY);
     ctx.lineTo(toX, toY);
     ctx.stroke();
     
-    // Draw arrowhead
     ctx.beginPath();
     ctx.moveTo(toX, toY);
     ctx.lineTo(
@@ -258,7 +247,6 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
     const coords = getCanvasCoordinates(e);
     
     if (isDrawingShape) {
-      // Preview shape while drawing
       redrawCanvas();
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
@@ -387,7 +375,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              {t('photo.save')}
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -643,7 +631,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            Save Photo
+            {t('photo.save')}
           </button>
         </div>
       </div>

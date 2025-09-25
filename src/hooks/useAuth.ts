@@ -21,8 +21,9 @@ export const useAuth = () => {
 // Mock authentication
 const MOCK_USERS: User[] = [
   { id: '1', name: 'Admin User', email: 'admin@company.com', role: 'admin', initials: 'AU' },
-  { id: '2', name: 'Team Member', email: 'team@company.com', role: 'team_member', initials: 'TM' },
-  { id: '3', name: 'Commercial User', email: 'commercial@company.com', role: 'commercial', initials: 'CU' },
+  { id: 'as', name: 'ALEXANDER SMITH', email: 'as@company.com', role: 'team_member', initials: 'AS' },
+  { id: 'mr', name: 'MAËLYS DE LA RUÉE', email: 'mr@company.com', role: 'team_member', initials: 'MR' },
+  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial', initials: 'V' },
 ];
 
 export const useAuthHook = () => {

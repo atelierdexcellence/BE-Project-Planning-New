@@ -5,7 +5,6 @@ import { LoginForm } from './components/Auth/LoginForm';
 import { Header } from './components/Layout/Header';
 import { MeetingsView } from './views/MeetingsView';
 import { ProjectsView } from './views/ProjectsView';
-import { TeamView } from './views/TeamView';
 
 function App() {
   const authHook = useAuthHook();
@@ -36,8 +35,6 @@ function App() {
         return <MeetingsView />;
       case 'projects':
         return <ProjectsView />;
-      case 'team':
-        return <TeamView />;
       default:
         return <MeetingsView />;
     }

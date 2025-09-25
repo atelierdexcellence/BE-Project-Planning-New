@@ -103,74 +103,6 @@ const MOCK_PROJECTS: Project[] = [
     d_level: 9,
     created_at: '2024-01-08T11:00:00Z',
     updated_at: '2024-01-26T12:15:00Z'
-  },
-  {
-    id: '4',
-    name: 'Chaises Salle à Manger',
-    client: 'Résidence Privée',
-    status: 'completed',
-    sub_category: 'seating',
-    color: '#10B981',
-    bc_order_number: 'BC2023-045',
-    image_url: 'https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=400',
-    collection_models: 'Collection Classique',
-    composition: 'Chaises en bois massif',
-    date_of_brief: '2023-12-01',
-    commercial_id: 'virginie',
-    atelier: 'paris',
-    be_team_member_ids: ['nr'],
-    key_dates: {
-      start_in_be: '2023-12-15',
-      wood_foam_launch: '2024-01-05',
-      previewed_delivery: '2024-02-15',
-      last_call: '2024-02-20'
-    },
-    hours_previewed: 60,
-    hours_completed: 58,
-    pieces: 8,
-    size: 'Small',
-    geometry: 'Square',
-    target_cost_constraint: 'Moderate',
-    modelling: '2D',
-    outsourced_suppliers: 0,
-    d_level_override: null,
-    d_level: 4,
-    created_at: '2023-12-01T14:00:00Z',
-    updated_at: '2024-02-20T10:30:00Z'
-  },
-  {
-    id: '5',
-    name: 'Table Conférence Ovale',
-    client: 'Cabinet d\'Avocats',
-    status: 'planning',
-    sub_category: 'tables',
-    color: '#8B5CF6',
-    bc_order_number: 'BC2024-004',
-    image_url: 'https://images.pexels.com/photos/1571471/pexels-photo-1571471.jpeg?auto=compress&cs=tinysrgb&w=400',
-    collection_models: 'Collection Professionnelle',
-    composition: 'Table ovale en noyer',
-    date_of_brief: '2024-01-25',
-    commercial_id: 'virginie',
-    atelier: 'lyon',
-    be_team_member_ids: ['as', 'aq'],
-    key_dates: {
-      start_in_be: '2024-02-10',
-      wood_foam_launch: '2024-02-25',
-      previewed_delivery: '2024-04-20',
-      last_call: '2024-04-25'
-    },
-    hours_previewed: 100,
-    hours_completed: 0,
-    pieces: 1,
-    size: 'Large',
-    geometry: 'Curved',
-    target_cost_constraint: 'High',
-    modelling: '3D',
-    outsourced_suppliers: 1,
-    d_level_override: 8,
-    d_level: 6,
-    created_at: '2024-01-25T16:00:00Z',
-    updated_at: '2024-01-25T16:00:00Z'
   }
 ];
 
@@ -185,6 +117,7 @@ const MOCK_MEETINGS: Meeting[] = [
     photos: [],
     voice_notes: [],
     author_id: 'as',
+    author_name: 'ALEXANDER SMITH',
     created_at: '2024-01-20T10:00:00Z',
     updated_at: '2024-01-20T10:00:00Z'
   },
@@ -198,6 +131,7 @@ const MOCK_MEETINGS: Meeting[] = [
     photos: [],
     voice_notes: [],
     author_id: 'aq',
+    author_name: 'ALEXIA QUENTIN',
     created_at: '2024-01-25T14:00:00Z',
     updated_at: '2024-01-25T14:00:00Z'
   }
@@ -206,23 +140,6 @@ const MOCK_MEETINGS: Meeting[] = [
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
-
-  const updateProject = async (id: string, updates: Partial<Project>) => {
-    setProjects(prev => prev.map(p => 
-      p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
-    ));
-  };
-
-  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
-    const newProject: Project = {
-      ...projectData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    setProjects(prev => [...prev, newProject]);
-    return newProject;
-  };
 
   const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
     const newMeeting: Meeting = {
@@ -248,8 +165,6 @@ export const useProjects = () => {
   return {
     projects,
     meetings,
-    updateProject,
-    createProject,
     createMeeting,
     updateMeeting,
     deleteMeeting

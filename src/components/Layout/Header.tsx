@@ -1,6 +1,7 @@
 import React from 'react';
-import { LogOut, MessageSquare, Calendar, Users } from 'lucide-react';
+import { LogOut, MessageSquare, FolderOpen, Globe } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
   activeView: string;
@@ -9,11 +10,11 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ activeView, onViewChange }) => {
   const { user, logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
 
   const menuItems = [
-    { id: 'meetings', label: 'Meetings', icon: MessageSquare },
-    { id: 'projects', label: 'Projects', icon: Calendar },
-    { id: 'team', label: 'Team', icon: Users }
+    { id: 'meetings', label: t('nav.meetings'), icon: MessageSquare },
+    { id: 'projects', label: t('nav.projects'), icon: FolderOpen }
   ];
 
   return (
@@ -52,6 +53,14 @@ export const Header: React.FC<HeaderProps> = ({ activeView, onViewChange }) => {
         </div>
 
         <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+          >
+            <Globe className="h-4 w-4" />
+            <span className="text-sm font-medium">{language.toUpperCase()}</span>
+          </button>
+
           <div className="flex items-center space-x-3">
             <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
               {user?.initials}

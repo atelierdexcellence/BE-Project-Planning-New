@@ -42,10 +42,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   // Voice-to-text state
   const [voiceEntries, setVoiceEntries] = useState<string[]>([]);
   
-  // Translation state
-  const [originalNotes, setOriginalNotes] = useState<string>('');
-  const [originalLanguage, setOriginalLanguage] = useState<Language>(language);
-  
   // Photo editing state
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string; caption?: string } | null>(null);
@@ -87,20 +83,16 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       recognitionInstance.onresult = (event: any) => {
         let finalTranscript = '';
         
-        // Only process results from the last result index we haven't seen
         for (let i = Math.max(event.resultIndex, lastResultIndex.current); i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
           }
         }
         
-        // Update the last result index
         lastResultIndex.current = event.results.length;
         
         if (finalTranscript.trim()) {
-          console.log('Final transcript received:', finalTranscript);
           const trimmedTranscript = finalTranscript.trim();
-          // Only process if this is different from the last processed transcript
           if (trimmedTranscript && trimmedTranscript !== lastProcessedTranscript.current) {
             lastProcessedTranscript.current = trimmedTranscript;
             handleVoiceTranscript(trimmedTranscript);
@@ -110,16 +102,12 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
       recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
-        console.log('Speech recognition error details:', event);
-        
-        // Only set listening to false if it's a critical error
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
           setIsListening(false);
         }
       };
 
       recognitionInstance.onstart = () => {
-        console.log('Speech recognition started');
         isStoppingIntentionally.current = false;
         lastResultIndex.current = 0;
         lastProcessedTranscript.current = '';
@@ -127,12 +115,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       };
 
       recognitionInstance.onend = () => {
-        console.log('Speech recognition ended');
         setIsListening(false);
         
-        // If recognition ended unexpectedly and we're not stopping intentionally, restart it
         if (!isStoppingIntentionally.current && isListening) {
-          console.log('Speech recognition ended unexpectedly, attempting to restart...');
           setTimeout(() => {
             if (!isStoppingIntentionally.current) {
               try {
@@ -141,16 +126,14 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                 console.error('Failed to restart speech recognition:', error);
               }
             }
-          }, 1000); // 1 second delay before restart
+          }, 1000);
         }
         
-        // Reset the flag after handling
         isStoppingIntentionally.current = false;
       };
 
       setRecognition(recognitionInstance);
       
-      // Cleanup function
       return () => {
         if (recognitionInstance) {
           isStoppingIntentionally.current = true;
@@ -161,8 +144,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           }
         }
       };
-    } else {
-      console.warn('Speech recognition not supported in this browser');
     }
   }, [language]);
 
@@ -188,7 +169,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          // Open photo editor for new uploads
           setEditingPhoto({
             id: Date.now().toString() + Math.random(),
             url: event.target?.result as string,
@@ -202,48 +182,33 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   };
 
   const handleVoiceTranscript = (transcript: string) => {
-    // Check for voice command to separate notes (supports both languages)
     const voiceCommandFr = 'nouveau note';
     const voiceCommandEn = 'new note';
     const voiceCommand = language === 'en' ? voiceCommandEn : voiceCommandFr;
-    
-    // Also check for the other language command for flexibility
     const altCommand = language === 'en' ? voiceCommandFr : voiceCommandEn;
     const parts = transcript.toLowerCase().split(voiceCommand);
     const altParts = transcript.toLowerCase().split(altCommand);
     
-    // Use whichever command was found (prioritize current language)
     const finalParts = parts.length > 1 ? parts : altParts;
     
     if (finalParts.length > 1) {
-      // Multiple parts separated by voice command
       const newEntries = finalParts
         .map(part => part.trim())
-        .filter(part => part.length > 0); // Remove empty parts
+        .filter(part => part.length > 0);
       
       setVoiceEntries(prev => [...prev, ...newEntries]);
     } else {
-      // Single entry
       const newEntry = transcript.trim();
       if (newEntry.length > 0) {
         setVoiceEntries(prev => [...prev, newEntry]);
       }
     }
-    
-    // Update notes will be handled by useEffect watching voiceEntries
   };
 
-  // Update notes when voice entries change
   React.useEffect(() => {
     if (voiceEntries.length > 0) {
       const currentNotes = formData.notes;
       const voiceSection = voiceEntries.map(entry => `• ${entry}`).join('\n\n');
-      
-      // Store original notes and language for translation
-      if (!originalNotes) {
-        setOriginalNotes(currentNotes ? `${currentNotes}\n\n\n${voiceSection}` : voiceSection);
-        setOriginalLanguage(language);
-      }
       
       setFormData(prev => ({
         ...prev,
@@ -252,16 +217,12 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           : voiceSection
       }));
     }
-  }, [voiceEntries, originalNotes, language]);
+  }, [voiceEntries]);
 
-  // Clear voice entries function
   const clearVoiceEntries = () => {
     setVoiceEntries([]);
-    setOriginalNotes('');
-    // Reset tracking when clearing entries
     lastResultIndex.current = 0;
     lastProcessedTranscript.current = '';
-    // Remove voice entries from notes
     const notesWithoutVoice = formData.notes.split('\n\n').filter(section => 
       !section.startsWith('• ')
     ).join('\n\n');
@@ -283,7 +244,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     const isNewPhoto = !formData.photos.find(p => p.id === editingPhoto.id);
     
     if (isNewPhoto) {
-      // Add new photo
       const newPhoto: MeetingPhoto = {
         id: editingPhoto.id,
         url: editedImageUrl,
@@ -295,7 +255,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
         photos: [...prev.photos, newPhoto]
       }));
     } else {
-      // Update existing photo
       setFormData(prev => ({
         ...prev,
         photos: prev.photos.map(photo =>
@@ -317,7 +276,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
   const handleCameraCapture = (mediaUrl: string, type: 'photo' | 'video') => {
     if (type === 'photo') {
-      // Open photo editor for captured photos
       setEditingPhoto({
         id: Date.now().toString() + Math.random(),
         url: mediaUrl,
@@ -325,7 +283,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       });
       setShowPhotoEditor(true);
     } else {
-      // For videos, add directly to photos array (treating as media)
       const newPhoto: MeetingPhoto = {
         id: Date.now().toString() + Math.random(),
         url: mediaUrl,
@@ -363,13 +320,9 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const startVoiceToText = () => {
     if (recognition && !isListening) {
       try {
-        // Update recognition language
         recognition.lang = language === 'en' ? 'en-US' : 'fr-FR';
-        // Reset tracking when starting new session
         lastResultIndex.current = 0;
         lastProcessedTranscript.current = '';
-        console.log('Starting voice recognition...');
-        console.log('Current notes before starting:', formData.notes);
         recognition.start();
       } catch (error) {
         console.error('Error starting voice recognition:', error);
@@ -381,10 +334,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     if (recognition && isListening) {
       try {
         isStoppingIntentionally.current = true;
-        // Reset tracking when stopping
         lastResultIndex.current = 0;
         lastProcessedTranscript.current = '';
-        console.log('Stopping voice recognition...');
         recognition.stop();
       } catch (error) {
         console.error('Error stopping voice recognition:', error);
@@ -458,32 +409,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
     onSave(meetingData);
   };
-
-  // Simple translation function (in a real app, you'd use a proper translation service)
-  const translateText = async (text: string, fromLang: Language, toLang: Language): Promise<string> => {
-    // This is a mock translation - in production, you'd use Google Translate API, DeepL, etc.
-    if (fromLang === toLang) return text;
-    
-    // For demo purposes, we'll just add a translation indicator
-    const indicator = toLang === 'en' ? '[Translated to English]' : '[Traduit en Français]';
-    return `${indicator}\n${text}`;
-  };
-
-  // Handle language change and translate notes if needed
-  React.useEffect(() => {
-    const translateNotes = async () => {
-      if (originalNotes && originalLanguage !== language && formData.notes) {
-        try {
-          const translatedNotes = await translateText(originalNotes, originalLanguage, language);
-          setFormData(prev => ({ ...prev, notes: translatedNotes }));
-        } catch (error) {
-          console.error('Translation failed:', error);
-        }
-      }
-    };
-
-    translateNotes();
-  }, [language, originalNotes, originalLanguage]);
 
   const formatRecordingTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -702,10 +627,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   {recognition && (
                     <div className="text-sm text-blue-600 mb-2 flex flex-col space-y-1">
                       <div>
-                        💡 Say "{language === 'en' ? 'New Note' : 'Nouveau Note'}" to create separate bullet points in the same recording session
+                        💡 Say "{language === 'en' ? 'New Note' : 'Nouveau Note'}" to create separate bullet points
                       </div>
                       <div className="text-xs">
-                        🌐 Voice recognition: {language === 'en' ? 'English' : 'Français'} | Both "New Note" and "Nouveau Note" commands work
+                        🌐 Voice recognition: {language === 'en' ? 'English' : 'Français'}
                       </div>
                     </div>
                   )}

@@ -34,7 +34,7 @@ export const LoginForm: React.FC = () => {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
-            Sign in to Meetings
+            Meetings Management
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Project Meeting Management System
@@ -51,11 +51,11 @@ export const LoginForm: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-blue-700">Team Member:</span>
-              <span className="font-mono text-blue-800">team@company.com / password</span>
+              <span className="font-mono text-blue-800">as@company.com / password</span>
             </div>
             <div className="flex justify-between">
               <span className="text-blue-700">Commercial:</span>
-              <span className="font-mono text-blue-800">commercial@company.com / password</span>
+              <span className="font-mono text-blue-800">virginie@company.com / password</span>
             </div>
           </div>
         </div>

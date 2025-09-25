@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Calendar, Users, Camera, Mic, FileText, Eye, CreditCard as Edit, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Search, Calendar, Users, Camera, Mic, FileText, Eye, Edit, Trash2, MessageSquare } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
