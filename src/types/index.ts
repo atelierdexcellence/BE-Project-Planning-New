@@ -60,3 +60,49 @@ export const TEAM_MEMBERS: User[] = [
   { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial', initials: 'V' },
   { id: 'admin', name: 'Admin User', email: 'admin@company.com', role: 'admin', initials: 'AU' }
 ];
+
+// Derived team member arrays
+export const BE_TEAM_MEMBERS = TEAM_MEMBERS.filter(member => member.role === 'team_member');
+export const COMMERCIAL_USERS = TEAM_MEMBERS.filter(member => member.role === 'commercial');
+
+// Task categories
+export interface TaskCategory {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export const TASK_CATEGORIES: TaskCategory[] = [
+  { id: 'design', name: 'Design', color: '#3B82F6' },
+  { id: 'modeling', name: 'Modeling', color: '#10B981' },
+  { id: 'production', name: 'Production', color: '#F59E0B' },
+  { id: 'review', name: 'Review', color: '#EF4444' }
+];
+
+// Ateliers
+export interface Atelier {
+  id: string;
+  name: string;
+  location: string;
+}
+
+export const ATELIERS: Atelier[] = [
+  { id: 'paris', name: 'Atelier Paris', location: 'Paris, France' },
+  { id: 'lyon', name: 'Atelier Lyon', location: 'Lyon, France' },
+  { id: 'marseille', name: 'Atelier Marseille', location: 'Marseille, France' }
+];
+
+// Project sub-categories
+export interface ProjectSubCategory {
+  id: string;
+  name: string;
+  category: string;
+}
+
+export const PROJECT_SUB_CATEGORIES: ProjectSubCategory[] = [
+  { id: 'seating', name: 'Seating', category: 'furniture' },
+  { id: 'tables', name: 'Tables', category: 'furniture' },
+  { id: 'storage', name: 'Storage', category: 'furniture' },
+  { id: 'lighting', name: 'Lighting', category: 'fixtures' },
+  { id: 'custom', name: 'Custom Work', category: 'special' }
+];
