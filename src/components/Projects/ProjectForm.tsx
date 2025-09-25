@@ -100,9 +100,54 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate that at least one BE team member is selected
+    // Validate required fields
+    if (!formData.name.trim()) {
+      alert('Project name is required');
+      return;
+    }
+    
+    if (!formData.client.trim()) {
+      alert('Client name is required');
+      return;
+    }
+    
+    if (!formData.date_of_brief) {
+      alert('Date of brief is required');
+      return;
+    }
+    
+    if (!formData.commercial_id) {
+      alert('Please select a commercial/chargé d\'affaires');
+      return;
+    }
+    
     if (formData.be_team_member_ids.length === 0) {
       alert('Please select at least one BE team member');
+      return;
+    }
+    
+    if (!formData.key_dates.start_in_be) {
+      alert('Start in BE date is required');
+      return;
+    }
+    
+    if (!formData.key_dates.wood_foam_launch) {
+      alert('Wood/Foam launch date is required');
+      return;
+    }
+    
+    if (!formData.key_dates.previewed_delivery) {
+      alert('Previewed delivery date is required');
+      return;
+    }
+    
+    if (!formData.key_dates.last_call) {
+      alert('Last call date is required');
+      return;
+    }
+    
+    if (formData.hours_previewed <= 0) {
+      alert('Hours previewed must be greater than 0');
       return;
     }
     
