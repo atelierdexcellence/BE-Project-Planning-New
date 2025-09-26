@@ -2,70 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iOS Safari specific fixes */
-@supports (-webkit-touch-callout: none) {
-  .ios-safe-area {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #6B7280 #E5E7EB;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #E5E7EB;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #6B7280;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
+
+/* Animation for voice recording */
+@keyframes pulse-red {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
-/* Prevent zoom on input focus for iOS */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  select,
-  textarea,
-  input[type="text"],
-  input[type="password"],
-  input[type="datetime"],
-  input[type="datetime-local"],
-  input[type="date"],
-  input[type="month"],
-  input[type="time"],
-  input[type="week"],
-  input[type="number"],
-  input[type="email"],
-  input[type="url"],
-  input[type="search"],
-  input[type="tel"],
-  input[type="color"] {
-    font-size: 16px;
-  }
+.animate-pulse-red {
+  animation: pulse-red 1s ease-in-out infinite;
 }
 
-/* Touch-friendly buttons */
-@media (max-width: 768px) {
-  button {
-    min-height: 44px;
-    min-width: 44px;
-  }
+/* Photo editor styles */
+.photo-editor-canvas {
+  cursor: crosshair;
 }
 
-/* Force scrollbars to always be visible */
-.scrollbar-always-visible {
-  scrollbar-width: auto !important;
-  scrollbar-color: #6B7280 #E5E7EB !important;
+.photo-editor-canvas.eraser {
+  cursor: grab;
 }
 
-.scrollbar-always-visible::-webkit-scrollbar {
-  width: 12px !important;
-  height: 12px !important;
-}
-
-.scrollbar-always-visible::-webkit-scrollbar-track {
-  background: #E5E7EB !important;
-  border-radius: 6px !important;
-}
-
-.scrollbar-always-visible::-webkit-scrollbar-thumb {
-  background: #6B7280 !important;
-  border-radius: 6px !important;
-  border: 2px solid #E5E7EB !important;
-}
-
-.scrollbar-always-visible::-webkit-scrollbar-thumb:hover {
-  background: #4B5563 !important;
-}
-
-.scrollbar-always-visible::-webkit-scrollbar-corner {
-  background: #E5E7EB !important;
+.photo-editor-canvas.text {
+  cursor: text;
 }
