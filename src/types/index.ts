@@ -1,14 +1,103 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'team_member' | 'commercial' | 'atelier';
+  initials: string;
+}
+
 export interface Project {
   id: string;
   name: string;
+  status: string; // Now stores completion percentage or status text
+  sub_category: 'dev_in_progress' | 'prod_with_be_tracking' | 'updates_nomenclature' | 'waiting_order' | 'completed' | 'on_hold';
+  color: string;
+  bc_order_number?: string;
+  image_url?: string;
   client: string;
-  status: 'planning' | 'in_progress' | 'at_risk' | 'overdue' | 'completed' | 'on_hold';
-  description?: string;
-  startDate: string;
-  endDate: string;
-  teamMembers: string[];
+  collection_models: string;
+  composition: string;
+  date_of_brief: string;
+  commercial_id: string;
+  atelier: 'siegeair' | 'maison_fey_vannes' | 'maison_fey_paris' | 'ville' | 'mussy' | 'ae';
+  be_team_member_ids: string[];
+  key_dates: {
+    start_in_be: string;
+    wood_foam_launch: string;
+    previewed_delivery: string;
+    last_call: string;
+  };
+  hours_previewed: number;
+  hours_completed: number;
+  notes: ProjectNote[];
   created_at: string;
   updated_at: string;
+}
+
+export interface Task {
+  id: string;
+  project_id: string;
+  name: string;
+  category: TaskCategory;
+  phase: 'pre_prod' | 'prod';
+  start_date: string;
+  end_date: string;
+  assignee_id: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked';
+  progress: number;
+  dependencies: string[];
+  order: number;
+  enabled: boolean;
+}
+
+export type TaskCategory = 
+  | 'reunion_lancement'
+  | 'be_plans_validation'
+  | 'be_conception_3d'
+  | 'be_prepa_fichiers'
+  | 'commande_mousse'
+  | 'reception_mousse'
+  | 'decoupe_bois_montage'
+  | 'reception_structure_bois'
+  | 'mise_en_mousse'
+  | 'reception_tissu'
+  | 'confection'
+  | 'tapisserie'
+  | 'rdv_confort_validation'
+  | 'compte_rendu'
+  | 'modifs_bois_mousse'
+  | 'nomenclature_bc'
+  | 'general';
+
+export const TASK_CATEGORIES: { id: TaskCategory; phase: 'pre_prod' | 'prod' }[] = [
+  { id: 'reunion_lancement', phase: 'pre_prod' },
+  { id: 'be_plans_validation', phase: 'pre_prod' },
+  { id: 'be_conception_3d', phase: 'pre_prod' },
+  { id: 'be_prepa_fichiers', phase: 'pre_prod' },
+  { id: 'commande_mousse', phase: 'prod' },
+  { id: 'reception_mousse', phase: 'prod' },
+  { id: 'decoupe_bois_montage', phase: 'prod' },
+  { id: 'reception_structure_bois', phase: 'prod' },
+  { id: 'mise_en_mousse', phase: 'prod' },
+  { id: 'reception_tissu', phase: 'prod' },
+  { id: 'confection', phase: 'prod' },
+  { id: 'tapisserie', phase: 'prod' },
+  { id: 'rdv_confort_validation', phase: 'prod' },
+  { id: 'compte_rendu', phase: 'prod' },
+  { id: 'modifs_bois_mousse', phase: 'prod' },
+  { id: 'nomenclature_bc', phase: 'prod' },
+  { id: 'general', phase: 'pre_prod' }
+];
+
+export interface ProjectNote {
+  id: string;
+  project_id: string;
+  content: string;
+  author_id: string;
+  author_name: string;
+  created_at: string;
+  type: 'update' | 'status_change' | 'alert' | 'general';
+  meeting_id?: string;
 }
 
 export interface Meeting {
@@ -40,69 +129,64 @@ export interface VoiceNote {
   timestamp: string;
 }
 
-export interface User {
+export interface TimeEntry {
   id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'team_member' | 'commercial' | 'atelier';
-  initials: string;
+  project_id: string;
+  user_id: string;
+  user_name: string;
+  hours: number;
+  date: string;
+  description?: string;
+  task_category?: TaskCategory;
+  percentage_completed?: number;
+  created_at: string;
+  updated_at: string;
 }
 
-// Team members data
-export const TEAM_MEMBERS: User[] = [
-  { id: 'as', name: 'ALEXANDER SMITH', email: 'as@company.com', role: 'team_member', initials: 'AS' },
-  { id: 'mr', name: 'MAËLYS DE LA RUÉE', email: 'mr@company.com', role: 'team_member', initials: 'MR' },
-  { id: 'aq', name: 'ALEXIA QUENTIN', email: 'aq@company.com', role: 'team_member', initials: 'AQ' },
-  { id: 'sr', name: 'STEPHANIE DE RORTHAYS', email: 'sr@company.com', role: 'team_member', initials: 'SR' },
-  { id: 'ld', name: 'LITESH DHUNNOO', email: 'ld@company.com', role: 'team_member', initials: 'LD' },
-  { id: 'ps', name: 'PASCALINE SOLEILHAC', email: 'ps@company.com', role: 'team_member', initials: 'PS' },
-  { id: 'nr', name: 'NICHOLAS RASCO', email: 'nr@company.com', role: 'team_member', initials: 'NR' },
-  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial', initials: 'V' },
-  { id: 'admin', name: 'Admin User', email: 'admin@company.com', role: 'admin', initials: 'AU' }
-];
-
-// Derived team member arrays
-export const BE_TEAM_MEMBERS = TEAM_MEMBERS.filter(member => member.role === 'team_member');
-export const COMMERCIAL_USERS = TEAM_MEMBERS.filter(member => member.role === 'commercial');
-
-// Task categories
-export interface TaskCategory {
+export interface Notification {
   id: string;
-  name: string;
-  color: string;
+  user_id: string;
+  project_id: string;
+  type: 'overdue_start' | 'upcoming_deadline' | 'status_update' | 'spec_change';
+  message: string;
+  read: boolean;
+  created_at: string;
 }
 
-export const TASK_CATEGORIES: TaskCategory[] = [
-  { id: 'design', name: 'Design', color: '#3B82F6' },
-  { id: 'modeling', name: 'Modeling', color: '#10B981' },
-  { id: 'production', name: 'Production', color: '#F59E0B' },
-  { id: 'review', name: 'Review', color: '#EF4444' }
+export const COMMERCIAL_USERS = [
+  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com' },
+  { id: 'nicholas', name: 'Nicholas', email: 'nicholas@company.com' },
+  { id: 'aurelie', name: 'Aurelie', email: 'aurelie@company.com' },
+  { id: 'paul', name: 'Paul', email: 'paul@company.com' },
+  { id: 'alain', name: 'Alain', email: 'alain@company.com' },
+  { id: 'victoria', name: 'Victoria', email: 'victoria@company.com' },
+  { id: 'anne-victorine', name: 'Anne-Victorine', email: 'anne-victorine@company.com' },
 ];
 
-// Ateliers
-export interface Atelier {
-  id: string;
-  name: string;
-  location: string;
-}
-
-export const ATELIERS: Atelier[] = [
-  { id: 'paris', name: 'Atelier Paris', location: 'Paris, France' },
-  { id: 'lyon', name: 'Atelier Lyon', location: 'Lyon, France' },
-  { id: 'marseille', name: 'Atelier Marseille', location: 'Marseille, France' }
+export const BE_TEAM_MEMBERS = [
+  { id: 'as', name: 'ALEXANDER SMITH (AS)', email: 'as@company.com' },
+  { id: 'mr', name: 'MAËLYS DE LA RUÉE (MR)', email: 'mr@company.com' },
+  { id: 'aq', name: 'ALEXIA QUENTIN (AQ)', email: 'aq@company.com' },
+  { id: 'sr', name: 'STEPHANIE DE RORTHAYS (SR)', email: 'sr@company.com' },
+  { id: 'ld', name: 'LITESH DHUNNOO (LD)', email: 'ld@company.com' },
+  { id: 'ps', name: 'PASCALINE SOLEILHAC (PS)', email: 'ps@company.com' },
+  { id: 'nr', name: 'NICHOLAS RASCO (NR)', email: 'nr@company.com' },
 ];
 
-// Project sub-categories
-export interface ProjectSubCategory {
-  id: string;
-  name: string;
-  category: string;
-}
-
-export const PROJECT_SUB_CATEGORIES: ProjectSubCategory[] = [
-  { id: 'seating', name: 'Seating', category: 'furniture' },
-  { id: 'tables', name: 'Tables', category: 'furniture' },
-  { id: 'storage', name: 'Storage', category: 'furniture' },
-  { id: 'lighting', name: 'Lighting', category: 'fixtures' },
-  { id: 'custom', name: 'Custom Work', category: 'special' }
+export const ATELIERS = [
+  { id: 'siegeair', name: 'Siegeair' },
+  { id: 'maison_fey_vannes', name: 'Maison Fey Vannes' },
+  { id: 'maison_fey_paris', name: 'Maison Fey Paris' },
+  { id: 'ville', name: 'Ville' },
+  { id: 'mussy', name: 'Mussy' },
+  { id: 'ae', name: 'AE' },
 ];
+
+export const PROJECT_SUB_CATEGORIES = [
+  { id: 'dev_in_progress', name: 'Projets en cours de développement', priority: 1 },
+  { id: 'prod_with_be_tracking', name: 'Projets lancés en prod avec suivi BE', priority: 2 },
+  { id: 'updates_nomenclature', name: 'Mises à jour à faire / Nomenclature édition à faire + surveiller vie série', priority: 3 },
+  { id: 'waiting_order', name: 'Projets en attente de commande', priority: 4 },
+  { id: 'completed', name: 'Projets Terminés', priority: 5 },
+  { id: 'on_hold', name: 'Projets en Attente', priority: 6 }
+] as const;

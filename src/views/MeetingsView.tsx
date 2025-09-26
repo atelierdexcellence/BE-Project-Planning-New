@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Calendar, Users, Camera, Mic, FileText, Eye, CreditCard as Edit, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Search, Calendar, Users, Camera, Mic, FileText, Eye, Edit, Trash2, MessageSquare } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
@@ -17,15 +17,26 @@ export const MeetingsView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [projectFilter, setProjectFilter] = useState<string>('all');
 
+  // Filter meetings based on user's assigned projects
+  const userProjects = useMemo(() => {
+    if (!user) return [];
+    return projects.filter(project => 
+      project.be_team_member_ids.includes(user.id) ||
+      project.commercial_id === user.id ||
+      user.role === 'admin'
+    );
+  }, [projects, user]);
+
   const filteredMeetings = useMemo(() => {
     return meetings.filter(meeting => {
       const matchesSearch = meeting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            meeting.notes.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesProject = projectFilter === 'all' || meeting.project_id === projectFilter;
+      const hasAccess = userProjects.some(p => p.id === meeting.project_id);
       
-      return matchesSearch && matchesProject;
+      return matchesSearch && matchesProject && hasAccess;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [meetings, searchTerm, projectFilter]);
+  }, [meetings, searchTerm, projectFilter, userProjects]);
 
   const handleCreateMeeting = () => {
     setSelectedMeeting(null);
@@ -117,7 +128,7 @@ export const MeetingsView: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
         >
           <option value="all">{t('meetings.all_projects')}</option>
-          {projects.map(project => (
+          {userProjects.map(project => (
             <option key={project.id} value={project.id}>
               {project.name} - {project.client}
             </option>
@@ -218,7 +229,7 @@ export const MeetingsView: React.FC = () => {
       {showMeetingForm && (
         <MeetingForm
           meeting={selectedMeeting}
-          projects={projects}
+          projects={userProjects}
           onSave={handleSaveMeeting}
           onCancel={() => {
             setShowMeetingForm(false);
