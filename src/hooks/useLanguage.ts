@@ -545,8 +545,8 @@ const translations = {
 
 export const useLanguageHook = () => {
   const [language, setLanguageState] = useState<Language>(() => {
-    // Get saved language from localStorage or default to 'fr'
-    const saved = localStorage.getItem('language');
+    // Get saved language from localStorage or user's default language preference, fallback to 'fr'
+    const saved = localStorage.getItem('language') || localStorage.getItem('defaultLanguage');
     return (saved === 'en' || saved === 'fr') ? saved : 'fr';
   });
 
@@ -555,9 +555,17 @@ export const useLanguageHook = () => {
     localStorage.setItem('language', lang);
   };
 
+  const setDefaultLanguage = (lang: Language) => {
+    localStorage.setItem('defaultLanguage', lang);
+    // If no current language override is set, apply the default immediately
+    if (!localStorage.getItem('language')) {
+      setLanguage(lang);
+    }
+  };
+
   const t = (key: string): string => {
     return translations[language][key] || key;
   };
 
-  return { language, setLanguage, t };
+  return { language, setLanguage, setDefaultLanguage, t };
 };

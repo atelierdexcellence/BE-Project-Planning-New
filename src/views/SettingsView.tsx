@@ -12,7 +12,7 @@ interface SettingsSection {
 
 export const SettingsView: React.FC = () => {
   const { user } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, setDefaultLanguage, t } = useLanguage();
   const [activeSection, setActiveSection] = useState('profile');
   const [settings, setSettings] = useState({
     // Profile settings
@@ -100,7 +100,7 @@ export const SettingsView: React.FC = () => {
 
     // Apply language change immediately
     if (section === 'appearance' && key === 'language') {
-      setLanguage(value);
+      setDefaultLanguage(value);
     }
   };
 
@@ -345,7 +345,7 @@ export const SettingsView: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Language
+            Default Language
           </label>
           <select
             value={settings.appearance.language}
@@ -355,6 +355,9 @@ export const SettingsView: React.FC = () => {
             <option value="fr">Français</option>
             <option value="en">English</option>
           </select>
+          <p className="text-xs text-gray-500 mt-1">
+            This will be your default language when you log in. You can still change it anytime using the language toggle in the header.
+          </p>
         </div>
 
         <div>
