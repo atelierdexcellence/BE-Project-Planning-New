@@ -18,7 +18,7 @@ export const useLanguage = () => {
   return context;
 };
 
-const translations = {
+const translations: Record<Language, Record<string, string>> = {
   en: {
     // Navigation
     'nav.overview': 'Team Overview',
@@ -224,9 +224,9 @@ const translations = {
     'timetracking.enable_notifications': 'Enable Daily Reminders',
     'timetracking.notification_description': 'Get reminded at 5:30 PM each day to log your hours',
     
-    // Meetings
-    'meetings.title': 'Meetings',
-    'meetings.subtitle': 'Manage project meetings and notes',
+  // Meetings
+  'meetings.title': 'Meetings',
+  'meetings.subtitle': 'Manage project meetings and notes',
     'meetings.new_meeting': 'New Meeting',
     'meetings.edit_meeting': 'Edit Meeting',
     'meetings.search': 'Search meetings...',
@@ -236,8 +236,8 @@ const translations = {
     'meetings.project': 'Project',
     'meetings.select_project': 'Select a project',
     'meetings.date': 'Date',
-    'meetings.title': 'Meeting Title',
-    'meetings.title_placeholder': 'Enter meeting title...',
+  'meetings.title_field': 'Meeting Title',
+  'meetings.title_placeholder': 'Enter meeting title...',
     'meetings.attendees': 'Attendees',
     'meetings.people': 'people',
     'meetings.photos': 'Photos',
@@ -485,9 +485,9 @@ const translations = {
     'timetracking.enable_notifications': 'Activer les Rappels Quotidiens',
     'timetracking.notification_description': 'Recevez un rappel à 17h30 chaque jour pour enregistrer vos heures',
     
-    // Meetings
-    'meetings.title': 'Réunions',
-    'meetings.subtitle': 'Gérer les réunions de projet et les notes',
+  // Meetings
+  'meetings.title': 'Réunions',
+  'meetings.subtitle': 'Gérer les réunions de projet et les notes',
     'meetings.new_meeting': 'Nouvelle Réunion',
     'meetings.edit_meeting': 'Modifier la Réunion',
     'meetings.search': 'Rechercher des réunions...',
@@ -497,8 +497,8 @@ const translations = {
     'meetings.project': 'Projet',
     'meetings.select_project': 'Sélectionner un projet',
     'meetings.date': 'Date',
-    'meetings.title': 'Titre de la Réunion',
-    'meetings.title_placeholder': 'Entrez le titre de la réunion...',
+  'meetings.title_field': 'Titre de la Réunion',
+  'meetings.title_placeholder': 'Entrez le titre de la réunion...',
     'meetings.attendees': 'Participants',
     'meetings.people': 'personnes',
     'meetings.photos': 'Photos',
@@ -545,8 +545,8 @@ const translations = {
 
 export const useLanguageHook = () => {
   const [language, setLanguageState] = useState<Language>(() => {
-    // Get saved language from localStorage or user's default language preference, fallback to 'fr'
-    const saved = localStorage.getItem('language') || localStorage.getItem('defaultLanguage');
+    // Get saved language from localStorage or default to 'fr'
+    const saved = localStorage.getItem('language');
     return (saved === 'en' || saved === 'fr') ? saved : 'fr';
   });
 
@@ -555,17 +555,9 @@ export const useLanguageHook = () => {
     localStorage.setItem('language', lang);
   };
 
-  const setDefaultLanguage = (lang: Language) => {
-    localStorage.setItem('defaultLanguage', lang);
-    // If no current language override is set, apply the default immediately
-    if (!localStorage.getItem('language')) {
-      setLanguage(lang);
-    }
-  };
-
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language][key] ?? key;
   };
 
-  return { language, setLanguage, setDefaultLanguage, t };
+  return { language, setLanguage, t };
 };

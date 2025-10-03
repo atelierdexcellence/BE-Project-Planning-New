@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Video, Square, RotateCcw, Download } from 'lucide-react';
+import { X, Camera, Video, Square, RotateCcw } from 'lucide-react';
 
 interface CameraCaptureProps {
   mode: 'photo' | 'video';
@@ -17,7 +17,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ mode, onCapture, o
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const recordingInterval = useRef<NodeJS.Timeout>();
+  const recordingInterval = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     startCamera();

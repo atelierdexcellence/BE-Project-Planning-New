@@ -1,88 +1,108 @@
-import { useState, useCallback } from 'react';
-import type { Project, Task, TimeEntry, Meeting, ProjectNote } from '../types';
+import { useState } from 'react';
+import type { Project, Meeting, Task, TimeEntry, ProjectNote } from '../types';
 
-// Mock data - replace with real API calls
 const MOCK_PROJECTS: Project[] = [
   {
     id: '1',
-    name: 'Project Alpha',
-    status: '65%',
-    sub_category: 'dev_in_progress',
+    name: 'Canapé Modulaire Premium',
+    client: 'Hôtel Le Bristol',
+    status: 'in_progress',
+    sub_category: 'seating',
     color: '#3B82F6',
-    bc_order_number: 'BC001',
-    image_url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client A',
-    collection_models: 'Collection Spring 2024',
-    composition: 'Cotton blend',
+    bc_order_number: 'BC2024-001',
+    image_url: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400',
+    collection_models: 'Collection Prestige',
+    composition: 'Canapé 3 places modulaire',
     date_of_brief: '2024-01-15',
     commercial_id: 'virginie',
-    atelier: 'siegeair',
+    atelier: 'paris',
     be_team_member_ids: ['as', 'mr'],
     key_dates: {
       start_in_be: '2024-02-01',
-      wood_foam_launch: '2024-03-15',
-      previewed_delivery: '2024-04-30',
-      last_call: '2024-05-15'
+      wood_foam_launch: '2024-02-15',
+      previewed_delivery: '2024-03-30',
+      last_call: '2024-04-05'
     },
     hours_previewed: 120,
-    hours_completed: 80,
-    notes: [],
-    created_at: '2024-01-15T00:00:00Z',
-    updated_at: '2024-01-20T00:00:00Z'
+    hours_completed: 85,
+    pieces: 3,
+    size: 'Large',
+    geometry: 'Curved',
+    target_cost_constraint: 'Moderate',
+    modelling: '3D',
+    outsourced_suppliers: 2,
+    d_level_override: null,
+    d_level: 7,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-01-26T14:30:00Z'
   },
   {
     id: '2',
-    name: 'Project Beta',
-    status: '30%',
-    sub_category: 'prod_with_be_tracking',
-    color: '#F59E0B',
-    bc_order_number: 'BC002',
-    image_url: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client B',
-    collection_models: 'Collection Summer 2024',
-    composition: 'Linen mix',
+    name: 'Fauteuils Direction Executive',
+    client: 'Banque Rothschild',
+    status: 'planning',
+    sub_category: 'seating',
+    color: '#10B981',
+    bc_order_number: 'BC2024-002',
+    image_url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400',
+    collection_models: 'Collection Executive',
+    composition: 'Fauteuils de direction en cuir',
     date_of_brief: '2024-01-20',
-    commercial_id: 'nicholas',
-    atelier: 'maison_fey_vannes',
-    be_team_member_ids: ['mr'],
+    commercial_id: 'virginie',
+    atelier: 'lyon',
+    be_team_member_ids: ['aq', 'sr'],
     key_dates: {
-      start_in_be: '2024-02-15',
-      wood_foam_launch: '2024-03-30',
-      previewed_delivery: '2024-05-15',
-      last_call: '2024-06-01'
+      start_in_be: '2024-02-05',
+      wood_foam_launch: '2024-02-20',
+      previewed_delivery: '2024-04-10',
+      last_call: '2024-04-15'
     },
-    hours_previewed: 150,
-    hours_completed: 45,
-    notes: [],
-    created_at: '2024-01-20T00:00:00Z',
-    updated_at: '2024-01-25T00:00:00Z'
+    hours_previewed: 80,
+    hours_completed: 15,
+    pieces: 6,
+    size: 'Medium',
+    geometry: 'Mixed',
+    target_cost_constraint: 'High',
+    modelling: '3D',
+    outsourced_suppliers: 1,
+    d_level_override: null,
+    d_level: 6,
+    created_at: '2024-01-20T09:00:00Z',
+    updated_at: '2024-01-25T16:45:00Z'
   },
   {
     id: '3',
-    name: 'Project Gamma',
-    status: '90%',
-    sub_category: 'updates_nomenclature',
-    color: '#EF4444',
-    bc_order_number: 'BC003',
-    image_url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-    client: 'Client C',
-    collection_models: 'Collection Fall 2024',
-    composition: 'Wool blend',
-    date_of_brief: '2023-12-15',
-    commercial_id: 'aurelie',
-    atelier: 'maison_fey_paris',
-    be_team_member_ids: ['aq', 'sr'],
+    name: 'Banquette Restaurant Gastronomique',
+    client: 'Restaurant Le Meurice',
+    status: 'at_risk',
+    sub_category: 'seating',
+    color: '#F59E0B',
+    bc_order_number: 'BC2024-003',
+    image_url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=400',
+    collection_models: 'Collection Restaurant',
+    composition: 'Banquettes sur mesure',
+    date_of_brief: '2024-01-08',
+    commercial_id: 'virginie',
+    atelier: 'marseille',
+    be_team_member_ids: ['ld', 'ps'],
     key_dates: {
-      start_in_be: '2024-01-01',
-      wood_foam_launch: '2024-02-15',
-      previewed_delivery: '2024-03-30',
-      last_call: '2024-04-15'
+      start_in_be: '2024-01-22',
+      wood_foam_launch: '2024-02-05',
+      previewed_delivery: '2024-03-15',
+      last_call: '2024-03-20'
     },
-    hours_previewed: 200,
-    hours_completed: 180,
-    notes: [],
-    created_at: '2023-12-15T00:00:00Z',
-    updated_at: '2024-01-10T00:00:00Z'
+    hours_previewed: 150,
+    hours_completed: 95,
+    pieces: 12,
+    size: 'Large',
+    geometry: 'Curved',
+    target_cost_constraint: 'Tight',
+    modelling: '3D',
+    outsourced_suppliers: 3,
+    d_level_override: null,
+    d_level: 9,
+    created_at: '2024-01-08T11:00:00Z',
+    updated_at: '2024-01-26T12:15:00Z'
   }
 ];
 
@@ -90,107 +110,36 @@ const MOCK_TASKS: Task[] = [
   {
     id: '1',
     project_id: '1',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
+    name: 'Analyse du Brief',
+    category: 'analyse_brief',
     phase: 'pre_prod',
     start_date: '2024-02-01',
-    end_date: '2024-02-28',
+    end_date: '2024-02-03',
     assignee_id: 'as',
     status: 'completed',
     progress: 100,
     dependencies: [],
-    order: 0,
-    enabled: true
+    order_index: 0,
+    enabled: true,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-02-03T17:00:00Z'
   },
   {
     id: '2',
     project_id: '1',
-    name: 'BE plans pour validation client',
-    category: 'be_plans_validation',
+    name: 'Recherche Références',
+    category: 'recherche_references',
     phase: 'pre_prod',
-    start_date: '2024-02-15',
-    end_date: '2024-03-01',
-    assignee_id: 'as',
-    status: 'in_progress',
-    progress: 80,
+    start_date: '2024-02-04',
+    end_date: '2024-02-08',
+    assignee_id: 'mr',
+    status: 'completed',
+    progress: 100,
     dependencies: ['1'],
-    order: 1,
-    enabled: true
-  },
-  {
-    id: '3',
-    project_id: '1',
-    name: 'Commande mousse',
-    category: 'commande_mousse',
-    phase: 'prod',
-    start_date: '2024-03-01',
-    end_date: '2024-03-31',
-    assignee_id: 'as',
-    status: 'in_progress',
-    progress: 65,
-    dependencies: ['2'],
-    order: 2,
-    enabled: true
-  },
-  {
-    id: '4',
-    project_id: '2',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
-    phase: 'pre_prod',
-    start_date: '2024-02-15',
-    end_date: '2024-03-01',
-    assignee_id: 'mr',
-    status: 'completed',
-    progress: 100,
-    dependencies: [],
-    order: 0,
-    enabled: true
-  },
-  {
-    id: '5',
-    project_id: '2',
-    name: 'BE conception 3D',
-    category: 'be_conception_3d',
-    phase: 'pre_prod',
-    start_date: '2024-03-01',
-    end_date: '2024-03-20',
-    assignee_id: 'mr',
-    status: 'in_progress',
-    progress: 40,
-    dependencies: ['4'],
-    order: 1,
-    enabled: true
-  },
-  {
-    id: '6',
-    project_id: '3',
-    name: 'Réunion de lancement',
-    category: 'reunion_lancement',
-    phase: 'pre_prod',
-    start_date: '2024-01-01',
-    end_date: '2024-01-15',
-    assignee_id: 'aq',
-    status: 'completed',
-    progress: 100,
-    dependencies: [],
-    order: 0,
-    enabled: true
-  },
-  {
-    id: '7',
-    project_id: '3',
-    name: 'Tapisserie',
-    category: 'tapisserie',
-    phase: 'prod',
-    start_date: '2024-01-15',
-    end_date: '2024-02-28',
-    assignee_id: 'aq',
-    status: 'blocked',
-    progress: 20,
-    dependencies: ['6'],
-    order: 1,
-    enabled: true
+    order_index: 1,
+    enabled: true,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-02-08T16:30:00Z'
   }
 ];
 
@@ -199,306 +148,160 @@ const MOCK_TIME_ENTRIES: TimeEntry[] = [
     id: '1',
     project_id: '1',
     user_id: 'as',
-    user_name: 'ALEXANDER SMITH (AS)',
-    hours: 8.5,
-    date: '2024-01-20',
-    description: 'Initial design work',
-    task_category: 'be_conception_3d',
-    created_at: '2024-01-20T10:00:00Z',
-    updated_at: '2024-01-20T10:00:00Z'
+    user_name: 'ALEXANDER SMITH',
+    hours: 8,
+    date: '2024-01-26',
+    description: 'Analyse du brief client et définition des spécifications techniques',
+    task_category: 'analyse_brief',
+    percentage_completed: 25,
+    created_at: '2024-01-26T17:00:00Z',
+    updated_at: '2024-01-26T17:00:00Z'
   },
   {
     id: '2',
     project_id: '1',
     user_id: 'mr',
-    user_name: 'MAËLYS DE LA RUÉE (MR)',
-    hours: 4.25,
-    date: '2024-01-21',
-    description: 'Technical review',
-    task_category: 'be_plans_validation',
-    created_at: '2024-01-21T14:00:00Z',
-    updated_at: '2024-01-21T14:00:00Z'
-  },
-  {
-    id: '3',
-    project_id: '2',
-    user_id: 'mr',
-    user_name: 'MAËLYS DE LA RUÉE (MR)',
-    hours: 6.75,
-    date: '2024-01-22',
-    description: 'Project setup and planning',
-    created_at: '2024-01-22T09:00:00Z',
-    updated_at: '2024-01-22T09:00:00Z'
+    user_name: 'MAËLYS DE LA RUÉE',
+    hours: 6,
+    date: '2024-01-26',
+    description: 'Recherche de références et création de moodboard',
+    task_category: 'recherche_references',
+    percentage_completed: 30,
+    created_at: '2024-01-26T16:30:00Z',
+    updated_at: '2024-01-26T16:30:00Z'
   }
 ];
 
 const MOCK_MEETINGS: Meeting[] = [
   {
-    id: '1',
+    id: 'm1',
     project_id: '1',
-    title: 'Project Alpha Kickoff Meeting',
-    date: '2024-01-26',
-    attendees: ['as', 'mr', 'virginie'],
-    notes: 'Discussed project timeline and initial requirements. Key decisions made on material selection and delivery schedule.',
+    title: 'Kickoff - Canapé Modulaire',
+    date: '2024-02-05',
+    attendees: ['as','mr'],
+    notes: 'Initial kickoff meeting for Canapé project',
     photos: [],
     voice_notes: [],
-    author_id: 'as',
-    author_name: 'ALEXANDER SMITH (AS)',
-    created_at: '2024-01-26T10:00:00Z',
-    updated_at: '2024-01-26T10:00:00Z'
+    author_id: 'virginie',
+    author_name: 'Virginie',
+    created_at: '2024-02-05T10:00:00Z',
+    updated_at: '2024-02-05T10:00:00Z'
   }
 ];
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
+  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(MOCK_TIME_ENTRIES);
-  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
-  const [isLoading, setIsLoading] = useState(false);
+  const [projectNotes, setProjectNotes] = useState<ProjectNote[]>([]);
 
-  const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsLoading(false);
-  }, []);
-
-  const createProject = useCallback(async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
     const newProject: Project = {
       ...projectData,
       id: Date.now().toString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    };
-    setProjects(prev => [...prev, newProject]);
-    console.log('✅ Created project with ID:', newProject.id);
+      };
+    setProjects(prev => [newProject, ...prev]);
     return newProject;
-  }, []);
+  }
 
-  const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
-    console.log('🔄 updateProject called for ID:', id, 'Current projects count:', projects.length);
-    console.log('📝 Updates:', updates);
-    
-    setProjects(prev => {
-      return prev.map(p => 
-        p.id === id 
-          ? { ...p, ...updates, updated_at: new Date().toISOString() }
-          : p
-      );
-    });
-  }, []);
+  const updateProject = async (projectId: string, updates: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>) => {
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates, updated_at: new Date().toISOString() } as Project : p));
+    return true;
+  };
 
-  const addProjectUpdate = useCallback(async (projectId: string, content: string, authorId: string, authorName: string) => {
-    const newUpdate: ProjectNote = {
+  // Meetings CRUD
+  const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
+    const newMeeting: Meeting = { ...meetingData, id: Date.now().toString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    setMeetings(prev => [newMeeting, ...prev]);
+    return newMeeting;
+  };
+
+  const updateMeeting = async (meetingId: string, updates: Partial<Omit<Meeting, 'id' | 'created_at' | 'updated_at'>>) => {
+    setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, ...updates, updated_at: new Date().toISOString() } as Meeting : m));
+    return true;
+  };
+
+  const deleteMeeting = async (meetingId: string) => {
+    setMeetings(prev => prev.filter(m => m.id !== meetingId));
+    return true;
+  };
+
+  const deleteProject = async (projectId: string) => {
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    return true;
+  };
+
+  const getTasksForProject = (projectId: string) => tasks.filter(t => t.project_id === projectId);
+
+  const updateProjectTasks = async (projectId: string, updatedTasks: Task[]) => {
+    // Remove old tasks for project and add updated ones
+    setTasks(prev => [...prev.filter(t => t.project_id !== projectId), ...updatedTasks]);
+    return true;
+  };
+
+  const getTimeEntriesForProject = (projectId: string) => timeEntries.filter(e => e.project_id === projectId);
+
+  const getTotalHoursForProject = (projectId: string) => {
+    return timeEntries.filter(e => e.project_id === projectId).reduce((sum, e) => sum + e.hours, 0);
+  };
+
+  const addTimeEntry = async (entry: Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>) => {
+    const newEntry: TimeEntry = { ...entry, id: Date.now().toString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as TimeEntry;
+    setTimeEntries(prev => [newEntry, ...prev]);
+    return newEntry;
+  };
+
+  const updateTimeEntry = async (entryId: string, updates: Partial<Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>>) => {
+    setTimeEntries(prev => prev.map(e => e.id === entryId ? { ...e, ...updates, updated_at: new Date().toISOString() } as TimeEntry : e));
+    return true;
+  };
+
+  const deleteTimeEntry = async (entryId: string) => {
+    setTimeEntries(prev => prev.filter(e => e.id !== entryId));
+    return true;
+  };
+
+  const sortProjectsByNextDate = (projectsList: Project[]) => {
+    return [...projectsList].sort((a, b) => new Date(a.key_dates.start_in_be).getTime() - new Date(b.key_dates.start_in_be).getTime());
+  };
+
+  const addProjectUpdate = async (projectId: string, content: string, authorId: string, authorName: string) => {
+    const newNote: ProjectNote = {
       id: Date.now().toString(),
       project_id: projectId,
       content,
       author_id: authorId,
       author_name: authorName,
-      created_at: new Date().toISOString(),
       type: 'update',
-      meeting_id: undefined
+      created_at: new Date().toISOString()
     };
-
-    // Add update to project
-    setProjects(prev => prev.map(p => 
-      p.id === projectId 
-        ? { ...p, notes: [...p.notes, newUpdate], updated_at: new Date().toISOString() }
-        : p
-    ));
-
-    // Send notifications (mock implementation - replace with real email service)
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      console.log(`📧 Email notification sent to Commercial (${project.commercial_id}): New update on ${project.name}`);
-      console.log(`📧 Email notification sent to BE Team (${project.be_team_member_id}): New update on ${project.name}`);
-      
-      // In a real implementation, you would call your email service here:
-      // await emailService.sendNotification({
-      //   to: [project.commercial_id, project.be_team_member_id],
-      //   subject: `Project Update: ${project.name}`,
-      //   body: `New update added by ${authorName}: ${content}`
-      // });
-    }
-
-    return newUpdate;
-  }, [projects]);
-
-  const deleteProject = useCallback(async (id: string) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
-  }, []);
-
-  const getTasksForProject = useCallback((projectId: string) => {
-    return tasks
-      .filter(task => task.project_id === projectId && task.enabled)
-      .sort((a, b) => a.order - b.order);
-  }, [tasks]);
-
-  const updateProjectTasks = useCallback(async (projectId: string, updatedTasks: Task[]) => {
-    setTasks(prev => [
-      ...prev.filter(task => task.project_id !== projectId),
-      ...updatedTasks
-    ]);
-  }, []);
-
-  const sortProjectsByNextDate = useCallback((projects: Project[]) => {
-    return [...projects].sort((a, b) => {
-      const nextDateA = new Date(Math.min(
-        new Date(a.key_dates.start_in_be).getTime(),
-        new Date(a.key_dates.wood_foam_launch).getTime(),
-        new Date(a.key_dates.previewed_delivery).getTime(),
-        new Date(a.key_dates.last_call).getTime()
-      ));
-      const nextDateB = new Date(Math.min(
-        new Date(b.key_dates.start_in_be).getTime(),
-        new Date(b.key_dates.wood_foam_launch).getTime(),
-        new Date(b.key_dates.previewed_delivery).getTime(),
-        new Date(b.key_dates.last_call).getTime()
-      ));
-      return nextDateA.getTime() - nextDateB.getTime();
-    });
-  }, []);
-
-  const getTimeEntriesForProject = useCallback((projectId: string) => {
-    return timeEntries.filter(entry => entry.project_id === projectId);
-  }, [timeEntries]);
-
-  const getTotalHoursForProject = useCallback((projectId: string) => {
-    return timeEntries
-      .filter(entry => entry.project_id === projectId)
-      .reduce((total, entry) => total + entry.hours, 0);
-  }, [timeEntries]);
-
-  const addTimeEntry = useCallback(async (timeEntryData: Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>) => {
-    const newTimeEntry: TimeEntry = {
-      ...timeEntryData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    setTimeEntries(prev => [...prev, newTimeEntry]);
-    
-    // Update project's hours_completed
-    const totalHours = getTotalHoursForProject(timeEntryData.project_id) + timeEntryData.hours;
-    setProjects(prev => prev.map(p => 
-      p.id === timeEntryData.project_id 
-        ? { ...p, hours_completed: totalHours, updated_at: new Date().toISOString() }
-        : p
-    ));
-    
-    return newTimeEntry;
-  }, [getTotalHoursForProject]);
-
-  const updateTimeEntry = useCallback(async (id: string, updates: Partial<TimeEntry>) => {
-    setTimeEntries(prev => prev.map(entry => 
-      entry.id === id 
-        ? { ...entry, ...updates, updated_at: new Date().toISOString() }
-        : entry
-    ));
-    
-    // Recalculate project hours
-    const updatedEntry = timeEntries.find(e => e.id === id);
-    if (updatedEntry) {
-      const totalHours = getTotalHoursForProject(updatedEntry.project_id);
-      setProjects(prev => prev.map(p => 
-        p.id === updatedEntry.project_id 
-          ? { ...p, hours_completed: totalHours, updated_at: new Date().toISOString() }
-          : p
-      ));
-    }
-  }, [timeEntries, getTotalHoursForProject]);
-
-  // Meeting functions
-  const createMeeting = useCallback(async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>) => {
-    const newMeeting: Meeting = {
-      ...meetingData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    setMeetings(prev => [...prev, newMeeting]);
-    
-    // Add meeting reference to project updates
-    const meetingUpdate: ProjectNote = {
-      id: (Date.now() + 1).toString(),
-      project_id: meetingData.project_id,
-      content: `Meeting: ${meetingData.title}`,
-      author_id: meetingData.author_id,
-      author_name: meetingData.author_name,
-      created_at: new Date().toISOString(),
-      type: 'update',
-      meeting_id: newMeeting.id
-    };
-    
-    setProjects(prev => prev.map(p => 
-      p.id === meetingData.project_id 
-        ? { ...p, notes: [...p.notes, meetingUpdate], updated_at: new Date().toISOString() }
-        : p
-    ));
-    
-    return newMeeting;
-  }, []);
-
-  const updateMeeting = useCallback(async (id: string, updates: Partial<Meeting>) => {
-    setMeetings(prev => prev.map(m => 
-      m.id === id 
-        ? { ...m, ...updates, updated_at: new Date().toISOString() }
-        : m
-    ));
-  }, []);
-
-  const deleteMeeting = useCallback(async (id: string) => {
-    const meeting = meetings.find(m => m.id === id);
-    if (meeting) {
-      setMeetings(prev => prev.filter(m => m.id !== id));
-      
-      // Remove meeting reference from project updates
-      setProjects(prev => prev.map(p => 
-        p.id === meeting.project_id 
-          ? { ...p, notes: p.notes.filter(note => note.meeting_id !== id) }
-          : p
-      ));
-    }
-  }, [meetings]);
-
-  const deleteTimeEntry = useCallback(async (id: string) => {
-    const entryToDelete = timeEntries.find(e => e.id === id);
-    if (!entryToDelete) return;
-    
-    setTimeEntries(prev => prev.filter(entry => entry.id !== id));
-    
-    // Recalculate project hours
-    const totalHours = getTotalHoursForProject(entryToDelete.project_id) - entryToDelete.hours;
-    setProjects(prev => prev.map(p => 
-      p.id === entryToDelete.project_id 
-        ? { ...p, hours_completed: Math.max(0, totalHours), updated_at: new Date().toISOString() }
-        : p
-    ));
-  }, [timeEntries, getTotalHoursForProject]);
+    setProjectNotes(prev => [newNote, ...prev]);
+    return newNote;
+  };
 
   return {
     projects,
+    meetings,
     tasks,
     timeEntries,
-    meetings,
-    isLoading,
-    fetchProjects,
+    projectNotes,
     createProject,
     updateProject,
-    addProjectUpdate,
     deleteProject,
+    createMeeting,
+    updateMeeting,
+    deleteMeeting,
     getTasksForProject,
     updateProjectTasks,
-    sortProjectsByNextDate,
     getTimeEntriesForProject,
     getTotalHoursForProject,
     addTimeEntry,
     updateTimeEntry,
     deleteTimeEntry,
-    createMeeting,
-    updateMeeting,
-    deleteMeeting
+    sortProjectsByNextDate,
+    addProjectUpdate
   };
 };
