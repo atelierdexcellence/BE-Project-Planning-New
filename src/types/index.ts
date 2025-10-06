@@ -41,6 +41,7 @@ export interface Task {
   phase: 'pre_prod' | 'prod';
   start_date: string;
   end_date: string;
+  duration_days?: number;
   assignee_id: string;
   status: 'pending' | 'in_progress' | 'completed' | 'blocked';
   progress?: number;
@@ -87,24 +88,31 @@ export interface Notification {
 
 export type Language = 'en' | 'fr';
 
-export type TaskCategory = 
-  | 'general'
-  | 'analyse_brief'
-  | 'recherche_references'
-  | 'esquisse_croquis'
-  | 'plan_2d'
-  | 'plan_3d'
-  | 'fiche_technique'
-  | 'devis_fournisseurs'
-  | 'commande_fournisseurs'
-  | 'suivi_livraisons'
+export type TaskCategory =
+  | 'be_plans_validation'
+  | 'be_etude_conception'
+  | 'commande_mousse'
+  | 'be_prepare_fichiers'
   | 'reception_mousse'
   | 'decoupe_bois_montage'
   | 'reception_structure_bois'
-  | 'mise_en_mousse'
+  | 'gandage_mise_mousse'
   | 'reception_tissu'
   | 'confection'
-  | 'tapisserie';
+  | 'tapisserie'
+  | 'rdv_confort_atelier'
+  | 'rdv_confort_structure'
+  | 'modifs_mousse_confort'
+  | 'pose_sangles'
+  | 'modifs_bois_montage'
+  | 'placage_bois'
+  | 'vernis_placage'
+  | 'rdv_validation_blanc'
+  | 'modifs_mousse_blanc'
+  | 'livraison_ebeniste'
+  | 'control_qualite'
+  | 'depart_palette'
+  | 'autre_a_definir';
 
 // Team Members
 export const BE_TEAM_MEMBERS = [
@@ -153,23 +161,30 @@ export const PROJECT_SUB_CATEGORIES = [
 ];
 
 export const TASK_CATEGORIES = [
-  { id: 'general', phase: 'pre_prod' as const },
-  { id: 'analyse_brief', phase: 'pre_prod' as const },
-  { id: 'recherche_references', phase: 'pre_prod' as const },
-  { id: 'esquisse_croquis', phase: 'pre_prod' as const },
-  { id: 'plan_2d', phase: 'pre_prod' as const },
-  { id: 'plan_3d', phase: 'pre_prod' as const },
-  { id: 'fiche_technique', phase: 'pre_prod' as const },
-  { id: 'devis_fournisseurs', phase: 'pre_prod' as const },
-  { id: 'commande_fournisseurs', phase: 'prod' as const },
-  { id: 'suivi_livraisons', phase: 'prod' as const },
-  { id: 'reception_mousse', phase: 'prod' as const },
-  { id: 'decoupe_bois_montage', phase: 'prod' as const },
-  { id: 'reception_structure_bois', phase: 'prod' as const },
-  { id: 'mise_en_mousse', phase: 'prod' as const },
-  { id: 'reception_tissu', phase: 'prod' as const },
-  { id: 'confection', phase: 'prod' as const },
-  { id: 'tapisserie', phase: 'prod' as const }
+  { id: 'be_plans_validation', phase: 'pre_prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'be_etude_conception', phase: 'pre_prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'commande_mousse', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
+  { id: 'be_prepare_fichiers', phase: 'prod' as const, defaultDuration: 2, isDefault: true },
+  { id: 'reception_mousse', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'decoupe_bois_montage', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'reception_structure_bois', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
+  { id: 'gandage_mise_mousse', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
+  { id: 'reception_tissu', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'confection', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'tapisserie', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
+  { id: 'rdv_confort_atelier', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'rdv_confort_structure', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'modifs_mousse_confort', phase: 'prod' as const, defaultDuration: 1, isDefault: false },
+  { id: 'pose_sangles', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'modifs_bois_montage', phase: 'prod' as const, defaultDuration: 2, isDefault: false },
+  { id: 'placage_bois', phase: 'prod' as const, defaultDuration: 3, isDefault: false },
+  { id: 'vernis_placage', phase: 'prod' as const, defaultDuration: 2, isDefault: false },
+  { id: 'rdv_validation_blanc', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'modifs_mousse_blanc', phase: 'prod' as const, defaultDuration: 1, isDefault: false },
+  { id: 'livraison_ebeniste', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'control_qualite', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'depart_palette', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
+  { id: 'autre_a_definir', phase: 'prod' as const, defaultDuration: 1, isDefault: false }
 ];
 
 // Meeting related types

@@ -81,9 +81,6 @@ export const GanttView: React.FC = () => {
   };
 
   const handleManageTasks = () => {
-    console.log('🎯 handleManageTasks called');
-    console.log('📋 Selected project:', selectedProject);
-    console.log('🔧 Setting showTaskManager to true');
     setShowTaskManager(true);
   };
 
@@ -99,10 +96,6 @@ export const GanttView: React.FC = () => {
   };
 
   if (showProjectGantt && selectedProject) {
-    console.log('🎨 Rendering ProjectGantt view');
-    console.log('🔧 showTaskManager:', showTaskManager);
-    console.log('📋 Selected project:', selectedProject);
-
     return (
       <div className="flex-1 p-6 overflow-hidden">
         <ProjectGanttChart
