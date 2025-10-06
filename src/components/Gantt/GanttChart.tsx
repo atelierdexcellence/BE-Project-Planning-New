@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import { Plus, Filter, Download, Calendar, Settings } from 'lucide-react';
+import { Plus, Filter, Download, Calendar, Settings, ArrowUpDown } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
-import { PROJECT_SUB_CATEGORIES } from '../../types';
+import { PROJECT_SUB_CATEGORIES, COMMERCIAL_USERS, BE_TEAM_MEMBERS } from '../../types';
 import type { Project, Task } from '../../types';
 
 interface ProjectHoverProps {
@@ -52,13 +52,21 @@ interface GanttChartProps {
   onStatusFilterChange: (filter: string) => void;
   subCategoryFilter: string;
   onSubCategoryFilterChange: (filter: string) => void;
+  sortBy: 'next_date' | 'client' | 'commercial' | 'be_member';
+  onSortByChange: (sortBy: 'next_date' | 'client' | 'commercial' | 'be_member') => void;
+  clientFilter: string;
+  onClientFilterChange: (filter: string) => void;
+  commercialFilter: string;
+  onCommercialFilterChange: (filter: string) => void;
+  beTeamFilter: string;
+  onBeTeamFilterChange: (filter: string) => void;
   onViewModeChange: (mode: 'year' | 'quarter' | 'month' | 'week') => void;
   onExport?: () => void;
 }
 
-export const GanttChart: React.FC<GanttChartProps> = ({ 
-  projects, 
-  tasks, 
+export const GanttChart: React.FC<GanttChartProps> = ({
+  projects,
+  tasks,
   viewMode = 'week',
   onProjectClick,
   onNewProject,
@@ -66,6 +74,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   onStatusFilterChange,
   subCategoryFilter,
   onSubCategoryFilterChange,
+  sortBy,
+  onSortByChange,
+  clientFilter,
+  onClientFilterChange,
+  commercialFilter,
+  onCommercialFilterChange,
+  beTeamFilter,
+  onBeTeamFilterChange,
   onViewModeChange,
   onExport
 }) => {
@@ -195,13 +211,22 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     return 'hidden';
   }, []);
 
+  // Get unique clients from projects
+  const uniqueClients = useMemo(() => {
+    const clients = new Set(projects.map(p => p.client));
+    return Array.from(clients).sort();
+  }, [projects]);
+
   // Filter projects based on status
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => 
+    return projects.filter(project =>
       (statusFilter === 'all' || project.status === statusFilter) &&
-      (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter)
+      (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter) &&
+      (clientFilter === 'all' || project.client === clientFilter) &&
+      (commercialFilter === 'all' || project.commercial_id === commercialFilter) &&
+      (beTeamFilter === 'all' || project.be_team_member_ids.includes(beTeamFilter))
     );
-  }, [projects, statusFilter, subCategoryFilter]);
+  }, [projects, statusFilter, subCategoryFilter, clientFilter, commercialFilter, beTeamFilter]);
 
   // Sort projects by priority and name
   const sortedProjects = useMemo(() => {
