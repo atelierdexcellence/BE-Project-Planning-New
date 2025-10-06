@@ -147,11 +147,12 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projects in Development',
-    'subcategory.prod_with_be_tracking': 'Projects in Production with BE Tracking',
-    'subcategory.updates_nomenclature': 'Updates Required / Nomenclature Edition + Series Monitoring',
-    'subcategory.waiting_order': 'Projects Waiting for Order',
-    'subcategory.completed': 'Completed Projects',
-    'subcategory.on_hold': 'Projects On Hold',
+    'subcategory.prod_with_be_tracking': 'Production with BE Tracking',
+    'subcategory.to_update': 'To Update',
+    'subcategory.on_hold': 'On Hold',
+    'subcategory.waiting_be_launch': 'Waiting BE Launch',
+    'subcategory.completed': 'Completed',
+    'subcategory.extracurricular': 'Extracurricular',
     
     // Status
     'status.planning': 'Planning',
@@ -408,11 +409,12 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projets en cours de développement',
-    'subcategory.prod_with_be_tracking': 'Projets lancés en prod avec suivi BE',
-    'subcategory.updates_nomenclature': 'Mises à jour à faire / Nomenclature édition à faire + surveiller vie série',
-    'subcategory.waiting_order': 'Projets en attente de commande',
-    'subcategory.completed': 'Projets Terminés',
-    'subcategory.on_hold': 'Projets en Attente',
+    'subcategory.prod_with_be_tracking': 'Projets lancés en production avec suivi par BE',
+    'subcategory.to_update': 'Projets à mettre à jour',
+    'subcategory.on_hold': 'Projets en pause',
+    'subcategory.waiting_be_launch': 'Projets en attente de lancement en BE',
+    'subcategory.completed': 'Projets terminés',
+    'subcategory.extracurricular': 'Projets extracurriculaires',
     
     // Status
     'status.planning': 'Planification',

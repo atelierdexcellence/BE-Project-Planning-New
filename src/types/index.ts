@@ -135,11 +135,13 @@ export const ATELIERS = [
 ];
 
 export const PROJECT_SUB_CATEGORIES = [
-  { id: 'seating', name: 'Seating', priority: 1 },
-  { id: 'tables', name: 'Tables', priority: 2 },
-  { id: 'storage', name: 'Storage', priority: 3 },
-  { id: 'lighting', name: 'Lighting', priority: 4 },
-  { id: 'accessories', name: 'Accessories', priority: 5 }
+  { id: 'dev_in_progress', name: 'Development in Progress', priority: 1 },
+  { id: 'prod_with_be_tracking', name: 'Production with BE Tracking', priority: 2 },
+  { id: 'to_update', name: 'To Update', priority: 3 },
+  { id: 'on_hold', name: 'On Hold', priority: 4 },
+  { id: 'waiting_be_launch', name: 'Waiting BE Launch', priority: 5 },
+  { id: 'completed', name: 'Completed', priority: 6 },
+  { id: 'extracurricular', name: 'Extracurricular', priority: 7 }
 ];
 
 export const TASK_CATEGORIES = [
