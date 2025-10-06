@@ -432,28 +432,130 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   return (
     <div className="space-y-6 h-full overflow-hidden relative">
       {/* Fixed Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="space-y-4">
+        {/* First Row: Sort By */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-gray-500" />
+            <ArrowUpDown className="h-4 w-4 text-gray-500" />
             <select
-              value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value)}
+              value={sortBy}
+              onChange={(e) => onSortByChange(e.target.value as any)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">{t('gantt.all_status')}</option>
-              <option value="planning">{t('status.planning')}</option>
-              <option value="in_progress">{t('status.in_progress')}</option>
-              <option value="at_risk">{t('status.at_risk')}</option>
-              <option value="overdue">{t('status.overdue')}</option>
-              <option value="completed">{t('status.completed')}</option>
-              <option value="on_hold">{t('status.on_hold')}</option>
+              <option value="next_date">{t('gantt.sort_by_date')}</option>
+              <option value="client">{t('gantt.sort_by_client')}</option>
+              <option value="commercial">{t('gantt.sort_by_commercial')}</option>
+              <option value="be_member">{t('gantt.sort_by_be_member')}</option>
             </select>
           </div>
 
           <div className="flex items-center space-x-2">
+            <button
+              onClick={onExport}
+              className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              <span>{t('gantt.export')}</span>
+            </button>
+
+            <button
+              onClick={onNewProject}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{t('projects.new_project')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Second Row: Filters */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4 flex-wrap gap-y-2">
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={statusFilter}
+                onChange={(e) => onStatusFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('gantt.all_status')}</option>
+                <option value="planning">{t('status.planning')}</option>
+                <option value="in_progress">{t('status.in_progress')}</option>
+                <option value="at_risk">{t('status.at_risk')}</option>
+                <option value="overdue">{t('status.overdue')}</option>
+                <option value="completed">{t('status.completed')}</option>
+                <option value="on_hold">{t('status.on_hold')}</option>
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={subCategoryFilter}
+                onChange={(e) => onSubCategoryFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('gantt.all_categories')}</option>
+                {PROJECT_SUB_CATEGORIES.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.priority}. {t(`subcategory.${category.id}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={clientFilter}
+                onChange={(e) => onClientFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('gantt.all_clients')}</option>
+                {uniqueClients.map((client) => (
+                  <option key={client} value={client}>
+                    {client}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={commercialFilter}
+                onChange={(e) => onCommercialFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('gantt.all_commercials')}</option>
+                {COMMERCIAL_USERS.map((commercial) => (
+                  <option key={commercial.id} value={commercial.id}>
+                    {commercial.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={beTeamFilter}
+                onChange={(e) => onBeTeamFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('gantt.all_be_members')}</option>
+                {BE_TEAM_MEMBERS.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4">
             {/* Navigation Controls */}
-            <div className="flex items-center space-x-2 mr-4">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={navigatePrevious}
                 className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
@@ -463,7 +565,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              
+
               <div className="text-center min-w-[200px]">
                 <div className="text-sm font-medium text-gray-900">
                   {getCurrentPeriodLabel()}
@@ -475,7 +577,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   {t('gantt.today')}
                 </button>
               </div>
-              
+
               <button
                 onClick={navigateNext}
                 className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
@@ -487,54 +589,22 @@ export const GanttChart: React.FC<GanttChartProps> = ({
               </button>
             </div>
 
-            <Filter className="h-4 w-4 text-gray-500" />
-            <select
-              value={subCategoryFilter}
-              onChange={(e) => onSubCategoryFilterChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">{t('gantt.all_categories')}</option>
-              {PROJECT_SUB_CATEGORIES.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.priority}. {t(`subcategory.${category.id}`)}
-                </option>
+            <div className="flex border border-gray-300 rounded-md">
+              {(['week', 'month', 'quarter', 'year'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => onViewModeChange(mode)}
+                  className={`px-3 py-2 text-sm capitalize ${
+                    viewMode === mode
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  } ${mode === 'week' ? 'rounded-l-md' : mode === 'year' ? 'rounded-r-md' : ''}`}
+                >
+                  {t(`gantt.${mode}`)}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
-
-          <div className="flex border border-gray-300 rounded-md">
-            {(['week', 'month', 'quarter', 'year'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => onViewModeChange(mode)}
-                className={`px-3 py-2 text-sm capitalize ${
-                  viewMode === mode
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                } ${mode === 'week' ? 'rounded-l-md' : mode === 'year' ? 'rounded-r-md' : ''}`}
-              >
-                {t(`gantt.${mode}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <button 
-            onClick={onExport}
-            className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            <span>{t('gantt.export')}</span>
-          </button>
-
-          <button
-            onClick={onNewProject}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span>{t('projects.new_project')}</span>
-          </button>
         </div>
       </div>
 

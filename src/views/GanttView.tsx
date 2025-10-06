@@ -18,11 +18,32 @@ export const GanttView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'year' | 'quarter' | 'month' | 'week'>('week');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [subCategoryFilter, setSubCategoryFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'next_date' | 'client' | 'commercial' | 'be_member'>('next_date');
+  const [clientFilter, setClientFilter] = useState<string>('all');
+  const [commercialFilter, setCommercialFilter] = useState<string>('all');
+  const [beTeamFilter, setBeTeamFilter] = useState<string>('all');
 
-  const sortedProjects = sortProjectsByNextDate(projects).filter(project => 
-    (statusFilter === 'all' || project.status === statusFilter) &&
-    (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter)
-  );
+  const sortedProjects = sortProjectsByNextDate(projects)
+    .filter(project =>
+      (statusFilter === 'all' || project.status === statusFilter) &&
+      (subCategoryFilter === 'all' || project.sub_category === subCategoryFilter) &&
+      (clientFilter === 'all' || project.client === clientFilter) &&
+      (commercialFilter === 'all' || project.commercial_id === commercialFilter) &&
+      (beTeamFilter === 'all' || project.be_team_member_ids.includes(beTeamFilter))
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'client':
+          return a.client.localeCompare(b.client);
+        case 'commercial':
+          return a.commercial_id.localeCompare(b.commercial_id);
+        case 'be_member':
+          return (a.be_team_member_ids[0] || '').localeCompare(b.be_team_member_ids[0] || '');
+        case 'next_date':
+        default:
+          return 0;
+      }
+    });
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
@@ -116,6 +137,14 @@ export const GanttView: React.FC = () => {
         onStatusFilterChange={setStatusFilter}
         subCategoryFilter={subCategoryFilter}
         onSubCategoryFilterChange={setSubCategoryFilter}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        clientFilter={clientFilter}
+        onClientFilterChange={setClientFilter}
+        commercialFilter={commercialFilter}
+        onCommercialFilterChange={setCommercialFilter}
+        beTeamFilter={beTeamFilter}
+        onBeTeamFilterChange={setBeTeamFilter}
         onViewModeChange={setViewMode}
         onExport={() => {}}
       />
