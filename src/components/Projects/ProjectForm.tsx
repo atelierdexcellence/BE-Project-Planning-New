@@ -35,7 +35,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     composition: '',
     date_of_brief: '',
     commercial_id: '',
-    atelier: 'siegeair' as const,
+    atelier: 'siegeair_chennevieres',
     be_team_member_ids: [] as string[],
     key_dates: {
       start_in_be: '',

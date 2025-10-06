@@ -135,10 +135,11 @@ export const TEAM_MEMBERS = [
 ];
 
 export const ATELIERS = [
-  { id: 'paris', name: 'Paris' },
-  { id: 'lyon', name: 'Lyon' },
-  { id: 'marseille', name: 'Marseille' },
-  { id: 'siegeair', name: 'Siège Air' }
+  { id: 'siegeair_chennevieres', name: 'Siegeair Chenneviers' },
+  { id: 'siegeair_villes', name: 'Siegeair Villes' },
+  { id: 'maison_fey_vannes', name: 'Maison Fey Vannes' },
+  { id: 'maison_fey_bastille', name: 'Maison Fey Bastille' },
+  { id: 'degroote_mussy', name: 'Degroote et Mussy' }
 ];
 
 export const PROJECT_SUB_CATEGORIES = [
