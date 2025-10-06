@@ -41,7 +41,6 @@ export interface Task {
   phase: 'pre_prod' | 'prod';
   start_date: string;
   end_date: string;
-  duration_days?: number;
   assignee_id: string;
   status: 'pending' | 'in_progress' | 'completed' | 'blocked';
   progress?: number;
@@ -88,31 +87,24 @@ export interface Notification {
 
 export type Language = 'en' | 'fr';
 
-export type TaskCategory =
-  | 'be_plans_validation'
-  | 'be_etude_conception'
-  | 'commande_mousse'
-  | 'be_prepare_fichiers'
+export type TaskCategory = 
+  | 'general'
+  | 'analyse_brief'
+  | 'recherche_references'
+  | 'esquisse_croquis'
+  | 'plan_2d'
+  | 'plan_3d'
+  | 'fiche_technique'
+  | 'devis_fournisseurs'
+  | 'commande_fournisseurs'
+  | 'suivi_livraisons'
   | 'reception_mousse'
   | 'decoupe_bois_montage'
   | 'reception_structure_bois'
-  | 'gandage_mise_mousse'
+  | 'mise_en_mousse'
   | 'reception_tissu'
   | 'confection'
-  | 'tapisserie'
-  | 'rdv_confort_atelier'
-  | 'rdv_confort_structure'
-  | 'modifs_mousse_confort'
-  | 'pose_sangles'
-  | 'modifs_bois_montage'
-  | 'placage_bois'
-  | 'vernis_placage'
-  | 'rdv_validation_blanc'
-  | 'modifs_mousse_blanc'
-  | 'livraison_ebeniste'
-  | 'control_qualite'
-  | 'depart_palette'
-  | 'autre_a_definir';
+  | 'tapisserie';
 
 // Team Members
 export const BE_TEAM_MEMBERS = [
@@ -126,14 +118,7 @@ export const BE_TEAM_MEMBERS = [
 ];
 
 export const COMMERCIAL_USERS = [
-  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial' as const, initials: 'V' },
-  { id: 'nicholas', name: 'Nicholas', email: 'nicholas@company.com', role: 'commercial' as const, initials: 'N' },
-  { id: 'aurelie', name: 'Aurelie', email: 'aurelie@company.com', role: 'commercial' as const, initials: 'A' },
-  { id: 'alain', name: 'Alain', email: 'alain@company.com', role: 'commercial' as const, initials: 'A' },
-  { id: 'paul', name: 'Paul', email: 'paul@company.com', role: 'commercial' as const, initials: 'P' },
-  { id: 'victoria', name: 'Victoria', email: 'victoria@company.com', role: 'commercial' as const, initials: 'V' },
-  { id: 'anne_victorine', name: 'Anne-Victorine', email: 'anne-victorine@company.com', role: 'commercial' as const, initials: 'AV' },
-  { id: 'laurie', name: 'Laurie', email: 'laurie@company.com', role: 'commercial' as const, initials: 'L' }
+  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial' as const, initials: 'V' }
 ];
 
 export const TEAM_MEMBERS = [
@@ -143,48 +128,38 @@ export const TEAM_MEMBERS = [
 ];
 
 export const ATELIERS = [
-  { id: 'siegeair_chennevieres', name: 'Siegeair Chenneviers' },
-  { id: 'siegeair_villes', name: 'Siegeair Villes' },
-  { id: 'maison_fey_vannes', name: 'Maison Fey Vannes' },
-  { id: 'maison_fey_bastille', name: 'Maison Fey Bastille' },
-  { id: 'degroote_mussy', name: 'Degroote et Mussy' }
+  { id: 'paris', name: 'Paris' },
+  { id: 'lyon', name: 'Lyon' },
+  { id: 'marseille', name: 'Marseille' },
+  { id: 'siegeair', name: 'Siège Air' }
 ];
 
 export const PROJECT_SUB_CATEGORIES = [
-  { id: 'dev_in_progress', name: 'Development in Progress', priority: 1 },
-  { id: 'prod_with_be_tracking', name: 'Production with BE Tracking', priority: 2 },
-  { id: 'to_update', name: 'To Update', priority: 3 },
-  { id: 'on_hold', name: 'On Hold', priority: 4 },
-  { id: 'waiting_be_launch', name: 'Waiting BE Launch', priority: 5 },
-  { id: 'completed', name: 'Completed', priority: 6 },
-  { id: 'extracurricular', name: 'Extracurricular', priority: 7 }
+  { id: 'seating', name: 'Seating', priority: 1 },
+  { id: 'tables', name: 'Tables', priority: 2 },
+  { id: 'storage', name: 'Storage', priority: 3 },
+  { id: 'lighting', name: 'Lighting', priority: 4 },
+  { id: 'accessories', name: 'Accessories', priority: 5 }
 ];
 
 export const TASK_CATEGORIES = [
-  { id: 'be_plans_validation', phase: 'pre_prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'be_etude_conception', phase: 'pre_prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'commande_mousse', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
-  { id: 'be_prepare_fichiers', phase: 'prod' as const, defaultDuration: 2, isDefault: true },
-  { id: 'reception_mousse', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'decoupe_bois_montage', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'reception_structure_bois', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
-  { id: 'gandage_mise_mousse', phase: 'prod' as const, defaultDuration: 0.5, isDefault: true },
-  { id: 'reception_tissu', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'confection', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'tapisserie', phase: 'prod' as const, defaultDuration: 7, isDefault: true },
-  { id: 'rdv_confort_atelier', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'rdv_confort_structure', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'modifs_mousse_confort', phase: 'prod' as const, defaultDuration: 1, isDefault: false },
-  { id: 'pose_sangles', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'modifs_bois_montage', phase: 'prod' as const, defaultDuration: 2, isDefault: false },
-  { id: 'placage_bois', phase: 'prod' as const, defaultDuration: 3, isDefault: false },
-  { id: 'vernis_placage', phase: 'prod' as const, defaultDuration: 2, isDefault: false },
-  { id: 'rdv_validation_blanc', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'modifs_mousse_blanc', phase: 'prod' as const, defaultDuration: 1, isDefault: false },
-  { id: 'livraison_ebeniste', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'control_qualite', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'depart_palette', phase: 'prod' as const, defaultDuration: 0.5, isDefault: false },
-  { id: 'autre_a_definir', phase: 'prod' as const, defaultDuration: 1, isDefault: false }
+  { id: 'general', phase: 'pre_prod' as const },
+  { id: 'analyse_brief', phase: 'pre_prod' as const },
+  { id: 'recherche_references', phase: 'pre_prod' as const },
+  { id: 'esquisse_croquis', phase: 'pre_prod' as const },
+  { id: 'plan_2d', phase: 'pre_prod' as const },
+  { id: 'plan_3d', phase: 'pre_prod' as const },
+  { id: 'fiche_technique', phase: 'pre_prod' as const },
+  { id: 'devis_fournisseurs', phase: 'pre_prod' as const },
+  { id: 'commande_fournisseurs', phase: 'prod' as const },
+  { id: 'suivi_livraisons', phase: 'prod' as const },
+  { id: 'reception_mousse', phase: 'prod' as const },
+  { id: 'decoupe_bois_montage', phase: 'prod' as const },
+  { id: 'reception_structure_bois', phase: 'prod' as const },
+  { id: 'mise_en_mousse', phase: 'prod' as const },
+  { id: 'reception_tissu', phase: 'prod' as const },
+  { id: 'confection', phase: 'prod' as const },
+  { id: 'tapisserie', phase: 'prod' as const }
 ];
 
 // Meeting related types

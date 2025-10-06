@@ -1,0 +1,14 @@
+# Dockerfile para el servicio de base de datos (PostgreSQL)
+# Basado en la imagen oficial de PostgreSQL
+
+FROM postgres:16-alpine
+
+# Copia el script de inicialización y las migraciones
+COPY ./init-db.sh /docker-entrypoint-initdb.d/init-db.sh
+COPY ./supabase/migrations /docker-entrypoint-initdb.d/migrations/
+
+# Asegúrate de que el script sea ejecutable
+RUN chmod +x /docker-entrypoint-initdb.d/init-db.sh
+
+# El script init-db.sh se ejecutará automáticamente al iniciar el contenedor
+# y aplicará las migraciones.

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    container_name: be-project-db
+    restart: always
+    environment:
+      POSTGRES_DB: be_project_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432" # Expone el puerto de PostgreSQL al host
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persistencia de datos de la base de datos
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: be-project-web
+    restart: always
+    ports:
+      - "80:80" # Expone el puerto 80 de Nginx al host
+    depends_on:
+      - db # Asegura que la base de datos se inicie antes que la web
+    environment:
+      # NOTA IMPORTANTE:
+      # Tu aplicación está diseñada para conectarse a la API de Supabase,
+      # no directamente a una base de datos PostgreSQL cruda.
+      # Estas variables de entorno son solo placeholders.
+      # Para que la aplicación funcione con una base de datos local,
+      # necesitarías una pila local de Supabase (PostgREST, etc.)
+      # o modificar tu código para usar un cliente PostgreSQL directo.
+      VITE_SUPABASE_URL: "http://localhost:5432/rest/v1" # Esto es un placeholder y no funcionará directamente con el cliente de Supabase.
+      VITE_SUPABASE_ANON_KEY: "your_local_anon_key" # Placeholder
+    # Si necesitas que la aplicación web se conecte a la DB,
+    # tendrías que cambiar la lógica en src/lib/supabase.ts
+    # para usar un cliente de PostgreSQL directo (ej. 'pg' npm package)
+    # y configurar la URL como 'postgresql://user:password@db:5432/be_project_db'
+    # en lugar de la URL de la API de Supabase.
+
+volumes:
+  db_data:

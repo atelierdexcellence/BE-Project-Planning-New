@@ -11,39 +11,36 @@ interface TaskManagerProps {
   onCancel: () => void;
 }
 
-export const TaskManager: React.FC<TaskManagerProps> = ({
-  projectId,
-  tasks,
-  onSave,
-  onCancel
+export const TaskManager: React.FC<TaskManagerProps> = ({ 
+  projectId, 
+  tasks, 
+  onSave, 
+  onCancel 
 }) => {
   const { t } = useLanguage();
   const [enabledTasks, setEnabledTasks] = useState<Task[]>([]);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
 
   useEffect(() => {
-    // Initialize with existing tasks or create default template
+    // Initialize with existing tasks or create default structure
     if (tasks.length > 0) {
-      setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order_index - b.order_index));
+      setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order - b.order));
     } else {
-      // Create default enabled tasks using standard template
-      const defaultCategories = TASK_CATEGORIES.filter(cat => cat.isDefault);
-      const defaultTasks = defaultCategories.map((category, index) => ({
+      // Create default enabled tasks for new projects
+      const defaultTasks = TASK_CATEGORIES.slice(0, 5).map((category, index) => ({
         id: `${projectId}-${category.id}`,
         project_id: projectId,
         name: t(`task.${category.id}`),
         category: category.id,
         phase: category.phase,
-        duration_days: category.defaultDuration,
         start_date: '',
         end_date: '',
         assignee_id: '',
         status: 'pending' as const,
         progress: 0,
         dependencies: [],
-        order_index: index,
-        enabled: true,
-        created_at: new Date().toISOString()
+        order: index,
+        enabled: true
       }));
       setEnabledTasks(defaultTasks);
     }
@@ -69,7 +66,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     // Update order
     const reorderedTasks = newTasks.map((task, index) => ({
       ...task,
-      order_index: index
+      order: index
     }));
 
     setEnabledTasks(reorderedTasks);
@@ -81,21 +78,19 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     if (!categoryInfo) return;
 
     const newTask: Task = {
-      id: `${projectId}-${category}-${Date.now()}`,
+      id: `${projectId}-${category}`,
       project_id: projectId,
       name: t(`task.${category}`),
       category,
       phase: categoryInfo.phase,
-      duration_days: categoryInfo.defaultDuration,
       start_date: '',
       end_date: '',
       assignee_id: '',
       status: 'pending',
       progress: 0,
       dependencies: [],
-      order_index: enabledTasks.length,
-      enabled: true,
-      created_at: new Date().toISOString()
+      order: enabledTasks.length,
+      enabled: true
     };
 
     setEnabledTasks([...enabledTasks, newTask]);
@@ -104,7 +99,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   const handleRemoveTask = (taskId: string) => {
     const updatedTasks = enabledTasks
       .filter(task => task.id !== taskId)
-      .map((task, index) => ({ ...task, order_index: index }));
+      .map((task, index) => ({ ...task, order: index }));
     setEnabledTasks(updatedTasks);
   };
 
@@ -117,21 +112,9 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     onSave(allTasks);
   };
 
-  const standardCategories = TASK_CATEGORIES.filter(
-    category => category.isDefault && !enabledTasks.some(task => task.category === category.id)
+  const availableCategories = TASK_CATEGORIES.filter(
+    category => !enabledTasks.some(task => task.category === category.id)
   );
-
-  const optionalCategories = TASK_CATEGORIES.filter(
-    category => !category.isDefault && !enabledTasks.some(task => task.category === category.id)
-  );
-
-  const formatDuration = (days: number | undefined) => {
-    if (!days) return '';
-    if (days < 1) return `${days * 2} half-day${days * 2 > 1 ? 's' : ''}`;
-    if (days === 1) return '1 day';
-    if (days === 7) return '1 week';
-    return `${days} days`;
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -170,22 +153,15 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                 >
                   <GripVertical className="h-5 w-5 text-gray-400" />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          task.phase === 'pre_prod'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {task.phase === 'pre_prod' ? 'Pré-Prod' : 'Prod'}
-                        </span>
-                        <span className="font-medium text-gray-900">{task.name}</span>
-                      </div>
-                      {task.duration_days && (
-                        <span className="text-sm text-gray-500">
-                          {formatDuration(task.duration_days)}
-                        </span>
-                      )}
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        task.phase === 'pre_prod' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {task.phase === 'pre_prod' ? 'Pré-Prod' : 'Prod'}
+                      </span>
+                      <span className="font-medium text-gray-900">{task.name}</span>
                     </div>
                   </div>
                   <button
@@ -199,76 +175,28 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             </div>
           </div>
 
-          {/* Standard Tasks (not yet added) */}
-          {standardCategories.length > 0 && (
+          {/* Available Tasks */}
+          {availableCategories.length > 0 && (
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Standard Tasks
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {t('tasks.available_tasks')} ({availableCategories.length})
               </h3>
-              <p className="text-sm text-gray-500 mb-3">Tasks from the standard Gantt template</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {standardCategories.map((category) => (
+                {availableCategories.map((category) => (
                   <div
                     key={category.id}
                     className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            category.phase === 'pre_prod'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {category.phase === 'pre_prod' ? 'Pré-Prod' : 'Prod'}
-                          </span>
-                          <span className="text-gray-900">{t(`task.${category.id}`)}</span>
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {formatDuration(category.defaultDuration)}
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          category.phase === 'pre_prod' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {category.phase === 'pre_prod' ? 'Pré-Prod' : 'Prod'}
                         </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleAddTask(category.id)}
-                      className="p-1 text-green-500 hover:text-green-700 transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Optional Tasks */}
-          {optionalCategories.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Optional Tasks
-              </h3>
-              <p className="text-sm text-gray-500 mb-3">Additional tasks that can be added as needed</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {optionalCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            category.phase === 'pre_prod'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {category.phase === 'pre_prod' ? 'Pré-Prod' : 'Prod'}
-                          </span>
-                          <span className="text-gray-900">{t(`task.${category.id}`)}</span>
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {formatDuration(category.defaultDuration)}
-                        </span>
+                        <span className="text-gray-900">{t(`task.${category.id}`)}</span>
                       </div>
                     </div>
                     <button

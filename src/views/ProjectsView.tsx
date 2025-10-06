@@ -2,19 +2,17 @@ import React, { useState } from 'react';
 import { ProjectCard } from '../components/Projects/ProjectCard';
 import { ProjectForm } from '../components/Projects/ProjectForm';
 import { ProjectGanttChart } from '../components/Gantt/ProjectGanttChart';
-import { TaskManager } from '../components/Tasks/TaskManager';
 import { useProjects } from '../hooks/useProjects';
 import { useLanguage } from '../hooks/useLanguage';
-import { Plus, Search, Grid2x2 as Grid, List } from 'lucide-react';
+import { Plus, Search, Grid, List } from 'lucide-react';
 import type { Project } from '../types';
 
 export const ProjectsView: React.FC = () => {
-  const { projects, sortProjectsByNextDate, createProject, updateProject, getTasksForProject, tasks, updateProjectTasks } = useProjects();
+  const { projects, sortProjectsByNextDate, createProject, updateProject, getTasksForProject } = useProjects();
   const { t } = useLanguage();
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectGantt, setShowProjectGantt] = useState(false);
-  const [showTaskManager, setShowTaskManager] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -57,38 +55,6 @@ export const ProjectsView: React.FC = () => {
     setSelectedProject(null);
   };
 
-  const handleManageTasks = () => {
-    setShowTaskManager(true);
-  };
-
-  const handleSaveTasks = async (updatedTasks: any[]) => {
-    if (selectedProject) {
-      await updateProjectTasks(selectedProject.id, updatedTasks);
-      setShowTaskManager(false);
-    }
-  };
-
-  const handleCloseTaskManager = () => {
-    setShowTaskManager(false);
-  };
-
-  const handleUpdateTask = async (taskId: string, updates: Partial<any>) => {
-    const projectTasks = tasks.filter(task => task.project_id === selectedProject?.id);
-    const updatedTasks = projectTasks.map(task =>
-      task.id === taskId ? { ...task, ...updates } : task
-    );
-    if (selectedProject) {
-      await updateProjectTasks(selectedProject.id, updatedTasks);
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    if (!selectedProject) return;
-    const projectTasks = tasks.filter(task => task.project_id === selectedProject.id);
-    const updatedTasks = projectTasks.filter(task => task.id !== taskId);
-    await updateProjectTasks(selectedProject.id, updatedTasks);
-  };
-
   if (showProjectGantt && selectedProject) {
     return (
       <div className="flex-1 p-6">
@@ -96,18 +62,7 @@ export const ProjectsView: React.FC = () => {
           project={selectedProject}
           tasks={getTasksForProject(selectedProject.id)}
           onBack={handleBackFromProjectGantt}
-          onManageTasks={handleManageTasks}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
         />
-        {showTaskManager && (
-          <TaskManager
-            projectId={selectedProject.id}
-            tasks={tasks.filter(task => task.project_id === selectedProject.id)}
-            onSave={handleSaveTasks}
-            onCancel={handleCloseTaskManager}
-          />
-        )}
       </div>
     );
   }
