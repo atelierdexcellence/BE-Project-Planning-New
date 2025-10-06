@@ -18,37 +18,42 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   onManageTasks
 }) => {
   const { t } = useLanguage();
-  const { timeScale, startDate, endDate } = useMemo(() => {
+  const { timeScale, startDate, endDate, dayWidth } = useMemo(() => {
     const projectStart = new Date(project.key_dates.start_in_be);
     const projectEnd = new Date(project.key_dates.last_call);
-    
-    // Add some padding to the timeline
+
+    // Add minimal padding to the timeline
     const startDate = new Date(projectStart);
-    startDate.setDate(startDate.getDate() - 7);
-    
+    startDate.setDate(startDate.getDate() - 3);
+
     const endDate = new Date(projectEnd);
-    endDate.setDate(endDate.getDate() + 7);
-    
+    endDate.setDate(endDate.getDate() + 3);
+
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const timeScale = [];
-    
+
     for (let i = 0; i < totalDays; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
       timeScale.push(date);
     }
-    
-    return { timeScale, startDate, endDate };
+
+    // Calculate day width to fit timeline to viewport
+    // Assume viewport width minus task name column (320px)
+    const availableWidth = typeof window !== 'undefined' ? window.innerWidth - 320 - 48 : 1200;
+    const dayWidth = Math.max(8, Math.floor(availableWidth / totalDays));
+
+    return { timeScale, startDate, endDate, dayWidth };
   }, [project]);
 
   const getTaskPosition = (task: Task) => {
     const taskStart = new Date(task.start_date);
     const taskEnd = new Date(task.end_date);
-    
+
     const startOffset = Math.max(0, Math.ceil((taskStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     const duration = Math.ceil((taskEnd.getTime() - taskStart.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return { startOffset, duration };
+
+    return { startOffset, duration, left: startOffset * dayWidth, width: duration * dayWidth };
   };
 
   const getPhaseColor = (phase: Task['phase']) => {
@@ -119,24 +124,25 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
         <div className="min-w-full">
           {/* Timeline Header */}
           <div className="flex border-b border-gray-200">
-            <div className="w-80 p-4 bg-gray-50 border-r border-gray-200 font-medium text-gray-900">
+            <div className="w-80 py-2 px-3 bg-gray-50 border-r border-gray-200 text-xs font-medium text-gray-900">
               {t('gantt.task_phase')}
             </div>
             <div className="flex-1 flex">
               {timeScale.map((date, index) => {
                 const isWeekendDay = isWeekend(date);
                 const showWeek = date.getDay() === 1 || index === 0;
-                
+
                 return (
                   <div
                     key={index}
-                    className={`w-4 border-r border-gray-100 ${
+                    style={{ width: `${dayWidth}px` }}
+                    className={`border-r border-gray-100 ${
                       isWeekendDay ? 'bg-gray-100' : 'bg-white'
                     }`}
                     title={date.toDateString()}
                   >
                     {showWeek && (
-                      <div className="text-xs text-gray-600 p-1 writing-mode-vertical">
+                      <div className="text-xs text-gray-600 p-1 transform rotate-90 origin-top-left whitespace-nowrap">
                         {date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                       </div>
                     )}
@@ -148,10 +154,10 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
           {/* Key Dates Row */}
           <div className="flex border-b border-gray-200 bg-blue-50">
-            <div className="w-80 p-4 border-r border-gray-200">
+            <div className="w-80 py-2 px-3 border-r border-gray-200">
               <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-900">{t('gantt.key_dates')}</span>
+                <Calendar className="h-3 w-3 text-blue-600" />
+                <span className="text-xs font-medium text-blue-900">{t('gantt.key_dates')}</span>
               </div>
             </div>
             <div className="flex-1 relative flex">
@@ -160,24 +166,25 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`w-4 border-r border-gray-100 h-12 ${
+                    style={{ width: `${dayWidth}px` }}
+                    className={`border-r border-gray-100 h-8 ${
                       isWeekendDay ? 'bg-gray-50' : 'bg-blue-50'
                     }`}
                   />
                 );
               })}
-              
+
               {/* Key Date Markers */}
               {Object.entries(project.key_dates).map(([key, dateStr]) => {
                 const date = new Date(dateStr);
                 const dayOffset = Math.ceil((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-                
+
                 if (dayOffset >= 0 && dayOffset < timeScale.length) {
                   return (
                     <div
                       key={key}
-                      className="absolute top-1/2 transform -translate-y-1/2 w-2 h-8 bg-red-500 rounded"
-                      style={{ left: `${dayOffset * 16}px` }}
+                      className="absolute top-1/2 transform -translate-y-1/2 w-1 h-6 bg-red-500 rounded"
+                      style={{ left: `${dayOffset * dayWidth}px` }}
                       title={`${key.replace('_', ' ')}: ${date.toLocaleDateString('fr-FR')}`}
                     />
                   );
@@ -189,30 +196,25 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
           {/* Task Rows */}
           {tasks.map((task) => {
-            const { startOffset, duration } = getTaskPosition(task);
+            const { left, width } = getTaskPosition(task);
             const phaseColor = getPhaseColor(task.phase);
             const statusColor = getStatusColor(task.status);
             const assignee = BE_TEAM_MEMBERS.find(m => m.id === task.assignee_id);
-            
+
             return (
               <div key={task.id} className="flex border-b border-gray-100 hover:bg-gray-50">
-                <div className="w-80 p-4 border-r border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <div 
-                      className="w-3 h-3 rounded-full"
+                <div className="w-80 py-1 px-3 border-r border-gray-200">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
                       style={{ backgroundColor: phaseColor }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-xs font-medium text-gray-900 truncate">
                         {task.name}
                       </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 text-xs rounded-full capitalize ${
-                          task.phase === 'pre_prod' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {task.phase.replace('_', '-')}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full capitalize ${
+                      <div className="flex items-center space-x-1 mt-0.5">
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full capitalize ${
                           task.status === 'completed' ? 'bg-green-100 text-green-800' :
                           task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
                           task.status === 'blocked' ? 'bg-red-100 text-red-800' :
@@ -220,41 +222,39 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                         }`}>
                           {task.status.replace('_', ' ')}
                         </span>
+                        {assignee && (
+                          <span className="text-xs text-gray-500">{assignee.initials}</span>
+                        )}
                       </div>
-                      {assignee && (
-                        <div className="flex items-center space-x-1 mt-1">
-                          <User className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs text-gray-500">{assignee.name}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex-1 relative flex">
                   {timeScale.map((date, index) => {
                     const isWeekendDay = isWeekend(date);
                     return (
                       <div
                         key={index}
-                        className={`w-4 border-r border-gray-100 h-20 ${
+                        style={{ width: `${dayWidth}px` }}
+                        className={`border-r border-gray-100 h-10 ${
                           isWeekendDay ? 'bg-gray-50' : 'bg-white'
                         }`}
                       />
                     );
                   })}
-                  
+
                   {/* Task Bar */}
                   <div
-                    className="absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center"
+                    className="absolute top-1/2 transform -translate-y-1/2 h-4 rounded flex items-center"
                     style={{
-                      left: `${startOffset * 16}px`,
-                      width: `${duration * 16}px`,
+                      left: `${left}px`,
+                      width: `${width}px`,
                       backgroundColor: statusColor,
                       opacity: 0.8
                     }}
                   >
-                    <div className="text-xs text-white px-2 truncate">
+                    <div className="text-xs text-white px-1 truncate">
                       {task.progress}%
                     </div>
                     {/* Progress overlay */}
