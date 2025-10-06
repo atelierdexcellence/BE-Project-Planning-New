@@ -72,6 +72,23 @@ export const ProjectsView: React.FC = () => {
     setShowTaskManager(false);
   };
 
+  const handleUpdateTask = async (taskId: string, updates: Partial<any>) => {
+    const projectTasks = tasks.filter(task => task.project_id === selectedProject?.id);
+    const updatedTasks = projectTasks.map(task =>
+      task.id === taskId ? { ...task, ...updates } : task
+    );
+    if (selectedProject) {
+      await updateProjectTasks(selectedProject.id, updatedTasks);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!selectedProject) return;
+    const projectTasks = tasks.filter(task => task.project_id === selectedProject.id);
+    const updatedTasks = projectTasks.filter(task => task.id !== taskId);
+    await updateProjectTasks(selectedProject.id, updatedTasks);
+  };
+
   if (showProjectGantt && selectedProject) {
     return (
       <div className="flex-1 p-6">
@@ -80,6 +97,8 @@ export const ProjectsView: React.FC = () => {
           tasks={getTasksForProject(selectedProject.id)}
           onBack={handleBackFromProjectGantt}
           onManageTasks={handleManageTasks}
+          onUpdateTask={handleUpdateTask}
+          onDeleteTask={handleDeleteTask}
         />
         {showTaskManager && (
           <TaskManager
