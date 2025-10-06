@@ -11,12 +11,16 @@ interface TaskManagerProps {
   onCancel: () => void;
 }
 
-export const TaskManager: React.FC<TaskManagerProps> = ({ 
-  projectId, 
-  tasks, 
-  onSave, 
-  onCancel 
+export const TaskManager: React.FC<TaskManagerProps> = ({
+  projectId,
+  tasks,
+  onSave,
+  onCancel
 }) => {
+  console.log('✅ TaskManager rendered');
+  console.log('📦 Project ID:', projectId);
+  console.log('📋 Tasks:', tasks);
+
   const { t } = useLanguage();
   const [enabledTasks, setEnabledTasks] = useState<Task[]>([]);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
