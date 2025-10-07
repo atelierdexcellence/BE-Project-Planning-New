@@ -24,7 +24,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   useEffect(() => {
     // Initialize with existing tasks or create default structure
     if (tasks.length > 0) {
-      setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order - b.order));
+      setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order_index - b.order_index));
     } else {
       // Create default enabled tasks for new projects
       const defaultTasks = TASK_CATEGORIES.slice(0, 5).map((category, index) => ({
@@ -33,14 +33,17 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
         name: t(`task.${category.id}`),
         category: category.id,
         phase: category.phase,
+        duration_days: category.default_duration_days,
         start_date: '',
         end_date: '',
         assignee_id: '',
         status: 'pending' as const,
         progress: 0,
         dependencies: [],
-        order: index,
-        enabled: true
+        order_index: index,
+        enabled: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }));
       setEnabledTasks(defaultTasks);
     }
@@ -66,7 +69,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     // Update order
     const reorderedTasks = newTasks.map((task, index) => ({
       ...task,
-      order: index
+      order_index: index
     }));
 
     setEnabledTasks(reorderedTasks);
@@ -83,14 +86,17 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       name: t(`task.${category}`),
       category,
       phase: categoryInfo.phase,
+      duration_days: categoryInfo.default_duration_days,
       start_date: '',
       end_date: '',
       assignee_id: '',
       status: 'pending',
       progress: 0,
       dependencies: [],
-      order: enabledTasks.length,
-      enabled: true
+      order_index: enabledTasks.length,
+      enabled: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     setEnabledTasks([...enabledTasks, newTask]);
@@ -99,7 +105,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   const handleRemoveTask = (taskId: string) => {
     const updatedTasks = enabledTasks
       .filter(task => task.id !== taskId)
-      .map((task, index) => ({ ...task, order: index }));
+      .map((task, index) => ({ ...task, order_index: index }));
     setEnabledTasks(updatedTasks);
   };
 

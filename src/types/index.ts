@@ -39,6 +39,7 @@ export interface Task {
   name: string;
   category: TaskCategory;
   phase: 'pre_prod' | 'prod';
+  duration_days: number;
   start_date: string;
   end_date: string;
   assignee_id: string;
