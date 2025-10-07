@@ -26,8 +26,8 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     if (tasks.length > 0) {
       setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order_index - b.order_index));
     } else {
-      // Create default enabled tasks for new projects
-      const defaultTasks = TASK_CATEGORIES.slice(0, 5).map((category, index) => ({
+      // Create default enabled tasks for new projects (first 11 standard tasks)
+      const defaultTasks = TASK_CATEGORIES.slice(0, 11).map((category, index) => ({
         id: `${projectId}-${category.id}`,
         project_id: projectId,
         name: t(`task.${category.id}`),
