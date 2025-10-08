@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical, Link } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical, Link, ChevronDown, ChevronRight } from 'lucide-react';
 import type { Project, Task } from '../../types';
 import { BE_TEAM_MEMBERS } from '../../types';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -34,8 +34,22 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [rowHeight, setRowHeight] = useState(80);
+  const [useScrolling, setUseScrolling] = useState(false);
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const timelineRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const toggleTaskExpanded = (taskId: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const calculateRowHeight = () => {
@@ -43,19 +57,30 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
         const viewportHeight = window.innerHeight;
         const containerTop = containerRef.current.getBoundingClientRect().top;
         const availableHeight = viewportHeight - containerTop - 40;
-        const headerHeight = 100;
+        const projectHeaderHeight = 100;
         const timelineHeaderHeight = 80;
         const keyDatesRowHeight = 48;
-        const remainingHeight = availableHeight - headerHeight - timelineHeaderHeight - keyDatesRowHeight;
-        const calculatedHeight = Math.max(60, Math.floor(remainingHeight / tasks.length));
-        setRowHeight(calculatedHeight);
-        console.log('Row height recalculated:', calculatedHeight, 'px for', tasks.length, 'tasks', 'remaining height:', remainingHeight);
+        const minRowHeight = 60;
+        const maxRowHeight = 150;
+        const remainingHeight = availableHeight - projectHeaderHeight - timelineHeaderHeight - keyDatesRowHeight;
+
+        const idealHeight = remainingHeight / tasks.length;
+
+        if (idealHeight < minRowHeight) {
+          setRowHeight(minRowHeight);
+          setUseScrolling(true);
+        } else if (idealHeight > maxRowHeight) {
+          setRowHeight(maxRowHeight);
+          setUseScrolling(true);
+        } else {
+          setRowHeight(Math.floor(idealHeight));
+          setUseScrolling(false);
+        }
       }
     };
 
-    // Use requestAnimationFrame for better timing after DOM updates
     const rafId = requestAnimationFrame(() => {
-      calculateRowHeight();
+      setTimeout(calculateRowHeight, 50);
     });
 
     window.addEventListener('resize', calculateRowHeight);
@@ -63,7 +88,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', calculateRowHeight);
     };
-  }, [tasks.length, tasks]);
+  }, [tasks.length, tasks, project.id]);
   const getWeekNumber = (date: Date): number => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -314,7 +339,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" style={useScrolling ? { maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' } : {}}>
         <div
           ref={timelineRef}
           className="min-w-full select-none"
@@ -563,53 +588,69 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 style={{ height: `${rowHeight}px` }}
               >
                 <div className="w-80 px-4 border-r border-gray-200 flex items-center">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 w-full">
                     {onReorderTasks && (
-                      <div className="cursor-move text-gray-400 hover:text-gray-600">
+                      <div className="cursor-move text-gray-400 hover:text-gray-600 flex-shrink-0">
                         <GripVertical className="h-4 w-4" />
                       </div>
                     )}
+                    <button
+                      onClick={() => toggleTaskExpanded(task.id)}
+                      className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                    >
+                      {expandedTasks.has(task.id) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: phaseColor }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
-                        onDoubleClick={() => handleTaskDoubleClick(task)}
-                        title="Double-click to edit"
-                      >
-                        {task.name}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 text-xs rounded-full capitalize ${
-                          task.phase === 'pre_prod' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {task.phase.replace('_', '-')}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full capitalize ${
-                          task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                          task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                          task.status === 'blocked' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {task.status.replace('_', ' ')}
-                        </span>
+                      <div className="flex items-center space-x-2">
+                        <p
+                          className="text-sm font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
+                          onDoubleClick={() => handleTaskDoubleClick(task)}
+                          title="Double-click to edit"
+                        >
+                          {task.name}
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {assignee && (
-                          <div className="flex items-center space-x-1">
-                            <User className="h-3 w-3 text-gray-400" />
-                            <span className="text-xs text-gray-500">{assignee.name}</span>
+                      {expandedTasks.has(task.id) && (
+                        <>
+                          <div className="flex items-center space-x-2 mt-2">
+                            <span className={`px-2 py-1 text-xs rounded-full capitalize ${
+                              task.phase === 'pre_prod' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {task.phase.replace('_', '-')}
+                            </span>
+                            <span className={`px-2 py-1 text-xs rounded-full capitalize ${
+                              task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                              task.status === 'blocked' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {task.status.replace('_', ' ')}
+                            </span>
                           </div>
-                        )}
-                        {task.dependencies && task.dependencies.length > 0 && (
-                          <div className="flex items-center space-x-1 bg-blue-50 px-2 py-0.5 rounded">
-                            <Link className="h-3 w-3 text-blue-600" />
-                            <span className="text-xs text-blue-600">{task.dependencies.length}</span>
+                          <div className="flex items-center space-x-2 mt-1">
+                            {assignee && (
+                              <div className="flex items-center space-x-1">
+                                <User className="h-3 w-3 text-gray-400" />
+                                <span className="text-xs text-gray-500">{assignee.name}</span>
+                              </div>
+                            )}
+                            {task.dependencies && task.dependencies.length > 0 && (
+                              <div className="flex items-center space-x-1 bg-blue-50 px-2 py-0.5 rounded">
+                                <Link className="h-3 w-3 text-blue-600" />
+                                <span className="text-xs text-blue-600">{task.dependencies.length}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
                     </div>
                     {onDeleteTask && (
                       <button
