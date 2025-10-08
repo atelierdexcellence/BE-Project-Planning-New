@@ -410,6 +410,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 const isMonday = date.getDay() === 1;
                 const weekNumber = getWeekNumber(date);
 
+                // Calculate days in this week (for Monday only)
                 let daysInWeek = 1;
                 if (isMonday) {
                   daysInWeek = 0;
@@ -423,17 +424,18 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                   }
                 }
 
+                // Skip Tuesday-Sunday if they're part of a week that started with Monday
                 const isTuesdayToSunday = date.getDay() >= 2 || date.getDay() === 0;
                 const mondayIndex = date.getDay() === 0 ? index - 6 : index - (date.getDay() - 1);
                 const hasMonday = mondayIndex >= 0 && timeScale[mondayIndex] && timeScale[mondayIndex].getDay() === 1;
 
                 if (isTuesdayToSunday && hasMonday) {
-                  return null;
+                  return null; // Skip rendering Tuesday-Sunday cells when Monday exists
                 }
 
                 return (
                   <div
-                    key={`week-${index}`}
+                    key={index}
                     className={`w-4 border-r border-gray-100 h-6 relative ${
                       isToday ? 'bg-green-500' :
                       isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
@@ -464,6 +466,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 const isFirstOfMonth = date.getDate() === 1;
                 const monthName = date.toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { month: 'short' });
 
+                // Calculate days in this month from current position (only for first of month)
                 let daysInMonth = 0;
                 if (isFirstOfMonth) {
                   const currentMonth = date.getMonth();
@@ -477,17 +480,18 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                   }
                 }
 
+                // Skip non-first-of-month days if they're part of a month that started with first day
                 const isNotFirstOfMonth = date.getDate() !== 1;
                 const firstOfMonthIndex = index - (date.getDate() - 1);
                 const hasFirstOfMonth = firstOfMonthIndex >= 0 && timeScale[firstOfMonthIndex] && timeScale[firstOfMonthIndex].getDate() === 1 && timeScale[firstOfMonthIndex].getMonth() === date.getMonth();
 
                 if (isNotFirstOfMonth && hasFirstOfMonth) {
-                  return null;
+                  return null; // Skip rendering non-first days when first of month exists
                 }
 
                 return (
                   <div
-                    key={`month-${index}`}
+                    key={index}
                     className={`w-4 border-r border-gray-100 h-4 relative ${
                       isToday ? 'bg-green-500' :
                       isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
@@ -514,10 +518,11 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
               {timeScale.map((date, index) => {
                 const isWeekendDay = isWeekend(date);
                 const isToday = date.toDateString() === new Date().toDateString();
+                const isNewYear = date.getMonth() === 0 && date.getDate() === 1;
 
                 return (
                   <div
-                    key={`day-${index}`}
+                    key={index}
                    className={`flex-1 border-r border-gray-100 h-3 relative ${
                       isToday ? 'bg-green-500' :
                       isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
@@ -530,6 +535,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                       }`}>
                       {date.getDate()}
                     </div>
+                    {/* Weekend grid line */}
                     {isWeekendDay && (
                       <div className="absolute inset-0 bg-gray-400 bg-opacity-20 pointer-events-none" />
                     )}
