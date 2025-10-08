@@ -33,12 +33,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   const [originalTaskData, setOriginalTaskData] = useState<{ start: string; end: string } | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'year' | 'quarter' | 'month' | 'week'>('week');
-  const [currentDate] = useState(new Date());
-  const [weekScrollOffset, setWeekScrollOffset] = useState(0);
-  const [monthScrollOffset, setMonthScrollOffset] = useState(0);
-  const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
-  const [yearScrollOffset, setYearScrollOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const getWeekNumber = (date: Date): number => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -54,53 +48,28 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   };
 
   const { timeScale, startDate, endDate } = useMemo(() => {
-    const now = new Date(currentDate);
+    // Use project key dates to determine timeline
+    const startInBE = new Date(project.key_dates.start_in_be);
+    const previewedDelivery = new Date(project.key_dates.previewed_delivery);
+    const lastCall = new Date(project.key_dates.last_call);
 
-    let startDate: Date;
-    let endDate: Date;
+    // Start date is Start In BE
+    const startDate = new Date(startInBE);
 
-    switch (viewMode) {
-      case 'week':
-        const currentDay = now.getDay();
-        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() + mondayOffset + (7 * weekScrollOffset));
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset, 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset + 1, 0);
-        break;
-      case 'quarter':
-        const currentQuarter = Math.floor(now.getMonth() / 3);
-        const targetQuarter = currentQuarter + quarterScrollOffset;
-        const targetYear = now.getFullYear() + Math.floor(targetQuarter / 4);
-        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
-        startDate = new Date(targetYear, adjustedQuarter * 3, 1);
-        endDate = new Date(targetYear, (adjustedQuarter * 3) + 3, 0);
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear() + yearScrollOffset, 0, 1);
-        endDate = new Date(now.getFullYear() + yearScrollOffset, 11, 31);
-        break;
-      default:
-        startDate = new Date(now);
-        endDate = new Date(now);
-        endDate.setMonth(endDate.getMonth() + 2);
-    }
+    // End date is the later of Previewed Delivery or Last Call
+    const endDate = lastCall > previewedDelivery ? new Date(lastCall) : new Date(previewedDelivery);
 
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     const timeScale = [];
-    
+
     for (let i = 0; i < totalDays; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
       timeScale.push(date);
     }
-    
+
     return { timeScale, startDate, endDate };
-  }, [viewMode, currentDate, weekScrollOffset, monthScrollOffset, quarterScrollOffset, yearScrollOffset]);
+  }, [project.key_dates]);
 
   const getTaskPosition = (task: Task) => {
     const taskStart = new Date(task.start_date);
@@ -269,64 +238,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     }
   };
 
-  const navigatePrevious = () => {
-    if (viewMode === 'week') {
-      setWeekScrollOffset(prev => prev - 1);
-    } else if (viewMode === 'month') {
-      setMonthScrollOffset(prev => prev - 1);
-    } else if (viewMode === 'quarter') {
-      setQuarterScrollOffset(prev => prev - 1);
-    } else if (viewMode === 'year') {
-      setYearScrollOffset(prev => prev - 1);
-    }
-  };
-
-  const navigateNext = () => {
-    if (viewMode === 'week') {
-      setWeekScrollOffset(prev => prev + 1);
-    } else if (viewMode === 'month') {
-      setMonthScrollOffset(prev => prev + 1);
-    } else if (viewMode === 'quarter') {
-      setQuarterScrollOffset(prev => prev + 1);
-    } else if (viewMode === 'year') {
-      setYearScrollOffset(prev => prev + 1);
-    }
-  };
-
-  const navigateToday = () => {
-    setWeekScrollOffset(0);
-    setMonthScrollOffset(0);
-    setQuarterScrollOffset(0);
-    setYearScrollOffset(0);
-  };
-
-  const getCurrentPeriodLabel = () => {
-    const date = new Date(currentDate);
-    switch (viewMode) {
-      case 'week':
-        const weekStart = new Date(date);
-        const currentDay = date.getDay();
-        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-        weekStart.setDate(date.getDate() + mondayOffset + (7 * weekScrollOffset));
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
-      case 'month':
-        const monthDate = new Date(date.getFullYear(), date.getMonth() + monthScrollOffset, 1);
-        return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-      case 'quarter':
-        const currentQuarter = Math.floor(date.getMonth() / 3);
-        const targetQuarter = currentQuarter + quarterScrollOffset;
-        const targetYear = date.getFullYear() + Math.floor(targetQuarter / 4);
-        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
-        return `Q${adjustedQuarter + 1} ${targetYear}`;
-      case 'year':
-        return (date.getFullYear() + yearScrollOffset).toString();
-      default:
-        return '';
-    }
-  };
-
   const beTeamMembers = BE_TEAM_MEMBERS.filter(m => project.be_team_member_ids.includes(m.id));
 
   return (
@@ -371,57 +282,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={navigatePrevious}
-              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-              title="Previous period"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div className="text-center min-w-[200px]">
-              <div className="text-sm font-medium text-gray-900">
-                {getCurrentPeriodLabel()}
-              </div>
-              <button
-                onClick={navigateToday}
-                className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                {t('gantt.today')}
-              </button>
-            </div>
-
-            <button
-              onClick={navigateNext}
-              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-              title="Next period"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex border border-gray-300 rounded-md">
-            {(['week', 'month', 'quarter', 'year'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`px-3 py-2 text-sm capitalize ${
-                  viewMode === mode
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                } ${mode === 'week' ? 'rounded-l-md' : mode === 'year' ? 'rounded-r-md' : ''}`}
-              >
-                {t(`gantt.${mode}`)}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
       
       <div className="overflow-x-auto">
@@ -573,6 +433,88 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                     )}
                   </div>
                 );
+              })}
+            </div>
+          </div>
+
+          {/* Key Dates Row */}
+          <div className="flex border-b border-gray-200 bg-blue-50">
+            <div className="w-80 p-4 border-r border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-900">{t('gantt.key_dates')}</span>
+              </div>
+            </div>
+            <div className="flex-1 relative flex">
+              {timeScale.map((date, index) => {
+                const isWeekendDay = isWeekend(date);
+                const isToday = date.toDateString() === new Date().toDateString();
+
+                return (
+                  <div
+                    key={index}
+                    className={`flex-1 border-r border-gray-100 relative h-12 min-w-0 ${
+                      isToday ? 'bg-green-100' :
+                      isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-blue-50'
+                    }`}
+                  >
+                    {/* Weekend grid line */}
+                    {isWeekendDay && (
+                      <div className="absolute inset-0 bg-gray-400 bg-opacity-30 pointer-events-none" />
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Key Date Markers */}
+              {[
+                { key: 'start_in_be', date: project.key_dates.start_in_be, color: '#3B82F6', label: 'Start In BE' },
+                { key: 'wood_foam_launch', date: project.key_dates.wood_foam_launch, color: '#F59E0B', label: 'Lancement Bois/Mousse' },
+                { key: 'previewed_delivery', date: project.key_dates.previewed_delivery, color: '#10B981', label: 'Livraison Prévue' },
+                { key: 'last_call', date: project.key_dates.last_call, color: '#EF4444', label: 'Dernier Appel' }
+              ].map(({ key, date, color: markerColor, label }) => {
+                const keyDate = new Date(date);
+                const dayWidth = 100 / timeScale.length;
+
+                // Find the exact day index for this key date
+                const keyDateDayIndex = timeScale.findIndex(timelineDate =>
+                  timelineDate.toDateString() === keyDate.toDateString()
+                );
+
+                // Position marker in the middle of the day column
+                const keyDatePercentage = keyDateDayIndex >= 0
+                  ? (keyDateDayIndex * dayWidth) + (dayWidth * 0.5)
+                  : -1;
+
+                // Only show marker if date is found in timeline
+                if (keyDatePercentage >= 0) {
+                  return (
+                    <div
+                      key={key}
+                      className="absolute w-0.5 z-20 pointer-events-none"
+                      style={{
+                        left: `${keyDatePercentage}%`,
+                        top: '8px',
+                        bottom: '8px',
+                        backgroundColor: markerColor,
+                        boxShadow: `0 0 4px ${markerColor}`
+                      }}
+                      title={`${label}: ${keyDate.toLocaleDateString('fr-FR')}`}
+                    >
+                      {/* Diamond marker at top */}
+                      <div
+                        className="absolute -top-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        style={{ backgroundColor: markerColor }}
+                      />
+                      {/* Diamond marker at bottom */}
+                      <div
+                        className="absolute -bottom-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        style={{ backgroundColor: markerColor }}
+                      />
+                    </div>
+                  );
+                }
+                return null;
               })}
             </div>
           </div>
