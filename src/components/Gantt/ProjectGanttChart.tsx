@@ -39,7 +39,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
   useEffect(() => {
     const calculateRowHeight = () => {
-      if (containerRef.current) {
+      if (containerRef.current && tasks.length > 0) {
         const viewportHeight = window.innerHeight;
         const containerTop = containerRef.current.getBoundingClientRect().top;
         const availableHeight = viewportHeight - containerTop - 40;
@@ -47,15 +47,23 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
         const timelineHeaderHeight = 80;
         const keyDatesRowHeight = 48;
         const remainingHeight = availableHeight - headerHeight - timelineHeaderHeight - keyDatesRowHeight;
-        const calculatedHeight = Math.max(60, remainingHeight / tasks.length);
+        const calculatedHeight = Math.max(60, Math.floor(remainingHeight / tasks.length));
         setRowHeight(calculatedHeight);
+        console.log('Row height recalculated:', calculatedHeight, 'px for', tasks.length, 'tasks', 'remaining height:', remainingHeight);
       }
     };
 
-    calculateRowHeight();
+    // Use requestAnimationFrame for better timing after DOM updates
+    const rafId = requestAnimationFrame(() => {
+      calculateRowHeight();
+    });
+
     window.addEventListener('resize', calculateRowHeight);
-    return () => window.removeEventListener('resize', calculateRowHeight);
-  }, [tasks.length]);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', calculateRowHeight);
+    };
+  }, [tasks.length, tasks]);
   const getWeekNumber = (date: Date): number => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
