@@ -372,12 +372,20 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                           {task.status.replace('_', ' ')}
                         </span>
                       </div>
-                      {assignee && (
-                        <div className="flex items-center space-x-1 mt-1">
-                          <User className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs text-gray-500">{assignee.name}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center space-x-2 mt-1">
+                        {assignee && (
+                          <div className="flex items-center space-x-1">
+                            <User className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-500">{assignee.name}</span>
+                          </div>
+                        )}
+                        {task.dependencies && task.dependencies.length > 0 && (
+                          <div className="flex items-center space-x-1 bg-blue-50 px-2 py-0.5 rounded">
+                            <Link className="h-3 w-3 text-blue-600" />
+                            <span className="text-xs text-blue-600">{task.dependencies.length}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     {onDeleteTask && (
                       <button
@@ -455,6 +463,60 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
             );
           })}
 
+          {/* Dependency Lines */}
+          <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+            {tasks.map((task, taskIndex) => {
+              if (!task.dependencies || task.dependencies.length === 0) return null;
+
+              return task.dependencies.map((depId) => {
+                const depTask = tasks.find(t => t.id === depId);
+                if (!depTask || !depTask.end_date || !task.start_date) return null;
+
+                const depIndex = tasks.findIndex(t => t.id === depId);
+                if (depIndex === -1) return null;
+
+                const depEndOffset = getTaskPosition(depTask).startOffset + getTaskPosition(depTask).duration;
+                const taskStartOffset = getTaskPosition(task).startOffset;
+
+                // Calculate Y positions (center of each task row)
+                const depY = (depIndex * 80) + 40 + 120; // 80px per row + header offset
+                const taskY = (taskIndex * 80) + 40 + 120;
+
+                // Calculate X positions
+                const depX = 320 + (depEndOffset * 16); // 320px left panel width
+                const taskX = 320 + (taskStartOffset * 16);
+
+                // Create a path from dependency end to task start
+                const midX = (depX + taskX) / 2;
+
+                return (
+                  <g key={`${task.id}-${depId}`}>
+                    <defs>
+                      <marker
+                        id={`arrowhead-${task.id}-${depId}`}
+                        markerWidth="10"
+                        markerHeight="10"
+                        refX="9"
+                        refY="3"
+                        orient="auto"
+                      >
+                        <polygon points="0 0, 10 3, 0 6" fill="#3B82F6" />
+                      </marker>
+                    </defs>
+                    <path
+                      d={`M ${depX} ${depY} L ${midX} ${depY} L ${midX} ${taskY} L ${taskX} ${taskY}`}
+                      stroke="#3B82F6"
+                      strokeWidth="2"
+                      fill="none"
+                      markerEnd={`url(#arrowhead-${task.id}-${depId})`}
+                      opacity="0.6"
+                    />
+                  </g>
+                );
+              });
+            })}
+          </svg>
+
           {tasks.length === 0 && (
             <div className="flex items-center justify-center py-12 text-gray-500">
               <div className="text-center">
@@ -470,6 +532,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       {editingTask && (
         <TaskEditModal
           task={editingTask}
+          allTasks={tasks}
           onSave={handleSaveTaskEdit}
           onCancel={() => setEditingTask(null)}
           projectBeTeamIds={project.be_team_member_ids}

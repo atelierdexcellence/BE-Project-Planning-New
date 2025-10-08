@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, User, TrendingUp } from 'lucide-react';
+import { X, Calendar, User, TrendingUp, Link } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import type { Task } from '../../types';
 import { BE_TEAM_MEMBERS } from '../../types';
 
 interface TaskEditModalProps {
   task: Task;
+  allTasks: Task[];
   onSave: (updates: Partial<Task>) => void;
   onCancel: () => void;
   projectBeTeamIds: string[];
@@ -13,6 +14,7 @@ interface TaskEditModalProps {
 
 export const TaskEditModal: React.FC<TaskEditModalProps> = ({
   task,
+  allTasks,
   onSave,
   onCancel,
   projectBeTeamIds
@@ -24,10 +26,12 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
     end_date: task.end_date,
     assignee_id: task.assignee_id,
     status: task.status,
-    progress: task.progress || 0
+    progress: task.progress || 0,
+    dependencies: task.dependencies || []
   });
 
   const availableMembers = BE_TEAM_MEMBERS.filter(m => projectBeTeamIds.includes(m.id));
+  const availableDependencies = allTasks.filter(t => t.id !== task.id);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,6 +153,44 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               <span>0%</span>
               <span>50%</span>
               <span>100%</span>
+            </div>
+          </div>
+
+          {/* Dependencies */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Link className="h-4 w-4 inline mr-1" />
+              {t('tasks.dependencies')}
+            </label>
+            <p className="text-xs text-gray-500 mb-2">{t('tasks.dependencies_help')}</p>
+            <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2">
+              {availableDependencies.length === 0 ? (
+                <p className="text-sm text-gray-500">{t('tasks.no_other_tasks')}</p>
+              ) : (
+                availableDependencies.map((depTask) => (
+                  <label key={depTask.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input
+                      type="checkbox"
+                      checked={formData.dependencies.includes(depTask.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            dependencies: [...formData.dependencies, depTask.id]
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            dependencies: formData.dependencies.filter(id => id !== depTask.id)
+                          });
+                        }
+                      }}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">{depTask.name}</span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
 

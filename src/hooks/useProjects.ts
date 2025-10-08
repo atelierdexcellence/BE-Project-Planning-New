@@ -296,20 +296,42 @@ export const useProjects = () => {
     const project = projects.find(p => p.id === projectId);
     if (!project) return false;
 
-    // Auto-calculate dates for tasks without them
-    const tasksWithDates = updatedTasks.map((task, index) => {
-      if (task.start_date && task.end_date) {
-        return task;
+    // Create a map for quick task lookup
+    const taskMap = new Map<string, Task>();
+    updatedTasks.forEach(task => taskMap.set(task.id, task));
+
+    // Function to calculate start date based on dependencies
+    const calculateStartDate = (task: Task): Date => {
+      // If task has dependencies, start after the latest dependency ends
+      if (task.dependencies && task.dependencies.length > 0) {
+        let latestEndDate = new Date(project.key_dates.start_in_be);
+
+        task.dependencies.forEach(depId => {
+          const depTask = taskMap.get(depId);
+          if (depTask && depTask.end_date) {
+            const depEndDate = new Date(depTask.end_date);
+            if (depEndDate > latestEndDate) {
+              latestEndDate = depEndDate;
+            }
+          }
+        });
+
+        // Start the day after the latest dependency ends
+        latestEndDate.setDate(latestEndDate.getDate() + 1);
+        return latestEndDate;
       }
 
-      // Find the previous task or use project start date
-      let startDate: Date;
-      if (index > 0 && updatedTasks[index - 1].end_date) {
-        startDate = new Date(updatedTasks[index - 1].end_date);
-        startDate.setDate(startDate.getDate() + 1);
-      } else {
-        startDate = new Date(project.key_dates.start_in_be);
+      // No dependencies - use existing start date or project start
+      if (task.start_date) {
+        return new Date(task.start_date);
       }
+
+      return new Date(project.key_dates.start_in_be);
+    };
+
+    // Recalculate dates for all tasks, respecting dependencies
+    const tasksWithDates = updatedTasks.map((task) => {
+      const startDate = calculateStartDate(task);
 
       // Calculate end date based on duration
       const endDate = new Date(startDate);

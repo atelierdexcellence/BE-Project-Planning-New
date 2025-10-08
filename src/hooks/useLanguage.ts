@@ -158,6 +158,9 @@ const translations: Record<Language, Record<string, string>> = {
     'tasks.unassigned': 'Unassigned',
     'tasks.status': 'Status',
     'tasks.progress': 'Progress',
+    'tasks.dependencies': 'Dependencies',
+    'tasks.dependencies_help': 'Select tasks that must be completed before this task can start',
+    'tasks.no_other_tasks': 'No other tasks available',
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projects in Development',
@@ -433,6 +436,9 @@ const translations: Record<Language, Record<string, string>> = {
     'tasks.unassigned': 'Non Assigné',
     'tasks.status': 'Statut',
     'tasks.progress': 'Progrès',
+    'tasks.dependencies': 'Dépendances',
+    'tasks.dependencies_help': 'Sélectionnez les tâches qui doivent être terminées avant que cette tâche puisse commencer',
+    'tasks.no_other_tasks': 'Aucune autre tâche disponible',
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projets en cours de développement',
