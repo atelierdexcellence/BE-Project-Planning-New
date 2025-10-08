@@ -293,8 +293,37 @@ export const useProjects = () => {
   const getTasksForProject = (projectId: string) => tasks.filter(t => t.project_id === projectId);
 
   const updateProjectTasks = async (projectId: string, updatedTasks: Task[]) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return false;
+
+    // Auto-calculate dates for tasks without them
+    const tasksWithDates = updatedTasks.map((task, index) => {
+      if (task.start_date && task.end_date) {
+        return task;
+      }
+
+      // Find the previous task or use project start date
+      let startDate: Date;
+      if (index > 0 && updatedTasks[index - 1].end_date) {
+        startDate = new Date(updatedTasks[index - 1].end_date);
+        startDate.setDate(startDate.getDate() + 1);
+      } else {
+        startDate = new Date(project.key_dates.start_in_be);
+      }
+
+      // Calculate end date based on duration
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + Math.max(task.duration_days - 1, 0));
+
+      return {
+        ...task,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+      };
+    });
+
     // Remove old tasks for project and add updated ones
-    setTasks(prev => [...prev.filter(t => t.project_id !== projectId), ...updatedTasks]);
+    setTasks(prev => [...prev.filter(t => t.project_id !== projectId), ...tasksWithDates]);
     return true;
   };
 

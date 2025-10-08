@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { ArrowLeft, Calendar, Clock, User, Settings, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical } from 'lucide-react';
 import type { Project, Task } from '../../types';
 import { BE_TEAM_MEMBERS } from '../../types';
 import { useLanguage } from '../../hooks/useLanguage';
+import { TaskEditModal } from '../Tasks/TaskEditModal';
 
 interface ProjectGanttChartProps {
   project: Project;
@@ -11,6 +12,7 @@ interface ProjectGanttChartProps {
   onManageTasks: () => void;
   onUpdateTask?: (taskId: string, updates: Partial<Task>) => void;
   onDeleteTask?: (taskId: string) => void;
+  onReorderTasks?: (reorderedTasks: Task[]) => void;
 }
 
 type DragMode = 'move' | 'resize-left' | 'resize-right' | null;
@@ -21,13 +23,16 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   onBack,
   onManageTasks,
   onUpdateTask,
-  onDeleteTask
+  onDeleteTask,
+  onReorderTasks
 }) => {
   const { t } = useLanguage();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [dragStartX, setDragStartX] = useState(0);
   const [originalTaskData, setOriginalTaskData] = useState<{ start: string; end: string } | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const { timeScale, startDate, endDate } = useMemo(() => {
     const projectStart = new Date(project.key_dates.start_in_be);
@@ -154,6 +159,45 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     setOriginalTaskData(null);
   };
 
+  const handleRowDragStart = (index: number) => {
+    setDraggedRowIndex(index);
+  };
+
+  const handleRowDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedRowIndex === null || draggedRowIndex === index) return;
+
+    const newTasks = [...tasks];
+    const draggedTask = newTasks[draggedRowIndex];
+    newTasks.splice(draggedRowIndex, 1);
+    newTasks.splice(index, 0, draggedTask);
+
+    const reorderedTasks = newTasks.map((task, idx) => ({
+      ...task,
+      order_index: idx
+    }));
+
+    if (onReorderTasks) {
+      onReorderTasks(reorderedTasks);
+    }
+    setDraggedRowIndex(index);
+  };
+
+  const handleRowDragEnd = () => {
+    setDraggedRowIndex(null);
+  };
+
+  const handleTaskDoubleClick = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const handleSaveTaskEdit = (updates: Partial<Task>) => {
+    if (editingTask && onUpdateTask) {
+      onUpdateTask(editingTask.id, updates);
+      setEditingTask(null);
+    }
+  };
+
   const beTeamMembers = BE_TEAM_MEMBERS.filter(m => project.be_team_member_ids.includes(m.id));
 
   return (
@@ -277,22 +321,40 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           </div>
 
           {/* Task Rows */}
-          {tasks.map((task) => {
+          {tasks.map((task, index) => {
             const { startOffset, duration } = getTaskPosition(task);
             const phaseColor = getPhaseColor(task.phase);
             const statusColor = getStatusColor(task.status);
             const assignee = BE_TEAM_MEMBERS.find(m => m.id === task.assignee_id);
-            
+
             return (
-              <div key={task.id} className="flex border-b border-gray-100 hover:bg-gray-50 group">
+              <div
+                key={task.id}
+                draggable={onReorderTasks !== undefined}
+                onDragStart={() => handleRowDragStart(index)}
+                onDragOver={(e) => handleRowDragOver(e, index)}
+                onDragEnd={handleRowDragEnd}
+                className={`flex border-b border-gray-100 hover:bg-gray-50 group ${
+                  draggedRowIndex === index ? 'opacity-50' : ''
+                }`}
+              >
                 <div className="w-80 p-4 border-r border-gray-200">
                   <div className="flex items-center space-x-3">
+                    {onReorderTasks && (
+                      <div className="cursor-move text-gray-400 hover:text-gray-600">
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                    )}
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: phaseColor }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p
+                        className="text-sm font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
+                        onDoubleClick={() => handleTaskDoubleClick(task)}
+                        title="Double-click to edit"
+                      >
                         {task.name}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
@@ -404,6 +466,15 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           )}
         </div>
       </div>
+
+      {editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          onSave={handleSaveTaskEdit}
+          onCancel={() => setEditingTask(null)}
+          projectBeTeamIds={project.be_team_member_ids}
+        />
+      )}
     </div>
   );
 };

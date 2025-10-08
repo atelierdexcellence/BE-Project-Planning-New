@@ -88,6 +88,12 @@ export const ProjectsView: React.FC = () => {
     await updateProjectTasks(selectedProject.id, updatedTasks);
   };
 
+  const handleReorderTasks = async (reorderedTasks: Task[]) => {
+    if (selectedProject) {
+      await updateProjectTasks(selectedProject.id, reorderedTasks);
+    }
+  };
+
   if (showProjectGantt && selectedProject) {
     return (
       <div className="flex-1 p-6 overflow-hidden">
@@ -98,6 +104,7 @@ export const ProjectsView: React.FC = () => {
           onManageTasks={handleManageTasks}
           onUpdateTask={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
+          onReorderTasks={handleReorderTasks}
         />
         {showTaskManager && (
           <TaskManager
