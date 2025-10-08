@@ -722,15 +722,19 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                       {/* Left resize handle */}
                       {onUpdateTask && (
                         <div
-                          className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black hover:bg-opacity-20"
+                          className="absolute left-0 top-0 bottom-0 w-3 cursor-ew-resize hover:bg-white hover:bg-opacity-30 z-20 flex items-center justify-center"
                           onMouseDown={(e) => handleTaskMouseDown(e, task.id, 'resize-left')}
-                        />
+                          title="Drag to resize start date"
+                        >
+                          <div className="w-0.5 h-4 bg-white bg-opacity-50 rounded"></div>
+                        </div>
                       )}
 
                       {/* Center drag area */}
                       <div
-                        className="flex-1 flex items-center justify-center"
+                        className="flex-1 flex items-center justify-center cursor-move"
                         onMouseDown={(e) => onUpdateTask && handleTaskMouseDown(e, task.id, 'move')}
+                        title="Drag to move task"
                       >
                         <div className="text-xs text-white px-2 truncate">
                           {task.progress}%
@@ -740,9 +744,12 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                       {/* Right resize handle */}
                       {onUpdateTask && (
                         <div
-                          className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black hover:bg-opacity-20"
+                          className="absolute right-0 top-0 bottom-0 w-3 cursor-ew-resize hover:bg-white hover:bg-opacity-30 z-20 flex items-center justify-center"
                           onMouseDown={(e) => handleTaskMouseDown(e, task.id, 'resize-right')}
-                        />
+                          title="Drag to resize end date"
+                        >
+                          <div className="w-0.5 h-4 bg-white bg-opacity-50 rounded"></div>
+                        </div>
                       )}
 
                       {/* Progress overlay */}
