@@ -151,7 +151,7 @@ const MOCK_TASKS: Task[] = [
     phase: 'prod',
     duration_days: 1,
     start_date: '2024-02-17',
-    end_date: '2024-02-18',
+    end_date: '2024-02-17',
     assignee_id: 'as',
     status: 'in_progress',
     progress: 50,
@@ -334,8 +334,11 @@ export const useProjects = () => {
       const startDate = calculateStartDate(task);
 
       // Calculate end date based on duration
+      // For a 1-day task, start and end should be the same day
+      // For a 7-day task, end should be 6 days after start (inclusive counting)
       const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + Math.max(task.duration_days - 1, 0));
+      const daysToAdd = Math.max(Math.ceil(task.duration_days) - 1, 0);
+      endDate.setDate(endDate.getDate() + daysToAdd);
 
       return {
         ...task,

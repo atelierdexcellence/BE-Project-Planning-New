@@ -154,14 +154,16 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     }
 
     if (endDayIndex >= 0) {
-      endPercentage = (endDayIndex * dayWidth) + (dayWidth * 0.5);
+      // For a task where start_date = end_date (1 day task), render full day width
+      // End at the end of the day, not the middle
+      endPercentage = (endDayIndex * dayWidth) + dayWidth;
     } else {
       // Calculate days from timeline start
       const daysFromStart = Math.floor((taskEnd.getTime() - timeScale[0].getTime()) / (1000 * 60 * 60 * 24));
-      endPercentage = (daysFromStart * dayWidth) + (dayWidth * 0.5);
+      endPercentage = (daysFromStart * dayWidth) + dayWidth;
     }
 
-    const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
+    const widthPercentage = Math.max(dayWidth, endPercentage - startPercentage);
 
     return { startPercentage, widthPercentage, dayWidth };
   };
@@ -191,7 +193,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     const task = tasks.find(t => t.id === taskId);
     if (!task || !onUpdateTask) return;
 
-    console.log('Task drag started:', { taskId, mode, task });
     setDraggedTask(taskId);
     setDragMode(mode);
     setDragStartX(e.clientX);
@@ -217,7 +218,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       const timelineWidth = timelineRef.current.offsetWidth;
       const dayWidth = timelineWidth / timeScale.length;
       const deltaDays = roundToHalfDay(deltaX / dayWidth);
-      console.log('Dragging:', { deltaX, dayWidth, deltaDays, mode: dragMode });
 
       if (dragMode === 'move') {
         const originalStart = new Date(originalTaskData.start);

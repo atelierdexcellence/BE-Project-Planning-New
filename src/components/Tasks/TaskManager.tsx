@@ -27,7 +27,8 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     // Calculate default end date (1 week from start)
     const startDate = new Date(projectStartDate);
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 7);
+    // For a 7-day task, end is 6 days after start (inclusive)
+    endDate.setDate(endDate.getDate() + 6);
     const defaultStartDate = startDate.toISOString().split('T')[0];
     const defaultEndDate = endDate.toISOString().split('T')[0];
 
@@ -96,10 +97,12 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     const categoryInfo = TASK_CATEGORIES.find(c => c.id === category);
     if (!categoryInfo) return;
 
-    // Set default dates (start at project start, 1 week duration)
+    // Set default dates (start at project start, use category duration)
     const startDate = new Date(projectStartDate);
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 7);
+    // For a 1-day task, start and end are same day. For 7-day, end is 6 days after
+    const daysToAdd = Math.max(Math.ceil(categoryInfo.default_duration_days) - 1, 0);
+    endDate.setDate(endDate.getDate() + daysToAdd);
 
     const newTask: Task = {
       id: `${projectId}-${category}`,
