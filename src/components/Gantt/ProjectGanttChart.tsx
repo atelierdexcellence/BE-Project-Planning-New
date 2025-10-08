@@ -105,11 +105,24 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   const getTaskPosition = (task: Task) => {
     const taskStart = new Date(task.start_date);
     const taskEnd = new Date(task.end_date);
-    
-    const startOffset = Math.max(0, Math.ceil((taskStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-    const duration = Math.ceil((taskEnd.getTime() - taskStart.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return { startOffset, duration };
+
+    // Calculate day width as percentage
+    const dayWidth = 100 / timeScale.length;
+
+    // Find exact day indices
+    const startDayIndex = timeScale.findIndex(timelineDate =>
+      timelineDate.toDateString() === taskStart.toDateString()
+    );
+    const endDayIndex = timeScale.findIndex(timelineDate =>
+      timelineDate.toDateString() === taskEnd.toDateString()
+    );
+
+    // Position start at left edge of start day, end at middle of end day
+    const startPercentage = startDayIndex >= 0 ? startDayIndex * dayWidth : 0;
+    const endPercentage = endDayIndex >= 0 ? (endDayIndex * dayWidth) + (dayWidth * 0.5) : 100;
+    const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
+
+    return { startPercentage, widthPercentage, dayWidth };
   };
 
   const getPhaseColor = (phase: Task['phase']) => {
@@ -144,13 +157,14 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggedTask || !dragMode || !originalTaskData || !onUpdateTask) return;
+    if (!draggedTask || !dragMode || !originalTaskData || !onUpdateTask || !timelineRef.current) return;
 
     const task = tasks.find(t => t.id === draggedTask);
     if (!task) return;
 
     const deltaX = e.clientX - dragStartX;
-    const dayWidth = 16;
+    const timelineWidth = timelineRef.current.offsetWidth;
+    const dayWidth = timelineWidth / timeScale.length;
     const deltaDays = roundToHalfDay(deltaX / dayWidth);
 
     if (dragMode === 'move') {
@@ -395,6 +409,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       
       <div className="overflow-x-auto">
         <div
+          ref={timelineRef}
           className="min-w-full select-none"
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -568,17 +583,49 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
               
               {/* Key Date Markers */}
               {Object.entries(project.key_dates).map(([key, dateStr]) => {
-                const date = new Date(dateStr);
-                const dayOffset = Math.ceil((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-                
-                if (dayOffset >= 0 && dayOffset < timeScale.length) {
+                const keyDate = new Date(dateStr);
+                const dayWidth = 100 / timeScale.length;
+
+                // Find the exact day index for this key date
+                const keyDateDayIndex = timeScale.findIndex(timelineDate =>
+                  timelineDate.toDateString() === keyDate.toDateString()
+                );
+
+                // Position marker in the middle of the day column
+                const keyDatePercentage = keyDateDayIndex >= 0
+                  ? (keyDateDayIndex * dayWidth) + (dayWidth * 0.5)
+                  : -1;
+
+                // Only show marker if date is found in timeline
+                if (keyDatePercentage >= 0) {
+                  const markerColor = key === 'wood_foam_launch' ? '#F59E0B' :
+                                     key === 'previewed_delivery' ? '#10B981' :
+                                     key === 'last_call' ? '#EF4444' : '#6B7280';
+
                   return (
                     <div
                       key={key}
-                      className="absolute top-1/2 transform -translate-y-1/2 w-2 h-8 bg-red-500 rounded"
-                      style={{ left: `${dayOffset * 16}px` }}
-                      title={`${key.replace('_', ' ')}: ${date.toLocaleDateString('fr-FR')}`}
-                    />
+                      className="absolute w-0.5 z-20 pointer-events-none"
+                      style={{
+                        left: `${keyDatePercentage}%`,
+                        top: '22px',
+                        bottom: '22px',
+                        backgroundColor: markerColor,
+                        boxShadow: `0 0 4px ${markerColor}`
+                      }}
+                      title={`${key.replace('_', ' ')}: ${keyDate.toLocaleDateString('fr-FR')}`}
+                    >
+                      {/* Diamond marker at top */}
+                      <div
+                        className="absolute -top-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        style={{ backgroundColor: markerColor }}
+                      />
+                      {/* Diamond marker at bottom */}
+                      <div
+                        className="absolute -bottom-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        style={{ backgroundColor: markerColor }}
+                      />
+                    </div>
                   );
                 }
                 return null;
@@ -588,7 +635,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
           {/* Task Rows */}
           {tasks.map((task, index) => {
-            const { startOffset, duration } = getTaskPosition(task);
+            const { startPercentage, widthPercentage } = getTaskPosition(task);
             const phaseColor = getPhaseColor(task.phase);
             const statusColor = getStatusColor(task.status);
             const assignee = BE_TEAM_MEMBERS.find(m => m.id === task.assignee_id);
@@ -668,27 +715,34 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 <div className="flex-1 relative flex">
                   {timeScale.map((date, index) => {
                     const isWeekendDay = isWeekend(date);
+                    const isToday = date.toDateString() === new Date().toDateString();
+
                     return (
                       <div
                         key={index}
-                        className={`w-4 border-r border-gray-100 h-20 ${
-                          isWeekendDay ? 'bg-gray-50' : 'bg-white'
+                        className={`flex-1 border-r border-gray-100 relative h-20 min-w-0 ${
+                          isToday ? 'bg-green-100' :
+                          isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                         }`}
-                      />
+                      >
+                        {/* Weekend grid line */}
+                        {isWeekendDay && (
+                          <div className="absolute inset-0 bg-gray-400 bg-opacity-30 pointer-events-none" />
+                        )}
+                      </div>
                     );
                   })}
                   
                   {/* Task Bar */}
                   {task.start_date && task.end_date && (
                     <div
-                      className={`absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center ${
+                      className={`absolute top-1/2 transform -translate-y-1/2 h-6 rounded flex items-center cursor-pointer z-10 shadow-sm border border-white whitespace-nowrap ${
                         draggedTask === task.id ? 'opacity-60' : 'opacity-80'
                       }`}
                       style={{
-                        left: `${startOffset * 16}px`,
-                        width: `${duration * 16}px`,
-                        backgroundColor: statusColor,
-                        cursor: onUpdateTask ? 'move' : 'default'
+                        left: `${startPercentage}%`,
+                        width: `${widthPercentage}%`,
+                        backgroundColor: statusColor
                       }}
                     >
                       {/* Left resize handle */}
