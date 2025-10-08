@@ -117,9 +117,26 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       timelineDate.toDateString() === taskEnd.toDateString()
     );
 
-    // Position start at left edge of start day, end at middle of end day
-    const startPercentage = startDayIndex >= 0 ? startDayIndex * dayWidth : 0;
-    const endPercentage = endDayIndex >= 0 ? (endDayIndex * dayWidth) + (dayWidth * 0.5) : 100;
+    // If dates are not found in timeline, calculate based on day offset from timeline start
+    let startPercentage = 0;
+    let endPercentage = 100;
+
+    if (startDayIndex >= 0) {
+      startPercentage = startDayIndex * dayWidth;
+    } else {
+      // Calculate days from timeline start
+      const daysFromStart = Math.floor((taskStart.getTime() - timeScale[0].getTime()) / (1000 * 60 * 60 * 24));
+      startPercentage = daysFromStart * dayWidth;
+    }
+
+    if (endDayIndex >= 0) {
+      endPercentage = (endDayIndex * dayWidth) + (dayWidth * 0.5);
+    } else {
+      // Calculate days from timeline start
+      const daysFromStart = Math.floor((taskEnd.getTime() - timeScale[0].getTime()) / (1000 * 60 * 60 * 24));
+      endPercentage = (daysFromStart * dayWidth) + (dayWidth * 0.5);
+    }
+
     const widthPercentage = Math.max(dayWidth * 0.5, endPercentage - startPercentage);
 
     return { startPercentage, widthPercentage, dayWidth };
