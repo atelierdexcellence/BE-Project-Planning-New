@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical, Link } from 'lucide-react';
 import type { Project, Task } from '../../types';
 import { BE_TEAM_MEMBERS } from '../../types';
 import { useLanguage } from '../../hooks/useLanguage';
