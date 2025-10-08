@@ -26,26 +26,71 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   onDeleteTask,
   onReorderTasks
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [dragStartX, setDragStartX] = useState(0);
   const [originalTaskData, setOriginalTaskData] = useState<{ start: string; end: string } | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'year' | 'quarter' | 'month' | 'week'>('week');
+  const [currentDate] = useState(new Date());
+  const [weekScrollOffset, setWeekScrollOffset] = useState(0);
+  const [monthScrollOffset, setMonthScrollOffset] = useState(0);
+  const [quarterScrollOffset, setQuarterScrollOffset] = useState(0);
+  const [yearScrollOffset, setYearScrollOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const getWeekNumber = (date: Date): number => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
+  const isWeekend = (date: Date): boolean => {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  };
+
   const { timeScale, startDate, endDate } = useMemo(() => {
-    const projectStart = new Date(project.key_dates.start_in_be);
-    const projectEnd = new Date(project.key_dates.last_call);
-    
-    // Add some padding to the timeline
-    const startDate = new Date(projectStart);
-    startDate.setDate(startDate.getDate() - 7);
-    
-    const endDate = new Date(projectEnd);
-    endDate.setDate(endDate.getDate() + 7);
-    
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const now = new Date(currentDate);
+
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (viewMode) {
+      case 'week':
+        const currentDay = now.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() + mondayOffset + (7 * weekScrollOffset));
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset, 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + monthScrollOffset + 1, 0);
+        break;
+      case 'quarter':
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        const targetQuarter = currentQuarter + quarterScrollOffset;
+        const targetYear = now.getFullYear() + Math.floor(targetQuarter / 4);
+        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+        startDate = new Date(targetYear, adjustedQuarter * 3, 1);
+        endDate = new Date(targetYear, (adjustedQuarter * 3) + 3, 0);
+        break;
+      case 'year':
+        startDate = new Date(now.getFullYear() + yearScrollOffset, 0, 1);
+        endDate = new Date(now.getFullYear() + yearScrollOffset, 11, 31);
+        break;
+      default:
+        startDate = new Date(now);
+        endDate = new Date(now);
+        endDate.setMonth(endDate.getMonth() + 2);
+    }
+
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     const timeScale = [];
     
     for (let i = 0; i < totalDays; i++) {
@@ -55,7 +100,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     }
     
     return { timeScale, startDate, endDate };
-  }, [project]);
+  }, [viewMode, currentDate, weekScrollOffset, monthScrollOffset, quarterScrollOffset, yearScrollOffset]);
 
   const getTaskPosition = (task: Task) => {
     const taskStart = new Date(task.start_date);
@@ -79,11 +124,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       blocked: '#EF4444'
     };
     return colors[status];
-  };
-
-  const isWeekend = (date: Date) => {
-    const day = date.getDay();
-    return day === 0 || day === 6;
   };
 
   const roundToHalfDay = (days: number) => {
@@ -198,6 +238,64 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     }
   };
 
+  const navigatePrevious = () => {
+    if (viewMode === 'week') {
+      setWeekScrollOffset(prev => prev - 1);
+    } else if (viewMode === 'month') {
+      setMonthScrollOffset(prev => prev - 1);
+    } else if (viewMode === 'quarter') {
+      setQuarterScrollOffset(prev => prev - 1);
+    } else if (viewMode === 'year') {
+      setYearScrollOffset(prev => prev - 1);
+    }
+  };
+
+  const navigateNext = () => {
+    if (viewMode === 'week') {
+      setWeekScrollOffset(prev => prev + 1);
+    } else if (viewMode === 'month') {
+      setMonthScrollOffset(prev => prev + 1);
+    } else if (viewMode === 'quarter') {
+      setQuarterScrollOffset(prev => prev + 1);
+    } else if (viewMode === 'year') {
+      setYearScrollOffset(prev => prev + 1);
+    }
+  };
+
+  const navigateToday = () => {
+    setWeekScrollOffset(0);
+    setMonthScrollOffset(0);
+    setQuarterScrollOffset(0);
+    setYearScrollOffset(0);
+  };
+
+  const getCurrentPeriodLabel = () => {
+    const date = new Date(currentDate);
+    switch (viewMode) {
+      case 'week':
+        const weekStart = new Date(date);
+        const currentDay = date.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        weekStart.setDate(date.getDate() + mondayOffset + (7 * weekScrollOffset));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        return `${weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+      case 'month':
+        const monthDate = new Date(date.getFullYear(), date.getMonth() + monthScrollOffset, 1);
+        return monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      case 'quarter':
+        const currentQuarter = Math.floor(date.getMonth() / 3);
+        const targetQuarter = currentQuarter + quarterScrollOffset;
+        const targetYear = date.getFullYear() + Math.floor(targetQuarter / 4);
+        const adjustedQuarter = ((targetQuarter % 4) + 4) % 4;
+        return `Q${adjustedQuarter + 1} ${targetYear}`;
+      case 'year':
+        return (date.getFullYear() + yearScrollOffset).toString();
+      default:
+        return '';
+    }
+  };
+
   const beTeamMembers = BE_TEAM_MEMBERS.filter(m => project.be_team_member_ids.includes(m.id));
 
   return (
@@ -241,6 +339,58 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
             </div>
           </div>
         </div>
+
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={navigatePrevious}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Previous period"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="text-center min-w-[200px]">
+              <div className="text-sm font-medium text-gray-900">
+                {getCurrentPeriodLabel()}
+              </div>
+              <button
+                onClick={navigateToday}
+                className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                {t('gantt.today')}
+              </button>
+            </div>
+
+            <button
+              onClick={navigateNext}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Next period"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex border border-gray-300 rounded-md">
+            {(['week', 'month', 'quarter', 'year'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`px-3 py-2 text-sm capitalize ${
+                  viewMode === mode
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } ${mode === 'week' ? 'rounded-l-md' : mode === 'year' ? 'rounded-r-md' : ''}`}
+              >
+                {t(`gantt.${mode}`)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       
       <div className="overflow-x-auto">
@@ -251,28 +401,143 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           onMouseLeave={handleMouseUp}
         >
           {/* Timeline Header */}
-          <div className="flex border-b border-gray-200">
-            <div className="w-80 p-4 bg-gray-50 border-r border-gray-200 font-medium text-gray-900">
-              {t('gantt.task_phase')}
-            </div>
-            <div className="flex-1 flex">
+          <div className="border-b border-gray-200 sticky top-0 bg-white z-20">
+            {/* Week Numbers Row */}
+            <div className="flex border-b border-gray-100">
+              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
+                {t('gantt.week')}
+              </div>
               {timeScale.map((date, index) => {
+                const isToday = date.toDateString() === new Date().toDateString();
                 const isWeekendDay = isWeekend(date);
-                const showWeek = date.getDay() === 1 || index === 0;
-                
+                const isMonday = date.getDay() === 1;
+                const weekNumber = getWeekNumber(date);
+
+                let daysInWeek = 1;
+                if (isMonday) {
+                  daysInWeek = 0;
+                  for (let i = 0; i < 7 && (index + i) < timeScale.length; i++) {
+                    const checkDate = timeScale[index + i];
+                    if (checkDate.getDay() === (1 + i) % 7 || (i === 6 && checkDate.getDay() === 0)) {
+                      daysInWeek++;
+                    } else {
+                      break;
+                    }
+                  }
+                }
+
+                const isTuesdayToSunday = date.getDay() >= 2 || date.getDay() === 0;
+                const mondayIndex = date.getDay() === 0 ? index - 6 : index - (date.getDay() - 1);
+                const hasMonday = mondayIndex >= 0 && timeScale[mondayIndex] && timeScale[mondayIndex].getDay() === 1;
+
+                if (isTuesdayToSunday && hasMonday) {
+                  return null;
+                }
+
                 return (
                   <div
-                    key={index}
-                    className={`w-4 border-r border-gray-100 ${
-                      isWeekendDay ? 'bg-gray-100' : 'bg-white'
+                    key={`week-${index}`}
+                    className={`w-4 border-r border-gray-100 h-6 relative ${
+                      isToday ? 'bg-green-500' :
+                      isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                     }`}
-                    title={date.toDateString()}
+                    style={isMonday ? { flex: daysInWeek } : { flex: 1 }}
                   >
-                    {showWeek && (
-                      <div className="text-xs text-gray-600 p-1 writing-mode-vertical">
-                        {date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                    {isMonday && (
+                      <div className={`text-xs p-1 font-medium text-center leading-none absolute inset-0 flex items-center justify-center ${
+                        isToday ? 'text-white font-bold' :
+                        'text-gray-700'
+                      }`}>
+                        {viewMode === 'year'
+                          ? (language === 'en' ? `W${weekNumber}` : `S${weekNumber}`)
+                          : (language === 'en' ? `W${weekNumber} ${date.getFullYear()}` : `S${weekNumber} ${date.getFullYear()}`)
+                        }
                       </div>
                     )}
+                  </div>
+                );
+              }).filter(Boolean)}
+            </div>
+
+            {/* Months Row */}
+            <div className="flex border-b border-gray-100">
+              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
+                {t('gantt.month')}
+              </div>
+              {timeScale.map((date, index) => {
+                const isWeekendDay = isWeekend(date);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isFirstOfMonth = date.getDate() === 1;
+                const monthName = date.toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { month: 'short' });
+
+                let daysInMonth = 0;
+                if (isFirstOfMonth) {
+                  for (let i = 0; i < 31 && (index + i) < timeScale.length; i++) {
+                    const checkDate = timeScale[index + i];
+                    if (checkDate.getMonth() === date.getMonth()) {
+                      daysInMonth++;
+                    } else {
+                      break;
+                    }
+                  }
+                }
+
+                const isNotFirstOfMonth = date.getDate() > 1;
+                const prevIndex = index - 1;
+                const prevDateInSameMonth = prevIndex >= 0 && timeScale[prevIndex] &&
+                  timeScale[prevIndex].getMonth() === date.getMonth();
+
+                if (isNotFirstOfMonth && prevDateInSameMonth) {
+                  return null;
+                }
+
+                return (
+                  <div
+                    key={`month-${index}`}
+                    className={`w-4 border-r border-gray-200 h-8 relative ${
+                      isToday ? 'bg-green-500' :
+                      isWeekendDay ? 'bg-gray-200' : 'bg-white'
+                    }`}
+                    style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
+                  >
+                    {isFirstOfMonth && (
+                      <div className={`text-xs p-1 font-semibold text-center leading-none absolute inset-0 flex items-center justify-center ${
+                        isToday ? 'text-white' :
+                        'text-gray-800'
+                      }`}>
+                        {monthName} {date.getFullYear()}
+                      </div>
+                    )}
+                  </div>
+                );
+              }).filter(Boolean)}
+            </div>
+
+            {/* Days Row */}
+            <div className="flex border-b border-gray-200">
+              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
+                {t('gantt.task_phase')}
+              </div>
+              {timeScale.map((date, index) => {
+                const isWeekendDay = isWeekend(date);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const dayNumber = date.getDate();
+
+                return (
+                  <div
+                    key={`day-${index}`}
+                    className={`w-4 border-r border-gray-100 h-8 relative flex items-center justify-center ${
+                      isToday ? 'bg-green-500' :
+                      isWeekendDay ? 'bg-gray-100' : 'bg-white'
+                    }`}
+                  >
+                    <div className={`text-xs font-medium ${
+                      isToday ? 'text-white font-bold' :
+                      isWeekendDay ? 'text-gray-500' :
+                      'text-gray-700'
+                    }`}>
+                      {dayNumber}
+                    </div>
                   </div>
                 );
               })}

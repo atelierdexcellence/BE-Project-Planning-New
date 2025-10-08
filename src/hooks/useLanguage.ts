@@ -96,7 +96,7 @@ const translations: Record<Language, Record<string, string>> = {
     'gantt.tasks_appear': 'Tasks will appear here once they are created.',
     'gantt.manage_tasks': 'Manage Tasks',
     'gantt.today': 'Today',
-    
+
     // Key Dates
     'gantt.wood_foam_launch': 'Wood/Foam Launch',
     'gantt.previewed_delivery': 'Previewed Delivery',
@@ -374,7 +374,7 @@ const translations: Record<Language, Record<string, string>> = {
     'gantt.tasks_appear': 'Les tâches apparaîtront ici une fois créées.',
     'gantt.manage_tasks': 'Gérer les Tâches',
     'gantt.today': 'Aujourd\'hui',
-    
+
     // Key Dates
     'gantt.wood_foam_launch': 'Lancement Bois/Mousse',
     'gantt.previewed_delivery': 'Livraison Prévue',
