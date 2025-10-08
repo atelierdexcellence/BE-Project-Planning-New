@@ -197,62 +197,83 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     setOriginalTaskData({ start: task.start_date, end: task.end_date });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggedTask || !dragMode || !originalTaskData || !onUpdateTask || !timelineRef.current) return;
-
-    const task = tasks.find(t => t.id === draggedTask);
-    if (!task) return;
-
-    const deltaX = e.clientX - dragStartX;
-    const timelineWidth = timelineRef.current.offsetWidth;
-    const dayWidth = timelineWidth / timeScale.length;
-    const deltaDays = roundToHalfDay(deltaX / dayWidth);
-
-    if (dragMode === 'move') {
-      const originalStart = new Date(originalTaskData.start);
-      const originalEnd = new Date(originalTaskData.end);
-
-      const newStart = new Date(originalStart);
-      newStart.setDate(newStart.getDate() + deltaDays);
-
-      const newEnd = new Date(originalEnd);
-      newEnd.setDate(newEnd.getDate() + deltaDays);
-
-      onUpdateTask(draggedTask, {
-        start_date: newStart.toISOString().split('T')[0],
-        end_date: newEnd.toISOString().split('T')[0]
-      });
-    } else if (dragMode === 'resize-left') {
-      const originalStart = new Date(originalTaskData.start);
-      const newStart = new Date(originalStart);
-      newStart.setDate(newStart.getDate() + deltaDays);
-
-      const endDate = new Date(task.end_date);
-      if (newStart < endDate) {
-        onUpdateTask(draggedTask, {
-          start_date: newStart.toISOString().split('T')[0]
-        });
-      }
-    } else if (dragMode === 'resize-right') {
-      const originalEnd = new Date(originalTaskData.end);
-      const newEnd = new Date(originalEnd);
-      newEnd.setDate(newEnd.getDate() + deltaDays);
-
-      const startDate = new Date(task.start_date);
-      if (newEnd > startDate) {
-        onUpdateTask(draggedTask, {
-          end_date: newEnd.toISOString().split('T')[0]
-        });
-      }
-    }
-  };
-
   const handleMouseUp = () => {
     setDraggedTask(null);
     setDragMode(null);
     setDragStartX(0);
     setOriginalTaskData(null);
   };
+
+  // Global mouse move handler for task dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!draggedTask || !dragMode || !originalTaskData || !onUpdateTask || !timelineRef.current) return;
+
+      const task = tasks.find(t => t.id === draggedTask);
+      if (!task) return;
+
+      const deltaX = e.clientX - dragStartX;
+      const timelineWidth = timelineRef.current.offsetWidth;
+      const dayWidth = timelineWidth / timeScale.length;
+      const deltaDays = roundToHalfDay(deltaX / dayWidth);
+
+      if (dragMode === 'move') {
+        const originalStart = new Date(originalTaskData.start);
+        const originalEnd = new Date(originalTaskData.end);
+
+        const newStart = new Date(originalStart);
+        newStart.setDate(newStart.getDate() + deltaDays);
+
+        const newEnd = new Date(originalEnd);
+        newEnd.setDate(newEnd.getDate() + deltaDays);
+
+        onUpdateTask(draggedTask, {
+          start_date: newStart.toISOString().split('T')[0],
+          end_date: newEnd.toISOString().split('T')[0]
+        });
+      } else if (dragMode === 'resize-left') {
+        const originalStart = new Date(originalTaskData.start);
+        const newStart = new Date(originalStart);
+        newStart.setDate(newStart.getDate() + deltaDays);
+
+        const endDate = new Date(task.end_date);
+        if (newStart < endDate) {
+          onUpdateTask(draggedTask, {
+            start_date: newStart.toISOString().split('T')[0]
+          });
+        }
+      } else if (dragMode === 'resize-right') {
+        const originalEnd = new Date(originalTaskData.end);
+        const newEnd = new Date(originalEnd);
+        newEnd.setDate(newEnd.getDate() + deltaDays);
+
+        const startDate = new Date(task.start_date);
+        if (newEnd > startDate) {
+          onUpdateTask(draggedTask, {
+            end_date: newEnd.toISOString().split('T')[0]
+          });
+        }
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      handleMouseUp();
+    };
+
+    if (draggedTask && dragMode) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.body.style.cursor = dragMode === 'move' ? 'grabbing' : 'ew-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [draggedTask, dragMode, dragStartX, originalTaskData, tasks, onUpdateTask, timeScale]);
 
   const handleRowDragStart = (index: number) => {
     setDraggedRowIndex(index);
@@ -364,9 +385,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
         <div
           ref={timelineRef}
           className="min-w-full select-none"
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
         >
           {/* Timeline Header */}
           <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-full">
