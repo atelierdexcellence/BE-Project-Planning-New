@@ -119,7 +119,14 @@ export const BE_TEAM_MEMBERS = [
 ];
 
 export const COMMERCIAL_USERS = [
-  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial' as const, initials: 'V' }
+  { id: 'nicolas', name: 'Nicolas', email: 'nicolas@company.com', role: 'commercial' as const, initials: 'N' },
+  { id: 'alain', name: 'Alain', email: 'alain@company.com', role: 'commercial' as const, initials: 'A' },
+  { id: 'aurelie', name: 'Aurélie', email: 'aurelie@company.com', role: 'commercial' as const, initials: 'Au' },
+  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial' as const, initials: 'V' },
+  { id: 'paul', name: 'Paul', email: 'paul@company.com', role: 'commercial' as const, initials: 'P' },
+  { id: 'victoria', name: 'Victoria', email: 'victoria@company.com', role: 'commercial' as const, initials: 'Vi' },
+  { id: 'louise', name: 'Louise', email: 'louise@company.com', role: 'commercial' as const, initials: 'L' },
+  { id: 'laurie', name: 'Laurie', email: 'laurie@company.com', role: 'commercial' as const, initials: 'La' }
 ];
 
 export const TEAM_MEMBERS = [
