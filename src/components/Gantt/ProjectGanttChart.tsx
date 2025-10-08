@@ -401,12 +401,9 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           onMouseLeave={handleMouseUp}
         >
           {/* Timeline Header */}
-          <div className="border-b border-gray-200 sticky top-0 bg-white z-20">
+          <div className="border-b border-gray-200 sticky top-0 bg-white z-20 min-w-full">
             {/* Week Numbers Row */}
             <div className="flex border-b border-gray-100">
-              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
-                {t('gantt.week')}
-              </div>
               {timeScale.map((date, index) => {
                 const isToday = date.toDateString() === new Date().toDateString();
                 const isWeekendDay = isWeekend(date);
@@ -461,9 +458,6 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
             {/* Months Row */}
             <div className="flex border-b border-gray-100">
-              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
-                {t('gantt.month')}
-              </div>
               {timeScale.map((date, index) => {
                 const isWeekendDay = isWeekend(date);
                 const isToday = date.toDateString() === new Date().toDateString();
@@ -472,9 +466,10 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
                 let daysInMonth = 0;
                 if (isFirstOfMonth) {
-                  for (let i = 0; i < 31 && (index + i) < timeScale.length; i++) {
+                  const currentMonth = date.getMonth();
+                  for (let i = 0; (index + i) < timeScale.length; i++) {
                     const checkDate = timeScale[index + i];
-                    if (checkDate.getMonth() === date.getMonth()) {
+                    if (checkDate.getMonth() === currentMonth) {
                       daysInMonth++;
                     } else {
                       break;
@@ -482,30 +477,31 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                   }
                 }
 
-                const isNotFirstOfMonth = date.getDate() > 1;
-                const prevIndex = index - 1;
-                const prevDateInSameMonth = prevIndex >= 0 && timeScale[prevIndex] &&
-                  timeScale[prevIndex].getMonth() === date.getMonth();
+                const isNotFirstOfMonth = date.getDate() !== 1;
+                const firstOfMonthIndex = index - (date.getDate() - 1);
+                const hasFirstOfMonth = firstOfMonthIndex >= 0 && timeScale[firstOfMonthIndex] && timeScale[firstOfMonthIndex].getDate() === 1 && timeScale[firstOfMonthIndex].getMonth() === date.getMonth();
 
-                if (isNotFirstOfMonth && prevDateInSameMonth) {
+                if (isNotFirstOfMonth && hasFirstOfMonth) {
                   return null;
                 }
 
                 return (
                   <div
                     key={`month-${index}`}
-                    className={`w-4 border-r border-gray-200 h-8 relative ${
+                    className={`w-4 border-r border-gray-100 h-4 relative ${
                       isToday ? 'bg-green-500' :
-                      isWeekendDay ? 'bg-gray-200' : 'bg-white'
+                      isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                     }`}
                     style={isFirstOfMonth ? { flex: daysInMonth } : { flex: 1 }}
                   >
                     {isFirstOfMonth && (
-                      <div className={`text-xs p-1 font-semibold text-center leading-none absolute inset-0 flex items-center justify-center ${
-                        isToday ? 'text-white' :
-                        'text-gray-800'
-                      }`}>
-                        {monthName} {date.getFullYear()}
+                      <div className={`text-xs font-medium text-center leading-none absolute inset-0 flex items-center justify-center border border-gray-300 bg-white ${
+                          isToday ? 'text-white bg-green-500 border-green-600 font-bold' : 'text-gray-700'
+                        }`}>
+                        {viewMode === 'year'
+                          ? monthName
+                          : `${monthName} ${date.getFullYear()}`
+                        }
                       </div>
                     )}
                   </div>
@@ -513,31 +509,30 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
               }).filter(Boolean)}
             </div>
 
-            {/* Days Row */}
-            <div className="flex border-b border-gray-200">
-              <div className="w-80 p-2 bg-gray-50 border-r border-gray-200 font-medium text-gray-900 text-xs">
-                {t('gantt.task_phase')}
-              </div>
+            {/* Dates Row */}
+            <div className="flex">
               {timeScale.map((date, index) => {
                 const isWeekendDay = isWeekend(date);
                 const isToday = date.toDateString() === new Date().toDateString();
-                const dayNumber = date.getDate();
 
                 return (
                   <div
                     key={`day-${index}`}
-                    className={`w-4 border-r border-gray-100 h-8 relative flex items-center justify-center ${
+                   className={`flex-1 border-r border-gray-100 h-3 relative ${
                       isToday ? 'bg-green-500' :
-                      isWeekendDay ? 'bg-gray-100' : 'bg-white'
+                      isWeekendDay ? 'bg-gray-400 bg-opacity-30' : 'bg-gray-50'
                     }`}
+                    title={date.toLocaleDateString('fr-FR')}
                   >
-                    <div className={`text-xs font-medium ${
-                      isToday ? 'text-white font-bold' :
-                      isWeekendDay ? 'text-gray-500' :
-                      'text-gray-700'
-                    }`}>
-                      {dayNumber}
+                   <div className={`text-xs font-medium flex items-center justify-center h-full leading-none ${
+                        isToday ? 'text-white font-bold' :
+                        'text-gray-700'
+                      }`}>
+                      {date.getDate()}
                     </div>
+                    {isWeekendDay && (
+                      <div className="absolute inset-0 bg-gray-400 bg-opacity-20 pointer-events-none" />
+                    )}
                   </div>
                 );
               })}
