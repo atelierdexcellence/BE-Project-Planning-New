@@ -6,25 +6,41 @@ import { TASK_CATEGORIES } from '../../types';
 
 interface TaskManagerProps {
   projectId: string;
+  projectStartDate: string;
   tasks: Task[];
   onSave: (tasks: Task[]) => void;
   onCancel: () => void;
 }
 
-export const TaskManager: React.FC<TaskManagerProps> = ({ 
-  projectId, 
-  tasks, 
-  onSave, 
-  onCancel 
+export const TaskManager: React.FC<TaskManagerProps> = ({
+  projectId,
+  projectStartDate,
+  tasks,
+  onSave,
+  onCancel
 }) => {
   const { t } = useLanguage();
   const [enabledTasks, setEnabledTasks] = useState<Task[]>([]);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
 
   useEffect(() => {
+    // Calculate default end date (1 week from start)
+    const startDate = new Date(projectStartDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 7);
+    const defaultStartDate = startDate.toISOString().split('T')[0];
+    const defaultEndDate = endDate.toISOString().split('T')[0];
+
     // Initialize with existing tasks or create default structure
     if (tasks.length > 0) {
-      setEnabledTasks(tasks.filter(task => task.enabled).sort((a, b) => a.order_index - b.order_index));
+      const filteredTasks = tasks.filter(task => task.enabled).sort((a, b) => a.order_index - b.order_index);
+      // Set default dates for tasks that don't have them
+      const tasksWithDates = filteredTasks.map(task => ({
+        ...task,
+        start_date: task.start_date || defaultStartDate,
+        end_date: task.end_date || defaultEndDate
+      }));
+      setEnabledTasks(tasksWithDates);
     } else {
       // Create default enabled tasks for new projects (first 11 standard tasks)
       const defaultTasks = TASK_CATEGORIES.slice(0, 11).map((category, index) => ({
@@ -34,8 +50,8 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
         category: category.id,
         phase: category.phase,
         duration_days: category.default_duration_days,
-        start_date: '',
-        end_date: '',
+        start_date: defaultStartDate,
+        end_date: defaultEndDate,
         assignee_id: '',
         status: 'pending' as const,
         progress: 0,
@@ -47,7 +63,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       }));
       setEnabledTasks(defaultTasks);
     }
-  }, [tasks, projectId, t]);
+  }, [tasks, projectId, projectStartDate, t]);
 
   const handleDragStart = (index: number) => {
     setDraggedItem(index);
@@ -80,6 +96,11 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     const categoryInfo = TASK_CATEGORIES.find(c => c.id === category);
     if (!categoryInfo) return;
 
+    // Set default dates (start at project start, 1 week duration)
+    const startDate = new Date(projectStartDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 7);
+
     const newTask: Task = {
       id: `${projectId}-${category}`,
       project_id: projectId,
@@ -87,8 +108,8 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       category,
       phase: categoryInfo.phase,
       duration_days: categoryInfo.default_duration_days,
-      start_date: '',
-      end_date: '',
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
       assignee_id: '',
       status: 'pending',
       progress: 0,

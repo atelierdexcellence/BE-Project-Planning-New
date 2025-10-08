@@ -111,6 +111,7 @@ export const GanttView: React.FC = () => {
         {showTaskManager && (
           <TaskManager
             projectId={selectedProject.id}
+            projectStartDate={selectedProject.key_dates.start_in_be}
             tasks={tasks.filter(task => task.project_id === selectedProject.id)}
             onSave={handleSaveTasks}
             onCancel={handleCloseTaskManager}
