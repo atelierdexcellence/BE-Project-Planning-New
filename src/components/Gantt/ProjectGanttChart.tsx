@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, User, Settings, Trash2, GripVertical, Link } from 'lucide-react';
 import type { Project, Task } from '../../types';
 import { BE_TEAM_MEMBERS } from '../../types';
@@ -33,7 +33,29 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   const [originalTaskData, setOriginalTaskData] = useState<{ start: string; end: string } | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
+  const [rowHeight, setRowHeight] = useState(80);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const calculateRowHeight = () => {
+      if (containerRef.current) {
+        const viewportHeight = window.innerHeight;
+        const containerTop = containerRef.current.getBoundingClientRect().top;
+        const availableHeight = viewportHeight - containerTop - 40;
+        const headerHeight = 100;
+        const timelineHeaderHeight = 80;
+        const keyDatesRowHeight = 48;
+        const remainingHeight = availableHeight - headerHeight - timelineHeaderHeight - keyDatesRowHeight;
+        const calculatedHeight = Math.max(60, remainingHeight / tasks.length);
+        setRowHeight(calculatedHeight);
+      }
+    };
+
+    calculateRowHeight();
+    window.addEventListener('resize', calculateRowHeight);
+    return () => window.removeEventListener('resize', calculateRowHeight);
+  }, [tasks.length]);
   const getWeekNumber = (date: Date): number => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -241,7 +263,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
   const beTeamMembers = BE_TEAM_MEMBERS.filter(m => project.be_team_member_ids.includes(m.id));
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div ref={containerRef} className="bg-white rounded-lg shadow-sm border">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -530,8 +552,9 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 className={`flex border-b border-gray-100 hover:bg-gray-50 group ${
                   draggedRowIndex === index ? 'opacity-50' : ''
                 }`}
+                style={{ height: `${rowHeight}px` }}
               >
-                <div className="w-80 p-4 border-r border-gray-200">
+                <div className="w-80 px-4 border-r border-gray-200 flex items-center">
                   <div className="flex items-center space-x-3">
                     {onReorderTasks && (
                       <div className="cursor-move text-gray-400 hover:text-gray-600">
@@ -600,10 +623,11 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                     return (
                       <div
                         key={index}
-                        className={`flex-1 border-r border-gray-100 relative h-20 min-w-0 ${
+                        className={`flex-1 border-r border-gray-100 relative min-w-0 ${
                           isToday ? 'bg-green-100' :
                           isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-white'
                         }`}
+                        style={{ height: `${rowHeight}px` }}
                       >
                         {/* Weekend grid line */}
                         {isWeekendDay && (
