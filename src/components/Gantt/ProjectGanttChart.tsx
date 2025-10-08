@@ -59,7 +59,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
         const availableHeight = viewportHeight - containerTop - 40;
         const projectHeaderHeight = 100;
         const timelineHeaderHeight = 80;
-        const keyDatesRowHeight = 48;
+        const keyDatesRowHeight = 24;
         const minRowHeight = 60;
         const maxRowHeight = 150;
         const remainingHeight = availableHeight - projectHeaderHeight - timelineHeaderHeight - keyDatesRowHeight;
@@ -337,6 +337,27 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
           </div>
         </div>
 
+        {/* Key Dates Legend */}
+        <div className="mt-4 flex items-center space-x-4 text-xs text-gray-600">
+          <span className="font-medium text-gray-700">Key Dates:</span>
+          <div className="flex items-center space-x-1">
+            <div className="w-0.5 h-4 bg-blue-500" />
+            <span>Start In BE</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-0.5 h-4 bg-orange-500" />
+            <span>Wood/Foam Launch</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-0.5 h-4 bg-green-500" />
+            <span>Previewed Delivery</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-0.5 h-4 bg-red-500" />
+            <span>Last Call</span>
+          </div>
+        </div>
+
       </div>
       
       <div className="overflow-x-auto" style={useScrolling ? { maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' } : {}}>
@@ -488,10 +509,10 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
 
           {/* Key Dates Row */}
           <div className="flex border-b border-gray-200 bg-blue-50">
-            <div className="w-80 p-4 border-r border-gray-200">
+            <div className="w-80 py-1 px-4 border-r border-gray-200 flex items-center">
               <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-900">{t('gantt.key_dates')}</span>
+                <Calendar className="h-3 w-3 text-blue-600" />
+                <span className="text-xs font-medium text-blue-900">{t('gantt.key_dates')}</span>
               </div>
             </div>
             <div className="flex-1 relative flex">
@@ -502,7 +523,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`flex-1 border-r border-gray-100 relative h-12 min-w-0 ${
+                    className={`flex-1 border-r border-gray-100 relative h-6 min-w-0 ${
                       isToday ? 'bg-green-100' :
                       isWeekendDay ? 'bg-gray-400 bg-opacity-20' : 'bg-blue-50'
                     }`}
@@ -543,8 +564,8 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                       className="absolute w-0.5 z-20 pointer-events-none"
                       style={{
                         left: `${keyDatePercentage}%`,
-                        top: '8px',
-                        bottom: '8px',
+                        top: '4px',
+                        bottom: '4px',
                         backgroundColor: markerColor,
                         boxShadow: `0 0 4px ${markerColor}`
                       }}
@@ -552,12 +573,12 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
                     >
                       {/* Diamond marker at top */}
                       <div
-                        className="absolute -top-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        className="absolute -top-0.5 -left-0.5 w-1 h-1 transform rotate-45"
                         style={{ backgroundColor: markerColor }}
                       />
                       {/* Diamond marker at bottom */}
                       <div
-                        className="absolute -bottom-1 -left-0.5 w-1 h-1 transform rotate-45"
+                        className="absolute -bottom-0.5 -left-0.5 w-1 h-1 transform rotate-45"
                         style={{ backgroundColor: markerColor }}
                       />
                     </div>
