@@ -191,6 +191,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
     const task = tasks.find(t => t.id === taskId);
     if (!task || !onUpdateTask) return;
 
+    console.log('Task drag started:', { taskId, mode, task });
     setDraggedTask(taskId);
     setDragMode(mode);
     setDragStartX(e.clientX);
@@ -216,6 +217,7 @@ export const ProjectGanttChart: React.FC<ProjectGanttChartProps> = ({
       const timelineWidth = timelineRef.current.offsetWidth;
       const dayWidth = timelineWidth / timeScale.length;
       const deltaDays = roundToHalfDay(deltaX / dayWidth);
+      console.log('Dragging:', { deltaX, dayWidth, deltaDays, mode: dragMode });
 
       if (dragMode === 'move') {
         const originalStart = new Date(originalTaskData.start);
