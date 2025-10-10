@@ -74,28 +74,6 @@ export const GanttView: React.FC = () => {
     setShowTaskManager(false);
   };
 
-  const handleReorderTasks = async (reorderedTasks: Task[]) => {
-    if (selectedProject) {
-      await updateProjectTasks(selectedProject.id, reorderedTasks);
-    }
-  };
-
-  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
-    if (!selectedProject) return;
-    const projectTasks = tasks.filter(t => t.project_id === selectedProject.id);
-    const updatedTasks = projectTasks.map(t =>
-      t.id === taskId ? { ...t, ...updates } : t
-    );
-    await updateProjectTasks(selectedProject.id, updatedTasks);
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    if (!selectedProject) return;
-    const projectTasks = tasks.filter(t => t.project_id === selectedProject.id);
-    const updatedTasks = projectTasks.filter(t => t.id !== taskId);
-    await updateProjectTasks(selectedProject.id, updatedTasks);
-  };
-
   if (showProjectGantt && selectedProject) {
     return (
       <div className="flex-1 p-6 overflow-hidden">
@@ -104,14 +82,10 @@ export const GanttView: React.FC = () => {
           tasks={getTasksForProject(selectedProject.id)}
           onBack={handleBackFromProjectGantt}
           onManageTasks={handleManageTasks}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-          onReorderTasks={handleReorderTasks}
         />
         {showTaskManager && (
           <TaskManager
             projectId={selectedProject.id}
-            projectStartDate={selectedProject.key_dates.start_in_be}
             tasks={tasks.filter(task => task.project_id === selectedProject.id)}
             onSave={handleSaveTasks}
             onCancel={handleCloseTaskManager}

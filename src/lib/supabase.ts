@@ -2,9 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const SUPABASE_PROJECT_ID = '55556544' // your project ref
-const STORAGE_BUCKET = '22e17ebbb1dc3f37edcdb6489f7d8c10'
-const BEARER_TOKEN = '1f66b03540884d0c92f2fba4a268f6e76e231cf7fca666e452a991fc62ea760e' // your bearer token
 
 // Create a mock client if Supabase is not configured
 export const supabase = supabaseUrl && supabaseAnonKey 

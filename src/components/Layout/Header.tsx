@@ -27,9 +27,9 @@ export const Header: React.FC<HeaderProps> = ({ onNotificationsClick, onMobileMe
           </button>
           
           <div className="flex items-center space-x-3">
-            <img
-              src="/PHOTO-2023-09-13-11-16-45.jpg"
-              alt="Atelier d'Excellence"
+            <img 
+              src="/PHOTO-2023-09-13-11-16-45 copy.jpg" 
+              alt="Atelier d'Excellence" 
               className="h-8 md:h-12 w-auto"
             />
           </div>

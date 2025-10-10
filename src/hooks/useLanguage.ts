@@ -18,7 +18,7 @@ export const useLanguage = () => {
   return context;
 };
 
-const translations: Record<Language, Record<string, string>> = {
+const translations = {
   en: {
     // Navigation
     'nav.overview': 'Team Overview',
@@ -96,7 +96,7 @@ const translations: Record<Language, Record<string, string>> = {
     'gantt.tasks_appear': 'Tasks will appear here once they are created.',
     'gantt.manage_tasks': 'Manage Tasks',
     'gantt.today': 'Today',
-
+    
     // Key Dates
     'gantt.wood_foam_launch': 'Wood/Foam Launch',
     'gantt.previewed_delivery': 'Previewed Delivery',
@@ -119,29 +119,23 @@ const translations: Record<Language, Record<string, string>> = {
     'overview.next': 'Next',
     'overview.more_projects': 'more projects',
     
-    'task.be_plans_validation': 'BE plans pour validation',
-    'task.be_etude_conception': 'BE étude conception',
+    'task.reunion_lancement': 'Réunion de lancement',
+    'task.be_plans_validation': 'BE plans pour validation client',
+    'task.be_conception_3d': 'BE conception 3D',
+    'task.be_prepa_fichiers': 'BE prépa fichiers découpe et notice montage',
     'task.commande_mousse': 'Commande mousse',
-    'task.be_prepare_fichiers_decoupe': 'BE prépare fichiers découpe bois 2D / dossier atelier',
-    'task.reception_mousse': 'Reception mousse',
-    'task.decoupe_bois_montage': 'Découpe bois + montage',
-    'task.reception_structure_bois': 'Reception structure bois à Chenn',
-    'task.gandage_mise_mousse': 'Gandage et Mise en mousse',
-    'task.reception_tissu': 'Reception tissu',
-    'task.confection': 'Confection (coupe/couture)',
+    'task.reception_mousse': 'Réception mousse',
+    'task.decoupe_bois_montage': 'Découpe bois et montage',
+    'task.reception_structure_bois': 'Réception structure bois à Chennevières',
+    'task.mise_en_mousse': 'Mise en mousse',
+    'task.reception_tissu': 'Réception tissu',
+    'task.confection': 'Confection (coupe et couture)',
     'task.tapisserie': 'Tapisserie',
-    'task.rdv_confort_test_atelier': 'Rdv confort test atelier',
-    'task.rdv_confort_structure_bois': 'RDV confort sur structure bois canapé',
-    'task.modifs_mousse_post_rdv': 'Modifs mousse post-rdv confort',
-    'task.pose_sangles_toile': 'Pose des sangles et/ou toile polypro',
-    'task.modifs_bois_post_montage': 'Modifs bois post-montage proto',
-    'task.placage_bois': 'Placage bois',
-    'task.vernis_placage_bois': 'Vernis placage bois',
-    'task.rdv_confort_validation_blanc': 'Rdv confort / validation mise en blanc',
-    'task.livraison_ebeniste': 'Livraison EBENISTE',
-    'task.controle_qualite': 'Control Qualité',
-    'task.depart_palette_moreau': 'Départ palette Moreau',
-    'task.autre_a_definir': 'Autre à définir',
+    'task.rdv_confort_validation': 'RDV confort validation mise en blanc',
+    'task.compte_rendu': 'Compte rendu',
+    'task.modifs_bois_mousse': 'Modifs bois / mousse post RDV',
+    'task.nomenclature_bc': 'Nomenclature mis sur BC',
+    'task.general': 'General',
     
     // Task Management
     'tasks.manage': 'Manage Project Tasks',
@@ -150,17 +144,6 @@ const translations: Record<Language, Record<string, string>> = {
     'tasks.available_tasks': 'Available Tasks',
     'tasks.save': 'Save Tasks',
     'tasks.cancel': 'Cancel',
-    'tasks.edit_task': 'Edit Task',
-    'tasks.task_name': 'Task Name',
-    'tasks.start_date': 'Start Date',
-    'tasks.end_date': 'End Date',
-    'tasks.assignee': 'Assignee',
-    'tasks.unassigned': 'Unassigned',
-    'tasks.status': 'Status',
-    'tasks.progress': 'Progress',
-    'tasks.dependencies': 'Dependencies',
-    'tasks.dependencies_help': 'Select tasks that must be completed before this task can start',
-    'tasks.no_other_tasks': 'No other tasks available',
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projects in Development',
@@ -241,9 +224,9 @@ const translations: Record<Language, Record<string, string>> = {
     'timetracking.enable_notifications': 'Enable Daily Reminders',
     'timetracking.notification_description': 'Get reminded at 5:30 PM each day to log your hours',
     
-  // Meetings
-  'meetings.title': 'Meetings',
-  'meetings.subtitle': 'Manage project meetings and notes',
+    // Meetings
+    'meetings.title': 'Meetings',
+    'meetings.subtitle': 'Manage project meetings and notes',
     'meetings.new_meeting': 'New Meeting',
     'meetings.edit_meeting': 'Edit Meeting',
     'meetings.search': 'Search meetings...',
@@ -253,8 +236,8 @@ const translations: Record<Language, Record<string, string>> = {
     'meetings.project': 'Project',
     'meetings.select_project': 'Select a project',
     'meetings.date': 'Date',
-  'meetings.title_field': 'Meeting Title',
-  'meetings.title_placeholder': 'Enter meeting title...',
+    'meetings.title': 'Meeting Title',
+    'meetings.title_placeholder': 'Enter meeting title...',
     'meetings.attendees': 'Attendees',
     'meetings.people': 'people',
     'meetings.photos': 'Photos',
@@ -374,7 +357,7 @@ const translations: Record<Language, Record<string, string>> = {
     'gantt.tasks_appear': 'Les tâches apparaîtront ici une fois créées.',
     'gantt.manage_tasks': 'Gérer les Tâches',
     'gantt.today': 'Aujourd\'hui',
-
+    
     // Key Dates
     'gantt.wood_foam_launch': 'Lancement Bois/Mousse',
     'gantt.previewed_delivery': 'Livraison Prévue',
@@ -397,29 +380,23 @@ const translations: Record<Language, Record<string, string>> = {
     'overview.next': 'Suivant',
     'overview.more_projects': 'projets supplémentaires',
     
-    'task.be_plans_validation': 'BE plans pour validation',
-    'task.be_etude_conception': 'BE étude conception',
+    'task.reunion_lancement': 'Réunion de lancement',
+    'task.be_plans_validation': 'BE plans pour validation client',
+    'task.be_conception_3d': 'BE conception 3D',
+    'task.be_prepa_fichiers': 'BE prépa fichiers découpe et notice montage',
     'task.commande_mousse': 'Commande mousse',
-    'task.be_prepare_fichiers_decoupe': 'BE prépare fichiers découpe bois 2D / dossier atelier',
-    'task.reception_mousse': 'Reception mousse',
-    'task.decoupe_bois_montage': 'Découpe bois + montage',
-    'task.reception_structure_bois': 'Reception structure bois à Chenn',
-    'task.gandage_mise_mousse': 'Gandage et Mise en mousse',
-    'task.reception_tissu': 'Reception tissu',
-    'task.confection': 'Confection (coupe/couture)',
+    'task.reception_mousse': 'Réception mousse',
+    'task.decoupe_bois_montage': 'Découpe bois et montage',
+    'task.reception_structure_bois': 'Réception structure bois à Chennevières',
+    'task.mise_en_mousse': 'Mise en mousse',
+    'task.reception_tissu': 'Réception tissu',
+    'task.confection': 'Confection (coupe et couture)',
     'task.tapisserie': 'Tapisserie',
-    'task.rdv_confort_test_atelier': 'Rdv confort test atelier',
-    'task.rdv_confort_structure_bois': 'RDV confort sur structure bois canapé',
-    'task.modifs_mousse_post_rdv': 'Modifs mousse post-rdv confort',
-    'task.pose_sangles_toile': 'Pose des sangles et/ou toile polypro',
-    'task.modifs_bois_post_montage': 'Modifs bois post-montage proto',
-    'task.placage_bois': 'Placage bois',
-    'task.vernis_placage_bois': 'Vernis placage bois',
-    'task.rdv_confort_validation_blanc': 'Rdv confort / validation mise en blanc',
-    'task.livraison_ebeniste': 'Livraison EBENISTE',
-    'task.controle_qualite': 'Control Qualité',
-    'task.depart_palette_moreau': 'Départ palette Moreau',
-    'task.autre_a_definir': 'Autre à définir',
+    'task.rdv_confort_validation': 'RDV confort validation mise en blanc',
+    'task.compte_rendu': 'Compte rendu',
+    'task.modifs_bois_mousse': 'Modifs bois / mousse post RDV',
+    'task.nomenclature_bc': 'Nomenclature mis sur BC',
+    'task.general': 'Général',
     
     // Task Management
     'tasks.manage': 'Gérer les Tâches du Projet',
@@ -428,17 +405,6 @@ const translations: Record<Language, Record<string, string>> = {
     'tasks.available_tasks': 'Tâches Disponibles',
     'tasks.save': 'Enregistrer les Tâches',
     'tasks.cancel': 'Annuler',
-    'tasks.edit_task': 'Modifier la Tâche',
-    'tasks.task_name': 'Nom de la Tâche',
-    'tasks.start_date': 'Date de Début',
-    'tasks.end_date': 'Date de Fin',
-    'tasks.assignee': 'Assigné à',
-    'tasks.unassigned': 'Non Assigné',
-    'tasks.status': 'Statut',
-    'tasks.progress': 'Progrès',
-    'tasks.dependencies': 'Dépendances',
-    'tasks.dependencies_help': 'Sélectionnez les tâches qui doivent être terminées avant que cette tâche puisse commencer',
-    'tasks.no_other_tasks': 'Aucune autre tâche disponible',
     
     // Sub Categories
     'subcategory.dev_in_progress': 'Projets en cours de développement',
@@ -519,9 +485,9 @@ const translations: Record<Language, Record<string, string>> = {
     'timetracking.enable_notifications': 'Activer les Rappels Quotidiens',
     'timetracking.notification_description': 'Recevez un rappel à 17h30 chaque jour pour enregistrer vos heures',
     
-  // Meetings
-  'meetings.title': 'Réunions',
-  'meetings.subtitle': 'Gérer les réunions de projet et les notes',
+    // Meetings
+    'meetings.title': 'Réunions',
+    'meetings.subtitle': 'Gérer les réunions de projet et les notes',
     'meetings.new_meeting': 'Nouvelle Réunion',
     'meetings.edit_meeting': 'Modifier la Réunion',
     'meetings.search': 'Rechercher des réunions...',
@@ -531,8 +497,8 @@ const translations: Record<Language, Record<string, string>> = {
     'meetings.project': 'Projet',
     'meetings.select_project': 'Sélectionner un projet',
     'meetings.date': 'Date',
-  'meetings.title_field': 'Titre de la Réunion',
-  'meetings.title_placeholder': 'Entrez le titre de la réunion...',
+    'meetings.title': 'Titre de la Réunion',
+    'meetings.title_placeholder': 'Entrez le titre de la réunion...',
     'meetings.attendees': 'Participants',
     'meetings.people': 'personnes',
     'meetings.photos': 'Photos',
@@ -579,8 +545,8 @@ const translations: Record<Language, Record<string, string>> = {
 
 export const useLanguageHook = () => {
   const [language, setLanguageState] = useState<Language>(() => {
-    // Get saved language from localStorage or default to 'fr'
-    const saved = localStorage.getItem('language');
+    // Get saved language from localStorage or user's default language preference, fallback to 'fr'
+    const saved = localStorage.getItem('language') || localStorage.getItem('defaultLanguage');
     return (saved === 'en' || saved === 'fr') ? saved : 'fr';
   });
 
@@ -589,9 +555,17 @@ export const useLanguageHook = () => {
     localStorage.setItem('language', lang);
   };
 
-  const t = (key: string): string => {
-    return translations[language][key] ?? key;
+  const setDefaultLanguage = (lang: Language) => {
+    localStorage.setItem('defaultLanguage', lang);
+    // If no current language override is set, apply the default immediately
+    if (!localStorage.getItem('language')) {
+      setLanguage(lang);
+    }
   };
 
-  return { language, setLanguage, t };
+  const t = (key: string): string => {
+    return translations[language][key] || key;
+  };
+
+  return { language, setLanguage, setDefaultLanguage, t };
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Camera, Mic, Upload, Trash2, Square, Edit, Video } from 'lucide-react';
+import { X, Save, Camera, Mic, MicOff, Users, Calendar, FileText, Upload, Trash2, Play, Pause, Square, Edit, Video, CameraIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage, Language } from '../../hooks/useLanguage';
 import { PhotoEditor } from './PhotoEditor';
@@ -37,7 +37,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   const [recordingTime, setRecordingTime] = useState(0);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-  const recordingInterval = useRef<number | undefined>(undefined);
+  const recordingInterval = useRef<NodeJS.Timeout>();
   
   // Voice-to-text state
   const [voiceEntries, setVoiceEntries] = useState<string[]>([]);
@@ -553,7 +553,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                {t('meetings.title_field')} *
+                {t('meetings.title')} *
               </label>
               <input
                 type="text"

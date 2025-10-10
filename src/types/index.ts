@@ -1,17 +1,25 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'team_member' | 'commercial' | 'atelier';
+  initials: string;
+}
+
 export interface Project {
   id: string;
   name: string;
-  client: string;
-  status: 'planning' | 'in_progress' | 'at_risk' | 'overdue' | 'completed' | 'on_hold';
-  sub_category: string;
+  status: string; // Now stores completion percentage or status text
+  sub_category: 'dev_in_progress' | 'prod_with_be_tracking' | 'updates_nomenclature' | 'waiting_order' | 'completed' | 'on_hold';
   color: string;
-  bc_order_number: string | null;
-  image_url: string | null;
+  bc_order_number?: string;
+  image_url?: string;
+  client: string;
   collection_models: string;
   composition: string;
   date_of_brief: string;
   commercial_id: string;
-  atelier: string;
+  atelier: 'siegeair' | 'maison_fey_vannes' | 'maison_fey_paris' | 'ville' | 'mussy' | 'ae';
   be_team_member_ids: string[];
   key_dates: {
     start_in_be: string;
@@ -21,16 +29,9 @@ export interface Project {
   };
   hours_previewed: number;
   hours_completed: number;
-  pieces: number;
-  size: 'Small' | 'Medium' | 'Large';
-  geometry: 'Square' | 'Mixed' | 'Curved';
-  target_cost_constraint: 'High' | 'Moderate' | 'Tight';
-  modelling: '2D' | '3D';
-  outsourced_suppliers: number;
-  d_level_override: number | null;
-  d_level: number | null;
+  notes: ProjectNote[];
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
 }
 
 export interface Task {
@@ -39,31 +40,54 @@ export interface Task {
   name: string;
   category: TaskCategory;
   phase: 'pre_prod' | 'prod';
-  duration_days: number;
   start_date: string;
   end_date: string;
   assignee_id: string;
   status: 'pending' | 'in_progress' | 'completed' | 'blocked';
-  progress?: number;
+  progress: number;
   dependencies: string[];
-  order_index: number;
+  order: number;
   enabled: boolean;
-  created_at: string;
-  updated_at?: string;
 }
-export interface TimeEntry {
-  id: string;
-  project_id: string;
-  user_id: string;
-  user_name: string;
-  hours: number;
-  date: string;
-  description: string;
-  task_category?: TaskCategory;
-  percentage_completed?: number;
-  created_at: string;
-  updated_at: string;
-}
+
+export type TaskCategory = 
+  | 'reunion_lancement'
+  | 'be_plans_validation'
+  | 'be_conception_3d'
+  | 'be_prepa_fichiers'
+  | 'commande_mousse'
+  | 'reception_mousse'
+  | 'decoupe_bois_montage'
+  | 'reception_structure_bois'
+  | 'mise_en_mousse'
+  | 'reception_tissu'
+  | 'confection'
+  | 'tapisserie'
+  | 'rdv_confort_validation'
+  | 'compte_rendu'
+  | 'modifs_bois_mousse'
+  | 'nomenclature_bc'
+  | 'general';
+
+export const TASK_CATEGORIES: { id: TaskCategory; phase: 'pre_prod' | 'prod' }[] = [
+  { id: 'reunion_lancement', phase: 'pre_prod' },
+  { id: 'be_plans_validation', phase: 'pre_prod' },
+  { id: 'be_conception_3d', phase: 'pre_prod' },
+  { id: 'be_prepa_fichiers', phase: 'pre_prod' },
+  { id: 'commande_mousse', phase: 'prod' },
+  { id: 'reception_mousse', phase: 'prod' },
+  { id: 'decoupe_bois_montage', phase: 'prod' },
+  { id: 'reception_structure_bois', phase: 'prod' },
+  { id: 'mise_en_mousse', phase: 'prod' },
+  { id: 'reception_tissu', phase: 'prod' },
+  { id: 'confection', phase: 'prod' },
+  { id: 'tapisserie', phase: 'prod' },
+  { id: 'rdv_confort_validation', phase: 'prod' },
+  { id: 'compte_rendu', phase: 'prod' },
+  { id: 'modifs_bois_mousse', phase: 'prod' },
+  { id: 'nomenclature_bc', phase: 'prod' },
+  { id: 'general', phase: 'pre_prod' }
+];
 
 export interface ProjectNote {
   id: string;
@@ -71,124 +95,9 @@ export interface ProjectNote {
   content: string;
   author_id: string;
   author_name: string;
-  type: 'update' | 'meeting';
+  created_at: string;
+  type: 'update' | 'status_change' | 'alert' | 'general';
   meeting_id?: string;
-  created_at: string;
-}
-
-export interface Notification {
-  id: string;
-  user_id: string;
-  project_id: string;
-  type: 'overdue_start' | 'upcoming_deadline' | 'status_update';
-  message: string;
-  read: boolean;
-  created_at: string;
-}
-
-export type Language = 'en' | 'fr';
-
-export type TaskCategory = 
-  | 'general'
-  | 'analyse_brief'
-  | 'recherche_references'
-  | 'esquisse_croquis'
-  | 'plan_2d'
-  | 'plan_3d'
-  | 'fiche_technique'
-  | 'devis_fournisseurs'
-  | 'commande_fournisseurs'
-  | 'suivi_livraisons'
-  | 'reception_mousse'
-  | 'decoupe_bois_montage'
-  | 'reception_structure_bois'
-  | 'mise_en_mousse'
-  | 'reception_tissu'
-  | 'confection'
-  | 'tapisserie';
-
-// Team Members
-export const BE_TEAM_MEMBERS = [
-  { id: 'as', name: 'ALEXANDER SMITH', email: 'as@company.com', role: 'team_member' as const, initials: 'AS' },
-  { id: 'mr', name: 'MAËLYS DE LA RUÉE', email: 'mr@company.com', role: 'team_member' as const, initials: 'MR' },
-  { id: 'aq', name: 'ALEXIA QUENTIN', email: 'aq@company.com', role: 'team_member' as const, initials: 'AQ' },
-  { id: 'sr', name: 'STEPHANIE DE RORTHAYS', email: 'sr@company.com', role: 'team_member' as const, initials: 'SR' },
-  { id: 'ld', name: 'LITESH DHUNNOO', email: 'ld@company.com', role: 'team_member' as const, initials: 'LD' },
-  { id: 'ps', name: 'PASCALINE SOLEILHAC', email: 'ps@company.com', role: 'team_member' as const, initials: 'PS' },
-  { id: 'nr', name: 'NICHOLAS RASCO', email: 'nr@company.com', role: 'team_member' as const, initials: 'NR' }
-];
-
-export const COMMERCIAL_USERS = [
-  { id: 'nicolas', name: 'Nicolas', email: 'nicolas@company.com', role: 'commercial' as const, initials: 'N' },
-  { id: 'alain', name: 'Alain', email: 'alain@company.com', role: 'commercial' as const, initials: 'A' },
-  { id: 'aurelie', name: 'Aurélie', email: 'aurelie@company.com', role: 'commercial' as const, initials: 'Au' },
-  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com', role: 'commercial' as const, initials: 'V' },
-  { id: 'paul', name: 'Paul', email: 'paul@company.com', role: 'commercial' as const, initials: 'P' },
-  { id: 'victoria', name: 'Victoria', email: 'victoria@company.com', role: 'commercial' as const, initials: 'Vi' },
-  { id: 'anne-victorine', name: 'Anne-Victorine', email: 'anne-victorine@company.com', role: 'commercial' as const, initials: 'AV' },
-  { id: 'laurie', name: 'Laurie', email: 'laurie@company.com', role: 'commercial' as const, initials: 'La' }
-];
-
-export const TEAM_MEMBERS = [
-  ...BE_TEAM_MEMBERS,
-  ...COMMERCIAL_USERS,
-  { id: 'admin', name: 'Admin User', email: 'admin@company.com', role: 'admin' as const, initials: 'AU' }
-];
-
-export const ATELIERS = [
-  { id: 'paris', name: 'Paris' },
-  { id: 'lyon', name: 'Lyon' },
-  { id: 'marseille', name: 'Marseille' },
-  { id: 'siegeair', name: 'Siège Air' }
-];
-
-export const PROJECT_SUB_CATEGORIES = [
-  { id: 'seating', name: 'Seating', priority: 1 },
-  { id: 'tables', name: 'Tables', priority: 2 },
-  { id: 'storage', name: 'Storage', priority: 3 },
-  { id: 'lighting', name: 'Lighting', priority: 4 },
-  { id: 'accessories', name: 'Accessories', priority: 5 }
-];
-
-export const TASK_CATEGORIES = [
-  { id: 'be_plans_validation', phase: 'pre_prod' as const, default_duration_days: 7 },
-  { id: 'be_etude_conception', phase: 'pre_prod' as const, default_duration_days: 7 },
-  { id: 'commande_mousse', phase: 'prod' as const, default_duration_days: 1 },
-  { id: 'be_prepare_fichiers_decoupe', phase: 'pre_prod' as const, default_duration_days: 7 },
-  { id: 'reception_mousse', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'decoupe_bois_montage', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'reception_structure_bois', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'gandage_mise_mousse', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'reception_tissu', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'confection', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'tapisserie', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'rdv_confort_test_atelier', phase: 'pre_prod' as const, default_duration_days: 7 },
-  { id: 'rdv_confort_structure_bois', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'modifs_mousse_post_rdv', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'pose_sangles_toile', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'modifs_bois_post_montage', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'placage_bois', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'vernis_placage_bois', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'rdv_confort_validation_blanc', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'livraison_ebeniste', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'controle_qualite', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'depart_palette_moreau', phase: 'prod' as const, default_duration_days: 7 },
-  { id: 'autre_a_definir', phase: 'prod' as const, default_duration_days: 7 }
-];
-
-// Meeting related types
-export interface MeetingPhoto {
-  id: string;
-  url: string;
-  caption?: string;
-  timestamp?: string;
-}
-
-export interface VoiceNote {
-  id: string;
-  transcript?: string;
-  duration: number;
-  timestamp: string;
 }
 
 export interface Meeting {
@@ -202,6 +111,82 @@ export interface Meeting {
   voice_notes: VoiceNote[];
   author_id: string;
   author_name: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
+
+export interface MeetingPhoto {
+  id: string;
+  url: string;
+  caption?: string;
+  timestamp: string;
+}
+
+export interface VoiceNote {
+  id: string;
+  transcript: string;
+  duration: number;
+  timestamp: string;
+}
+
+export interface TimeEntry {
+  id: string;
+  project_id: string;
+  user_id: string;
+  user_name: string;
+  hours: number;
+  date: string;
+  description?: string;
+  task_category?: TaskCategory;
+  percentage_completed?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  project_id: string;
+  type: 'overdue_start' | 'upcoming_deadline' | 'status_update' | 'spec_change';
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+export const COMMERCIAL_USERS = [
+  { id: 'virginie', name: 'Virginie', email: 'virginie@company.com' },
+  { id: 'nicholas', name: 'Nicholas', email: 'nicholas@company.com' },
+  { id: 'aurelie', name: 'Aurelie', email: 'aurelie@company.com' },
+  { id: 'paul', name: 'Paul', email: 'paul@company.com' },
+  { id: 'alain', name: 'Alain', email: 'alain@company.com' },
+  { id: 'victoria', name: 'Victoria', email: 'victoria@company.com' },
+  { id: 'anne-victorine', name: 'Anne-Victorine', email: 'anne-victorine@company.com' },
+];
+
+export const BE_TEAM_MEMBERS = [
+  { id: 'as', name: 'ALEXANDER SMITH (AS)', email: 'as@company.com' },
+  { id: 'mr', name: 'MAËLYS DE LA RUÉE (MR)', email: 'mr@company.com' },
+  { id: 'aq', name: 'ALEXIA QUENTIN (AQ)', email: 'aq@company.com' },
+  { id: 'sr', name: 'STEPHANIE DE RORTHAYS (SR)', email: 'sr@company.com' },
+  { id: 'ld', name: 'LITESH DHUNNOO (LD)', email: 'ld@company.com' },
+  { id: 'ps', name: 'PASCALINE SOLEILHAC (PS)', email: 'ps@company.com' },
+  { id: 'nr', name: 'NICHOLAS RASCO (NR)', email: 'nr@company.com' },
+];
+
+export const ATELIERS = [
+  { id: 'siegeair', name: 'Siegeair' },
+  { id: 'maison_fey_vannes', name: 'Maison Fey Vannes' },
+  { id: 'maison_fey_paris', name: 'Maison Fey Paris' },
+  { id: 'ville', name: 'Ville' },
+  { id: 'mussy', name: 'Mussy' },
+  { id: 'ae', name: 'AE' },
+];
+
+export const PROJECT_SUB_CATEGORIES = [
+  { id: 'dev_in_progress', name: 'Projets en cours de développement', priority: 1 },
+  { id: 'prod_with_be_tracking', name: 'Projets lancés en prod avec suivi BE', priority: 2 },
+  { id: 'updates_nomenclature', name: 'Mises à jour à faire / Nomenclature édition à faire + surveiller vie série', priority: 3 },
+  { id: 'waiting_order', name: 'Projets en attente de commande', priority: 4 },
+  { id: 'completed', name: 'Projets Terminés', priority: 5 },
+  { id: 'on_hold', name: 'Projets en Attente', priority: 6 }
+] as const;
